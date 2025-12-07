@@ -137,7 +137,7 @@ export default function AthletesTable({
       <div className="border border-[#303245] rounded-lg overflow-hidden p-5 bg-[#08081A] mt-10">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#303245] bg-[#020231]">
+            <tr className="border border-[#24273f] bg-[#020231]">
               <th className="px-6 py-4 text-left font-semibold">Name</th>
               <th className="px-6 py-4 text-left font-semibold">Category</th>
               <th className="px-6 py-4 text-left font-semibold">Phase</th>
@@ -191,7 +191,7 @@ export default function AthletesTable({
                           onEditAthlete(athlete);
                           setOpenMenuId(null);
                         }}
-                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-secondary/50 transition-colors text-left text-primary"
+                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-blue-800/40 transition-colors text-left text-primary"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit
@@ -201,7 +201,7 @@ export default function AthletesTable({
                           onDeleteAthlete(athlete.id);
                           setOpenMenuId(null);
                         }}
-                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-secondary/50 transition-colors text-left text-destructive"
+                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-blue-800/40 transition-colors text-left text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete
