@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { X } from "lucide-react";
+import { Loader, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface Athlete {
@@ -95,16 +95,23 @@ export default function AthletesModal({
     }));
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    setLoading(true);
+
+    setTimeout(() => {
+      onSave(formData);
+      setLoading(false);
+    }, 2000); // 2 seconds loading
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#08081A] rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card">
           <h2 className="text-2xl font-bold"> Add Athletes</h2>
           <button
@@ -126,7 +133,7 @@ export default function AthletesModal({
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -137,7 +144,7 @@ export default function AthletesModal({
                 value={formData.category}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -148,7 +155,7 @@ export default function AthletesModal({
                 value={formData.phase}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
           </div>
@@ -165,7 +172,7 @@ export default function AthletesModal({
                 value={formData.weight}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -178,7 +185,7 @@ export default function AthletesModal({
                 value={formData.height}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -191,7 +198,7 @@ export default function AthletesModal({
                 value={formData.assignedCardio}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
           </div>
@@ -208,7 +215,7 @@ export default function AthletesModal({
                 value={formData.restDaySteps}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -221,7 +228,7 @@ export default function AthletesModal({
                 value={formData.trainingDaySteps}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -234,7 +241,7 @@ export default function AthletesModal({
                 value={formData.birthday}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
           </div>
@@ -247,7 +254,7 @@ export default function AthletesModal({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-[#4A9E4A]"
               >
                 <option className="bg-[#4040D3]" value="Natural ">
                   Natural
@@ -267,7 +274,7 @@ export default function AthletesModal({
                 value={formData.lastCheckIn}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
           </div>
@@ -280,7 +287,7 @@ export default function AthletesModal({
               value={formData.goal}
               onChange={handleChange}
               placeholder="Type.."
-              className="w-full bg-input border border-[#4A9E4A] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary min-h-[120px] resize-none"
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] min-h-[120px] resize-none"
             />
           </div>
 
@@ -288,9 +295,13 @@ export default function AthletesModal({
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex-1 bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
+              className="flex-1 flex items-center justify-center bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
             >
-              Save
+              {loading ? (
+                <Loader className="w-5 h-5 animate-spin text-center" />
+              ) : (
+                "Save"
+              )}
             </button>
             <button
               type="button"
