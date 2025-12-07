@@ -5,10 +5,6 @@ import ExerciseDatabaseCard from "./exerciseDatabaseCard/ExerciseDatabaseCard";
 import DeleteModal from "./deleteModal/DeleteModal";
 import AddExerciseModal from "./addExerciseModal/AddExerciseModal";
 
-// import ExerciseCard from "@/components/exercise-card"
-// import ExerciseModal from "@/components/exercise-modal"
-// import DeleteConfirmationModal from "@/components/delete-confirmation-modal"
-
 interface Exercise {
   id: string;
   name: string;
@@ -105,7 +101,7 @@ export default function ExerciseDatabase() {
               <h1 className="text-3xl font-bold">Exercise Database</h1>
               <button
                 onClick={handleAddExercise}
-                className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors font-medium"
+                className="px-6 py-3 border border-[#4A9E4A] text-primary rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium"
               >
                 + Add Exercise
               </button>

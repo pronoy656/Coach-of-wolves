@@ -17,9 +17,9 @@ export default function DeleteModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-lg max-w-sm w-full mx-4 p-6">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 mx-auto mb-4">
-          <AlertCircle className="w-6 h-6 text-destructive" />
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-sm w-full mx-4 p-6">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500/30 mx-auto mb-4">
+          <AlertCircle className="w-6 h-6 text-red-500" />
         </div>
 
         <h3 className="text-lg font-bold text-center mb-2">Delete Exercise</h3>
@@ -31,13 +31,13 @@ export default function DeleteModal({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-secondary transition-colors font-medium"
+            className="flex-1 px-4 py-2 border  border-[#303245] rounded-lg hover:bg-secondary transition-colors font-medium"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-destructive hover:bg-destructive/80 text-white rounded-lg transition-colors font-medium"
+            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-600/80 text-white rounded-lg transition-colors font-medium"
           >
             Delete
           </button>

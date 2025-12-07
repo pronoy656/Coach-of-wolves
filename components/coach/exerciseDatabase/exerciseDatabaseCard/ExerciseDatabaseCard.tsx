@@ -30,13 +30,13 @@ export default function ExerciseDatabaseCard({
       : exercise.muscleGroups || [];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+    <div className="bg-[#08081A] border border-[#303245] rounded-lg p-6 hover:border-[#4A9E4A] transition-colors">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-4">
           {/* Icon placeholder */}
-          <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center">
+          <div className="w-16 h-16 bg-[#29293F] rounded-lg flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-primary"
+              className="w-8 h-8 text-[#66b42a]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -54,7 +54,7 @@ export default function ExerciseDatabaseCard({
               {exercise.name}
             </h3>
             <div className="flex items-center gap-2">
-              <span className="bg-primary/20 text-primary px-2 py-1 rounded text-sm font-medium">
+              <span className="bg-green-600/40 text-primary px-2 py-1 rounded-xl text-sm font-medium">
                 {exercise.category}
               </span>
               <span className="text-muted-foreground text-sm flex items-center gap-1">
@@ -73,13 +73,13 @@ export default function ExerciseDatabaseCard({
         <div className="flex items-center gap-2">
           <button
             onClick={onEdit}
-            className="p-2 hover:bg-secondary rounded transition-colors text-primary"
+            className="p-2 hover:bg-secondary rounded transition-colors text-green-500"
           >
             <Edit2 className="w-5 h-5" />
           </button>
           <button
             onClick={onDelete}
-            className="p-2 hover:bg-secondary rounded transition-colors text-destructive"
+            className="p-2 hover:bg-secondary rounded transition-colors text-red-600"
           >
             <Trash2 className="w-5 h-5" />
           </button>
@@ -91,7 +91,7 @@ export default function ExerciseDatabaseCard({
         {displayedCategories.map((cat) => (
           <span
             key={cat}
-            className="bg-secondary text-muted-foreground px-3 py-1 rounded text-sm"
+            className="bg-[#30303D] text-muted-foreground px-3 py-1.5 rounded-2xl text-sm"
           >
             {cat}
           </span>

@@ -173,15 +173,15 @@ export default function AddExerciseModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto scrollbar-none">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card">
+        <div className="flex items-center justify-between p-4 border-b border-[#2F312F] sticky top-0 bg-card/60 backdrop-blur-md">
           <h2 className="text-2xl font-bold">
             {exercise ? "Edit Exercise" : "Add Exercise"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-secondary/50 rounded transition-colors"
+            className="p-1 hover:bg-red-500 rounded transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -200,7 +200,7 @@ export default function AddExerciseModal({
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-border rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -211,7 +211,7 @@ export default function AddExerciseModal({
                 value={formData.group}
                 onChange={handleChange}
                 placeholder="Type.."
-                className="w-full bg-input border border-border rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
               />
             </div>
             <div>
@@ -220,11 +220,20 @@ export default function AddExerciseModal({
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full bg-input border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-[#4A9E4A]"
               >
-                <option value="">Type..</option>
+                <option
+                  value=""
+                  style={{ backgroundColor: "#1E1F25", color: "white" }}
+                >
+                  Type..
+                </option>
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
+                  <option
+                    key={cat}
+                    value={cat}
+                    style={{ backgroundColor: "#1E1F25" }}
+                  >
                     {cat}
                   </option>
                 ))}
@@ -241,7 +250,7 @@ export default function AddExerciseModal({
               value={formData.iconName}
               onChange={handleChange}
               placeholder="Type.."
-              className="w-full bg-input border border-border rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
             />
           </div>
 
@@ -255,7 +264,7 @@ export default function AddExerciseModal({
               value={formData.description}
               onChange={handleChange}
               placeholder="Type.."
-              className="w-full bg-input border border-border rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary min-h-[100px] resize-none"
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] min-h-[100px] resize-none"
             />
           </div>
 
@@ -263,7 +272,7 @@ export default function AddExerciseModal({
             <label className="block text-sm font-medium mb-3">
               Sub Category
             </label>
-            <div className="grid grid-cols-2 gap-3 bg-input border border-border rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-3 bg-input border border-[#303245] rounded-lg p-4">
               {SUBCATEGORIES.map((subcat) => (
                 <label
                   key={subcat}
@@ -273,7 +282,7 @@ export default function AddExerciseModal({
                     type="checkbox"
                     checked={formData.subcategories.includes(subcat)}
                     onChange={() => handleSubcategoryChange(subcat)}
-                    className="w-4 h-4 rounded border-border bg-secondary accent-primary"
+                    className="w-4 h-4 rounded border-[#303245] bg-secondary accent-primary"
                   />
                   <span className="text-sm">{subcat}</span>
                 </label>
@@ -299,7 +308,7 @@ export default function AddExerciseModal({
               </svg>
               <label className="text-sm font-medium">Upload Image</label>
             </div>
-            <label className="block w-full border-2 border-dashed border-primary rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 transition-colors">
+            <label className="block w-full border-2 border-dashed border-[#4A9E4A] rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 transition-colors">
               <div className="flex flex-col items-center">
                 <svg
                   className="w-12 h-12 text-primary mb-2"
@@ -361,7 +370,7 @@ export default function AddExerciseModal({
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleVideoDrop}
-              className="block w-full border-2 border-dashed border-primary rounded-lg p-8 text-center hover:bg-primary/5 transition-colors cursor-pointer"
+              className="block w-full border-2 border-dashed border-[#4A9E4A] rounded-lg p-8 text-center hover:bg-primary/5 transition-colors cursor-pointer"
             >
               <div className="flex flex-col items-center">
                 <svg
@@ -403,7 +412,7 @@ export default function AddExerciseModal({
 
           <button
             type="button"
-            className="w-full bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
+            className="w-full border border-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
           >
             Upload
           </button>
