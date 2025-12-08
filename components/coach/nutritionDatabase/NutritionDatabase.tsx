@@ -75,6 +75,20 @@ export default function NutritionDatabase() {
       saturatedFats: 2,
       unsaturatedFats: 2,
     },
+    {
+      id: "4",
+      name: "Oatmeal",
+      category: "Carbohydrate",
+      defaultQuantity: "100g",
+      calories: 389,
+      proteins: 17,
+      carbohydrates: 66,
+      fats: 7,
+      sugar: 1,
+      fiber: 11,
+      saturatedFats: 1,
+      unsaturatedFats: 5,
+    },
   ]);
 
   const [showModal, setShowModal] = useState(false);
