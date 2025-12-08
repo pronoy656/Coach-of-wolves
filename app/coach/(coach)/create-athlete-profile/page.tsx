@@ -1,5 +1,10 @@
+import CreateAthleteProfile from "@/components/coach/createAthleteProfile/CreateAthleteProfile";
 import React from "react";
 
 export default function CreateAthleteProfilePage() {
-  return <div>CreateAthleteProfilePage</div>;
+  return (
+    <div>
+      <CreateAthleteProfile />
+    </div>
+  );
 }
