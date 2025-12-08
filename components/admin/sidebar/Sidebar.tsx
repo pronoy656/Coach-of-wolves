@@ -42,14 +42,14 @@ export default function Sidebar() {
         <NavItem
           icon={<Users size={20} />}
           label="Athlete Management"
-          href="/admin/athlete-management"
-          active={pathname === "/admin/athlete-management"}
+          href="/admin/athlete-Management"
+          active={pathname === "/admin/athlete-Management"}
         />
         <NavItem
           icon={<Users size={20} />}
           label="Coach Management"
-          href="/admin/coach-management"
-          active={pathname === "/admin/coach-management"}
+          href="/admin/coach-Management"
+          active={pathname === "/admin/coach-Management"}
         />
 
         <NavItem

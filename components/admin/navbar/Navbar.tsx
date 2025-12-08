@@ -6,7 +6,7 @@ export default function Header() {
   return (
     <header className="bg-[#101021] border border-[#2F312F] backdrop-blur px-6 py-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Coach Dashboard</h1>
+        <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
           <button className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 transition relative">
             <Bell size={20} className="text-primary" />

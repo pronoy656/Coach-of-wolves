@@ -322,10 +322,13 @@ export default function NutritionModal({
 
                 <button
                   type="submit"
-                  className="mt-9 w-full flex items-center justify-center bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
+                  className="mt-9 w-full flex items-center justify-center bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors gap-2"
                 >
                   {loading ? (
-                    <Loader className="w-5 h-5 animate-spin" />
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
                   ) : (
                     "Save"
                   )}
