@@ -1,24 +1,9 @@
-// import React from "react";
-// import StatsCard from "../stattsCard/StatsCard";
-
-// export default function Overview() {
-//   return (
-//     <div>
-//       <StatsCard />
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState } from "react";
 import StatsCard from "../stattsCard/StatsCard";
 import AthletesSection from "../athlatesSection/AthlatesSection";
 import Filter from "../filter/Filter";
-
-// import StatsCards from "@/components/stats-cards"
-// import AthletesSection from "@/components/athletes-section"
-// import FilterPanel from "@/components/filter-panel"
 
 export default function Dashboard() {
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
