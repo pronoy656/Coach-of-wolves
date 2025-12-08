@@ -101,7 +101,7 @@ export default function ExerciseDatabase() {
               <h1 className="text-3xl font-bold">Exercise Database</h1>
               <button
                 onClick={handleAddExercise}
-                className="px-6 py-3 border border-[#4A9E4A] text-primary rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium"
+                className="px-6 py-3 border-2 border-[#4A9E4A] text-[#4A9E4A] rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium"
               >
                 + Add Exercise
               </button>
@@ -138,15 +138,19 @@ export default function ExerciseDatabase() {
           setSelectedExercise(null);
         }}
         onSave={handleSaveExercise}
-        exercise={selectedExercise}
+        // exercise={selectedExercise}
+        // exercise={selectedExercise || undefined}
       />
 
       {/* Delete Confirmation Modal */}
-      <DeleteModal
-        isOpen={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
-      />
+      {deleteConfirmOpen && (
+        <DeleteModal
+          title="Delete Exercise"
+          message="Are you sure you want to delete this exercise? This action cannot be undone."
+          onCancel={() => setDeleteConfirmOpen(false)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }
