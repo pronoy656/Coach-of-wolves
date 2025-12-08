@@ -37,6 +37,42 @@ export default function ExerciseDatabase() {
       description: "Shoulder exercise",
       muscleGroups: ["Triceps", "Shoulders"],
     },
+    {
+      id: "3",
+      name: "Deadlift",
+      group: "Barbell",
+      category: "Back",
+      iconName: "dumbbell",
+      description: "Full-body strength exercise focusing on posterior chain",
+      muscleGroups: ["Back", "Hamstrings", "Glutes", "Forearms"],
+    },
+    {
+      id: "4",
+      name: "Squat",
+      group: "Barbell",
+      category: "Legs",
+      iconName: "dumbbell",
+      description: "Compound leg exercise targeting quads and glutes",
+      muscleGroups: ["Quads", "Glutes", "Hamstrings", "Core"],
+    },
+    {
+      id: "5",
+      name: "Lat Pulldown",
+      group: "Machine",
+      category: "Back",
+      iconName: "dumbbell",
+      description: "Back exercise focusing on the lats",
+      muscleGroups: ["Lats", "Biceps", "Upper Back"],
+    },
+    {
+      id: "6",
+      name: "Leg Press",
+      group: "Machine",
+      category: "Legs",
+      iconName: "dumbbell",
+      description: "Lower-body exercise targeting quads and glutes",
+      muscleGroups: ["Quads", "Glutes", "Hamstrings"],
+    },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
