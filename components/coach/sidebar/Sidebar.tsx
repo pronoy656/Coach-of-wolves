@@ -81,6 +81,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -150,6 +151,12 @@ export default function Sidebar() {
           label="Show Management"
           href="/coach/show-Management"
           active={pathname === "/coach/show-Management"}
+        />
+        <NavItem
+          icon={<User size={20} />}
+          label="Create Athlete Profile"
+          href="/coach/create-athlete-profile"
+          active={pathname === "/coach/create-athlete-profile"}
         />
       </nav>
 

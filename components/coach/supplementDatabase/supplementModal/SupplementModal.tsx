@@ -178,16 +178,12 @@ export default function SupplementModal({
           </div>
 
           {/* Save Button */}
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center items-center pt-4">
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-[#4040D3] hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              className="w-full px-6 py-3 bg-[#4040D3] hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center"
             >
-              {loading ? (
-                <Loader className="w-5 h-5 animate-spin text-center" />
-              ) : (
-                "Save"
-              )}
+              {loading ? <Loader className="w-5 h-5 animate-spin" /> : "Save"}
             </button>
           </div>
         </form>
