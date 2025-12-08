@@ -61,6 +61,20 @@ export default function NutritionDatabase() {
       saturatedFats: 2,
       unsaturatedFats: 2,
     },
+    {
+      id: "3",
+      name: "Milk Shake",
+      category: "Protein",
+      defaultQuantity: "100g",
+      calories: 330,
+      proteins: 62,
+      carbohydrates: 0,
+      fats: 7,
+      sugar: 0,
+      fiber: 0,
+      saturatedFats: 2,
+      unsaturatedFats: 2,
+    },
   ]);
 
   const [showModal, setShowModal] = useState(false);
