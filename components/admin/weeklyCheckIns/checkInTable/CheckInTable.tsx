@@ -1,0 +1,174 @@
+"use client";
+
+import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
+import { Trash2 } from "lucide-react";
+import { useState } from "react";
+
+interface CheckIn {
+  id: number;
+  athlete: string;
+  week: string;
+  checkInDate: string;
+  coach: string;
+  weightChange: string;
+  status: string;
+}
+
+interface CheckInTableProps {
+  checkIns: CheckIn[];
+  onDelete: (id: number) => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export default function CheckInTable({
+  checkIns,
+  onDelete,
+  currentPage,
+  totalPages,
+  onPageChange,
+}: CheckInTableProps) {
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    id: number;
+    athlete: string;
+  }>({
+    isOpen: false,
+    id: 0,
+    athlete: "",
+  });
+
+  const handleDeleteClick = (id: number, athlete: string) => {
+    setDeleteModal({ isOpen: true, id, athlete });
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(deleteModal.id);
+    setDeleteModal({ isOpen: false, id: 0, athlete: "" });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ isOpen: false, id: 0, athlete: "" });
+  };
+
+  return (
+    <>
+      <div className="bg-card border border-[#24273f] rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-[#24273f] bg-[#020231]">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Athlete
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Week
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Check in Date
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Coach
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Weight Change
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {checkIns.map((checkIn, index) => (
+                <tr
+                  key={checkIn.id}
+                  className={`border-b border-[#24273f] ${
+                    index % 2 === 0 ? "bg-[#020231]/50" : "bg-background"
+                  } hover:bg-secondary/20 transition-colors`}
+                >
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {checkIn.athlete}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {checkIn.week}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {checkIn.checkInDate}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {checkIn.coach}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {checkIn.weightChange}
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        checkIn.status === "Completed"
+                          ? "bg-green-500/20 text-green-500"
+                          : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
+                      {checkIn.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <button
+                      onClick={() =>
+                        handleDeleteClick(checkIn.id, checkIn.athlete)
+                      }
+                      className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors"
+                      title="Delete check-in"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <div className="flex justify-end p-4">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => onPageChange(currentPage - 1)}
+              >
+                Prev
+              </button>
+
+              <span className="px-4">
+                {currentPage} / {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => onPageChange(currentPage + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </table>
+        </div>
+
+        {checkIns.length === 0 && (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">
+              No check-ins found matching your filters
+            </p>
+          </div>
+        )}
+      </div>
+
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        title="Delete Athlete"
+        message="Are you sure you want to delete this Athlete? This action cannot be undone."
+        athleteName={deleteModal.athlete}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
+    </>
+  );
+}
