@@ -8,6 +8,7 @@
 
 import { useState, FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export default function ConfirmPassword() {
   const [showPassword, setShowPassword] = useState(false);
@@ -98,12 +99,14 @@ export default function ConfirmPassword() {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
-          >
-            Set Password
-          </button>
+          <Link href="/">
+            <button
+              type="submit"
+              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
+            >
+              Set Password
+            </button>
+          </Link>
         </form>
       </div>
     </div>

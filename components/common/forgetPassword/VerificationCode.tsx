@@ -136,12 +136,14 @@ export default function VerificationCode() {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-4"
-          >
-            Verify
-          </button>
+          <Link href="/create-password">
+            <button
+              type="submit"
+              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-4"
+            >
+              Verify
+            </button>
+          </Link>
         </form>
       </div>
     </div>

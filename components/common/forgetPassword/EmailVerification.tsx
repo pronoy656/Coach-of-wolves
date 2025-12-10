@@ -58,13 +58,14 @@ export default function EmailVerification() {
               required
             />
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
-          >
-            Submit
-          </button>
+          <Link href="/code-verification">
+            <button
+              type="submit"
+              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
+            >
+              Submit
+            </button>
+          </Link>
         </form>
       </div>
     </div>
