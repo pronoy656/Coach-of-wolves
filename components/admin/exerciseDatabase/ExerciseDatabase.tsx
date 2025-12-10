@@ -390,6 +390,10 @@ export default function AdminExerciseDatabase() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null
   );
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    id?: string;
+  }>({ show: false });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMuscleGroup, setSelectedMuscleGroup] =
     useState("All Muscle Groups");
@@ -430,6 +434,7 @@ export default function AdminExerciseDatabase() {
   const handleDelete = (id: string) => {
     setExerciseToDelete(id);
     setShowDeleteModal(true);
+    setDeleteConfirm({ show: true, id });
   };
 
   const confirmDelete = () => {
@@ -619,6 +624,7 @@ export default function AdminExerciseDatabase() {
 
       {showDeleteModal && (
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Exercise"
           message="Are you sure you want to delete this exercise? This action cannot be undone."
           onConfirm={confirmDelete}

@@ -1,20 +1,9 @@
-// import React from "react";
-
-// export default function nutritionDatabase() {
-//   return <div>nutritionDatabase</div>;
-// }
-
 "use client";
 
 import { useState } from "react";
 import NutritionCard from "./nutritionCard/NutritionCard";
 import NutritionModal from "./nutritionModal/NutritionModal";
 import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
-// import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
-
-// import NutritionCard from "@/components/nutrition-card"
-// import NutritionModal from "@/components/nutrition-modal"
-// import DeleteConfirmationModal from "@/components/delete-confirmation-modal"
 
 interface Nutrition {
   id: string;
@@ -97,6 +86,11 @@ export default function NutritionDatabase() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    id?: string;
+  }>({ show: false });
+
   const handleAddNutrition = () => {
     setEditingId(null);
     setShowModal(true);
@@ -110,6 +104,7 @@ export default function NutritionDatabase() {
   const handleDeleteNutrition = (id: string) => {
     setDeletingId(id);
     setShowDeleteModal(true);
+    setDeleteConfirm({ show: true, id });
   };
 
   const confirmDelete = () => {
@@ -181,6 +176,7 @@ export default function NutritionDatabase() {
 
       {showDeleteModal && (
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Nutrition"
           message="Are you sure you want to delete this nutrition? This action cannot be undone."
           onConfirm={confirmDelete}

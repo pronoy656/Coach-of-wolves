@@ -230,6 +230,7 @@ export default function WeeklyCheckIns() {
                   <option value="Completed">Completed</option>
                   <option value="Pending">Pending</option>
                 </select>
+
                 <WeekCalender
                   selectedWeek={selectedWeek}
                   onWeekChange={handleWeekChange}

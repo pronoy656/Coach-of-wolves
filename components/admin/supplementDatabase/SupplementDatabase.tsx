@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Edit2, Trash2, Search } from "lucide-react";
 import SupplementModal from "./supplementModal/SupplementModal";
 import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
-// import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 
 interface Supplement {
   id: string;
@@ -118,6 +117,10 @@ export default function SupplementDatabase() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    id?: string;
+  }>({ show: false });
 
   const filteredSupplements = supplements.filter(
     (s) =>
@@ -153,6 +156,7 @@ export default function SupplementDatabase() {
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteModalOpen(true);
+    setDeleteConfirm({ show: true, id });
   };
 
   const confirmDelete = () => {
@@ -331,6 +335,7 @@ export default function SupplementDatabase() {
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Supplement"
           message="Are you sure you want to delete this supplement? This action cannot be undone."
           onConfirm={confirmDelete}

@@ -4,8 +4,9 @@ import { useState } from "react";
 
 import { Edit2, Trash2 } from "lucide-react";
 import AddCoachModal from "./addCoachModal/AddCoachModal";
-import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
+
 import Image from "next/image";
+import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
 
 interface Coach {
   id: string;
@@ -162,14 +163,15 @@ export default function CoachManagement() {
         />
       )}
 
-      {deleteConfirm.show && (
+      {
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Coach"
           message="Are you sure you want to delete this coach? This action cannot be undone."
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteConfirm({ show: false })}
         />
-      )}
+      }
     </div>
   );
 }
