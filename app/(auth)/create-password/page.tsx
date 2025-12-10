@@ -1,5 +1,10 @@
+import ConfirmPassword from "@/components/common/forgetPassword/ConfirmPassword";
 import React from "react";
 
 export default function CreatePasswordPage() {
-  return <div>CreatePasswordPage</div>;
+  return (
+    <div>
+      <ConfirmPassword />
+    </div>
+  );
 }
