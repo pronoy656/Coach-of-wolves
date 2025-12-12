@@ -207,7 +207,7 @@ export default function TimelineTable() {
         <table className="w-full min-w-[1200px] border-collapse text-center">
           {/* --- Table Header --- */}
           <thead>
-            <tr className="bg-[#8b8b93] text-gray-900 font-bold">
+            <tr className="bg-[#a8a8af] text-gray-900 font-bold">
               <th
                 rowSpan={2}
                 className="border border-gray-600 px-2 py-1 min-w-10"
@@ -234,40 +234,40 @@ export default function TimelineTable() {
               </th>
               <th
                 rowSpan={2}
-                className="border border-gray-600 w-[40px] bg-gray-400"
+                className="border border-gray-600 w-10 bg-gray-400"
               ></th>
               <th
                 rowSpan={2}
-                className="border border-gray-600 w-[40px] bg-gray-400"
+                className="border border-gray-600 w-10 bg-gray-400"
               ></th>
 
               <th
                 colSpan={4}
-                className="border border-gray-600 px-2 py-1 bg-[#8b8b93]"
+                className="border border-gray-600 px-2 py-1 bg-[#a9a9af]"
               >
                 Training day
               </th>
               <th
                 colSpan={4}
-                className="border border-gray-600 px-2 py-1 bg-[#8b8b93]"
+                className="border border-gray-600 px-2 py-1 bg-[#a9a9af]"
               >
                 Restday
               </th>
               <th
                 colSpan={2}
-                className="border border-gray-600 px-2 py-1 bg-[#8b8b93]"
+                className="border border-gray-600 px-2 py-1 bg-[#a9a9af]"
               >
                 Training day
               </th>
               <th
                 colSpan={2}
-                className="border border-gray-600 px-2 py-1 bg-[#8b8b93]"
+                className="border border-gray-600 px-2 py-1 bg-[#a9a9af]"
               >
                 Restday
               </th>
             </tr>
 
-            <tr className="bg-[#a1a1aa] text-[10px] sm:text-xs text-gray-800 font-semibold">
+            <tr className="bg-[#a8a8af] text-[10px] sm:text-xs text-gray-800 font-semibold">
               <th className="border border-gray-600 py-1">Protein</th>
               <th className="border border-gray-600 py-1">Carbs</th>
               <th className="border border-gray-600 py-1">Fats</th>
@@ -301,7 +301,7 @@ export default function TimelineTable() {
                         updateRow(row.id, ["date"], e.target.value)
                       }
                       // [color-scheme:dark] ensures the calendar icon is visible in dark mode
-                      className="w-full bg-transparent text-white outline-none [color-scheme:dark] cursor-pointer"
+                      className="w-full bg-transparent text-white outline-none scheme-dark cursor-pointer"
                     />
                   ) : (
                     <span>{formatDateDisplay(row.date)}</span>

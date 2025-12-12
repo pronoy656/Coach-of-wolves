@@ -64,7 +64,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
         );
       case "Supplements":
         return (
-          <div className="text-gray-400">
+          <div className="">
             <SupplementsTab />
           </div>
         );
@@ -121,7 +121,6 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
 
       {/* --- Content Area --- */}
       <div className="mt-8 min-h-[200px] w-full rounded-2xl bg-[#0d0d18] border border-white/5 p-8">
-        {/* <h2 className="mb-4 text-xl font-medium text-white">{activeTab}</h2> */}
         {renderContent()}
       </div>
     </div>
