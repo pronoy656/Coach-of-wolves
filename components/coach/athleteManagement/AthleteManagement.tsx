@@ -1,9 +1,3 @@
-// import React from "react";
-
-// export default function AthleteManagement() {
-//   return <div>athleteManagement</div>;
-// }
-
 "use client";
 
 import { useState, useMemo } from "react";
