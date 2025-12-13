@@ -115,8 +115,12 @@ export default function SupplementDatabase() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean }>({
+    show: false,
+  });
 
   const filteredSupplements = supplements.filter(
     (s) =>
@@ -151,16 +155,22 @@ export default function SupplementDatabase() {
 
   const handleDelete = (id: string) => {
     setDeleteId(id);
-    setDeleteModalOpen(true);
+    setDeleteConfirm({ show: true });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false });
+    setDeleteId(null);
   };
 
   const confirmDelete = () => {
-    if (deleteId) {
-      setSupplements(supplements.filter((s) => s.id !== deleteId));
-      setDeleteModalOpen(false);
-      setDeleteId(null);
-      setCurrentPage(1);
-    }
+    if (!deleteId) return;
+
+    setSupplements((prev) => prev.filter((s) => s.id !== deleteId));
+
+    setDeleteId(null);
+    setDeleteConfirm({ show: false });
+    setCurrentPage(1);
   };
 
   const editingSuplement = editingId
@@ -328,17 +338,15 @@ export default function SupplementDatabase() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteModalOpen && (
+      {
         <DeleteModal
+          isOpen={deleteConfirm.show} // show property use করতে হবে
           title="Delete Supplement"
           message="Are you sure you want to delete this supplement? This action cannot be undone."
           onConfirm={confirmDelete}
-          onCancel={() => {
-            setDeleteModalOpen(false);
-            setDeleteId(null);
-          }}
+          onCancel={cancelDelete}
         />
-      )}
+      }
     </div>
   );
 }

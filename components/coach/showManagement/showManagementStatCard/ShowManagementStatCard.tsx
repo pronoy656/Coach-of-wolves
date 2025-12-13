@@ -1,11 +1,3 @@
-// import React from 'react'
-
-// export default function ShowManagementStatCard() {
-//   return (
-//     <div>showManagementStatCard</div>
-//   )
-// }
-
 "use client";
 
 interface ShowStatsProps {
@@ -21,7 +13,7 @@ export default function ShowManagementStatCard({
 }: ShowStatsProps) {
   return (
     <div className="grid grid-cols-3 gap-4">
-      <div className="bg-card border border-border rounded-lg p-6">
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg p-6 hover:border-[#4A9E4A] transition">
         <div className="flex items-center justify-between mb-4">
           <p className="text-muted-foreground">Upcoming Shows</p>
           <span className="text-2xl">⭐</span>
@@ -30,7 +22,7 @@ export default function ShowManagementStatCard({
         <p className="text-sm text-muted-foreground">Next 60 days</p>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-6">
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg p-6 hover:border-[#4A9E4A] transition">
         <div className="flex items-center justify-between mb-4">
           <p className="text-muted-foreground">Peak Week Active</p>
           <span className="text-2xl">📋</span>
@@ -39,7 +31,7 @@ export default function ShowManagementStatCard({
         <p className="text-sm text-muted-foreground">7 days from show</p>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-6">
+      <div className="bg-[#08081A] border border-[#303245] rounded-lg p-6 hover:border-[#4A9E4A] transition">
         <div className="flex items-center justify-between mb-4">
           <p className="text-muted-foreground">Completed Shows</p>
           <span className="text-2xl">✓</span>

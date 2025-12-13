@@ -87,6 +87,10 @@ export default function ShowManagement() {
   const [editingShow, setEditingShow] = useState<Show | null>(null);
   const [deleteConfirmShow, setDeleteConfirmShow] = useState<Show | null>(null);
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean }>({
+    show: false,
+  });
+
   const handleAddShow = () => {
     setEditingShow(null);
     setIsModalOpen(true);
@@ -99,6 +103,7 @@ export default function ShowManagement() {
 
   const handleDeleteShow = (show: Show) => {
     setDeleteConfirmShow(show);
+    setDeleteConfirm({ show: true });
   };
 
   const handleConfirmDelete = () => {
@@ -165,9 +170,9 @@ export default function ShowManagement() {
             />
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="bg-card border border-[#24273f] rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-secondary border-b border-border">
+                <thead className="border border-[#24273f] bg-[#020231]">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                       Show Name
@@ -193,7 +198,7 @@ export default function ShowManagement() {
                   {shows.map((show, index) => (
                     <tr
                       key={show.id}
-                      className="border-b border-border hover:bg-secondary/50 transition-colors"
+                      className="border-b bg-[#212133] border-[#303245] hover:bg-[#212133] transition-colors"
                       style={{
                         backgroundColor:
                           index % 2 === 0
@@ -255,6 +260,7 @@ export default function ShowManagement() {
 
       {deleteConfirmShow && (
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Show"
           message={`Are you sure you want to delete "${deleteConfirmShow.showName}"? This action cannot be undone.`}
           onConfirm={handleConfirmDelete}

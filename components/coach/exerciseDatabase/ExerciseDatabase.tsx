@@ -79,8 +79,13 @@ export default function ExerciseDatabase() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null
   );
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  // const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    id?: string;
+  }>({ show: false });
 
   const handleAddExercise = () => {
     setSelectedExercise(null);
@@ -94,15 +99,14 @@ export default function ExerciseDatabase() {
 
   const handleDeleteClick = (id: string) => {
     setExerciseToDelete(id);
-    setDeleteConfirmOpen(true);
+    setDeleteConfirm({ show: true, id });
   };
 
   const handleConfirmDelete = () => {
-    if (exerciseToDelete) {
-      setExercises((prev) => prev.filter((ex) => ex.id !== exerciseToDelete));
-      setDeleteConfirmOpen(false);
-      setExerciseToDelete(null);
-    }
+    if (!exerciseToDelete) return;
+    setExercises((prev) => prev.filter((ex) => ex.id !== exerciseToDelete));
+    setExerciseToDelete(null);
+    setDeleteConfirm({ show: false });
   };
 
   const handleSaveExercise = (exercise: Omit<Exercise, "id">) => {
@@ -174,19 +178,18 @@ export default function ExerciseDatabase() {
           setSelectedExercise(null);
         }}
         onSave={handleSaveExercise}
-        // exercise={selectedExercise}
-        // exercise={selectedExercise || undefined}
       />
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmOpen && (
+      {
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Exercise"
           message="Are you sure you want to delete this exercise? This action cannot be undone."
-          onCancel={() => setDeleteConfirmOpen(false)}
           onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteConfirm({ show: false })}
         />
-      )}
+      }
     </div>
   );
 }

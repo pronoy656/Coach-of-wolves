@@ -1,19 +1,9 @@
-// import React from "react";
-
-// export default function nutritionDatabase() {
-//   return <div>nutritionDatabase</div>;
-// }
-
 "use client";
 
 import { useState } from "react";
 import NutritionCard from "./nutritionCard/NutritionCard";
 import NutritionModal from "./nutritionModal/NutritionModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
-
-// import NutritionCard from "@/components/nutrition-card"
-// import NutritionModal from "@/components/nutrition-modal"
-// import DeleteConfirmationModal from "@/components/delete-confirmation-modal"
 
 interface Nutrition {
   id: string;
@@ -93,8 +83,14 @@ export default function NutritionDatabase() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [nutritionToDelete, setNutritionToDelete] = useState<string | null>(
+    null
+  );
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+  }>({ show: false });
 
   const handleAddNutrition = () => {
     setEditingId(null);
@@ -107,16 +103,17 @@ export default function NutritionDatabase() {
   };
 
   const handleDeleteNutrition = (id: string) => {
-    setDeletingId(id);
-    setShowDeleteModal(true);
+    setNutritionToDelete(id);
+    setDeleteConfirm({ show: true });
   };
 
-  const confirmDelete = () => {
-    if (deletingId) {
-      setNutritions(nutritions.filter((n) => n.id !== deletingId));
-    }
-    setShowDeleteModal(false);
-    setDeletingId(null);
+  const handleConfirmDelete = () => {
+    if (!nutritionToDelete) return;
+
+    setNutritions((prev) => prev.filter((n) => n.id !== nutritionToDelete));
+
+    setNutritionToDelete(null);
+    setDeleteConfirm({ show: false });
   };
 
   const handleSaveNutrition = (nutrition: Nutrition) => {
@@ -178,17 +175,18 @@ export default function NutritionDatabase() {
         />
       )}
 
-      {showDeleteModal && (
+      {
         <DeleteModal
+          isOpen={deleteConfirm.show}
           title="Delete Nutrition"
           message="Are you sure you want to delete this nutrition? This action cannot be undone."
-          onConfirm={confirmDelete}
+          onConfirm={handleConfirmDelete}
           onCancel={() => {
-            setShowDeleteModal(false);
-            setDeletingId(null);
+            setNutritionToDelete(null);
+            setDeleteConfirm({ show: false });
           }}
         />
-      )}
+      }
     </div>
   );
 }
