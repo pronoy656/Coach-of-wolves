@@ -58,7 +58,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
         );
       case "Nutrition":
         return (
-          <div className="text-gray-400">
+          <div className="">
             <NutritionTab />
           </div>
         );

@@ -87,14 +87,6 @@ export default function NutritionModal({
     }));
   };
 
-  //   const handleSave = () => {
-  //     if (!formData.name || !formData.category) {
-  //       alert("Please fill in all required fields");
-  //       return;
-  //     }
-  //     onSave(formData);
-  //   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -130,14 +122,14 @@ export default function NutritionModal({
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Name
+                      Food Name
                     </label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder="Insert a food name"
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -150,7 +142,7 @@ export default function NutritionModal({
                       name="brand"
                       value={formData.brand || ""}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder="Insert a brand name"
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
