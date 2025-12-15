@@ -258,7 +258,7 @@ export default function TrainingPage() {
                         onClick={() => handleDeleteClick("plan", plan.id)}
                         className="w-8 h-8 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 text-red-400" />
                       </button>
                     </div>
                   </div>

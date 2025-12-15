@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 
-// --- Icons (Inline SVGs to avoid dependencies) ---
-
 const CalendarIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -656,7 +654,7 @@ export default function Dashboard() {
       <div className="mb-6">
         <button className="flex items-center gap-2 px-6 py-3 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium">
           <CalendarIcon />
-          <span>Calendar</span>
+          <span className="text-base">Calendar</span>
         </button>
       </div>
 
