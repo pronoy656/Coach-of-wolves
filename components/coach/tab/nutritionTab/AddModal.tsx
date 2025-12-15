@@ -1,11 +1,3 @@
-// import React from 'react'
-
-// export default function AddModal() {
-//   return (
-//     <div>AddModal</div>
-//   )
-// }
-
 "use client";
 
 import type React from "react";

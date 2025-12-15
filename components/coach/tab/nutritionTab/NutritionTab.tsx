@@ -230,7 +230,7 @@ export default function NutritionTab() {
           {activeDayMeals.map((meal) => (
             <div
               key={meal.id}
-              className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-emerald-500/30 rounded-lg overflow-hidden"
+              className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#222233] rounded-lg overflow-hidden"
             >
               <div className="p-6 space-y-4">
                 {/* Meal Header */}
@@ -242,15 +242,16 @@ export default function NutritionTab() {
                       </span>
                       <h3 className="text-xl font-bold flex items-center gap-2">
                         {meal.mealsName}
-                        <span className="flex items-center gap-1.5">
-                          <div
-                            className={`w-2 h-2 rounded-full ${getDayBadgeColor(
-                              meal.day
-                            )}`}
-                          ></div>
-                          <span className="text-xs text-gray-400 font-normal">
-                            {meal.day}
-                          </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            meal.day === "Training Day"
+                              ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700/50"
+                              : meal.day === "Rest Day"
+                              ? "bg-gray-800/30 text-gray-300 border border-gray-700/50"
+                              : "bg-purple-900/30 text-purple-300 border border-purple-700/50"
+                          }`}
+                        >
+                          {meal.day}
                         </span>
                       </h3>
                     </div>
