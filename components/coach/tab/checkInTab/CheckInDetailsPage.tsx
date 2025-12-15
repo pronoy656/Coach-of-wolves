@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -39,6 +40,30 @@ interface CheckInDetailProps {
   onDelete: () => void;
 }
 
+// Move YesNoDisplay component outside the main component
+const YesNoDisplay = ({ value }: { value: boolean }) => (
+  <div className="flex gap-3">
+    <div
+      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${
+        value
+          ? "bg-green-600/20 text-green-400 border border-green-600/30"
+          : "bg-slate-700/50 text-gray-400 border border-slate-600"
+      }`}
+    >
+      {value ? "Yes" : "No"}
+    </div>
+    <div
+      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${
+        !value
+          ? "bg-red-600/20 text-red-400 border border-red-600/30"
+          : "bg-slate-700/50 text-gray-400 border border-slate-600"
+      }`}
+    >
+      {value ? "No" : "Yes"}
+    </div>
+  </div>
+);
+
 export default function CheckInDetailsPage({
   checkIn,
   onUpdate,
@@ -48,17 +73,6 @@ export default function CheckInDetailsPage({
   const [editData, setEditData] = useState(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
   const [showAddQuestion, setShowAddQuestion] = useState(false);
-
-  const handleSliderChange = (field: string, value: number) => {
-    const [section, key] = field.split(".");
-    setEditData((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [key]: value,
-      },
-    }));
-  };
 
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
@@ -97,51 +111,13 @@ export default function CheckInDetailsPage({
     setIsEditing(false);
   };
 
-  const YesNoButton = ({
-    value,
-    onChange,
-  }: {
-    value: boolean;
-    onChange: (val: boolean) => void;
-  }) => (
-    <div className="flex gap-3">
-      <button
-        onClick={() => onChange(true)}
-        className={`flex-1 px-2 py-2 rounded-lg font-semibold transition-all duration-200 ${
-          value
-            ? "bg-green-600 text-white"
-            : "bg-slate-700 text-gray-200 hover:bg-slate-600"
-        }`}
-      >
-        Yes
-      </button>
-      <button
-        onClick={() => onChange(false)}
-        className={`flex-1 px-2 py-2 rounded-lg font-semibold transition-all duration-200 ${
-          !value
-            ? "bg-red-600 text-white"
-            : "bg-slate-700 text-gray-200 hover:bg-slate-600"
-        }`}
-      >
-        No
-      </button>
-    </div>
-  );
-
   const SliderWithIndicator = ({
     label,
-    field,
     value,
   }: {
     label: string;
-    field: string;
     value: number;
   }) => {
-    const [section, key] = field.split(".");
-    const prevValue = checkIn[section as keyof typeof checkIn][key as any];
-    const isIncreased = value > prevValue;
-    const isDecreased = value < prevValue;
-
     return (
       <div className="bg-[#0b0b22] rounded-lg p-4 border border-slate-700/30">
         <div className="flex justify-between items-center mb-3">
@@ -150,19 +126,6 @@ export default function CheckInDetailsPage({
             <span className="text-green-500 font-medium text-lg">
               {value}/10
             </span>
-            {isEditing && (
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded ${
-                  isIncreased
-                    ? "bg-green-500/20 text-emerald-400"
-                    : isDecreased
-                    ? "bg-red-500/20 text-red-400"
-                    : "opacity-0"
-                }`}
-              >
-                {isIncreased ? "↑" : isDecreased ? "↓" : ""}
-              </span>
-            )}
           </div>
         </div>
         <input
@@ -171,23 +134,14 @@ export default function CheckInDetailsPage({
           max="10"
           step="1"
           value={value}
-          onChange={(e) =>
-            handleSliderChange(field, Number.parseInt(e.target.value))
-          }
-          disabled={!isEditing}
-          className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          readOnly
+          className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-not-allowed opacity-50"
           style={{
-            background: isEditing
-              ? `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${
-                  ((value - 1) / 9) * 100
-                }%, rgb(30, 41, 59) ${
-                  ((value - 1) / 9) * 100
-                }%, rgb(30, 41, 59) 100%)`
-              : `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${
-                  ((value - 1) / 9) * 100
-                }%, rgb(30, 41, 59) ${
-                  ((value - 1) / 9) * 100
-                }%, rgb(30, 41, 59) 100%)`,
+            background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${
+              ((value - 1) / 9) * 100
+            }%, rgb(30, 41, 59) ${
+              ((value - 1) / 9) * 100
+            }%, rgb(30, 41, 59) 100%)`,
           }}
         />
       </div>
@@ -196,7 +150,7 @@ export default function CheckInDetailsPage({
 
   return (
     <div className="space-y-8">
-      {/* Header with Edit Button */}
+      {/* Header with Edit Button - Now only for editing questions and notes */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
         <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
         <button
@@ -210,17 +164,17 @@ export default function CheckInDetailsPage({
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
             isEditing
               ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
-              : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+              : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
           }`}
         >
           <Edit2 className="w-4 h-4" />
-          {isEditing ? "Save Changes" : "Edit"}
+          {isEditing ? "Save Changes" : "Edit Questions & Notes"}
         </button>
       </div>
 
-      {/* Well-Being and Nutrition in one row */}
+      {/* Well-Being and Nutrition in one row - VIEW ONLY */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Well-Being Section */}
+        {/* Well-Being Section - VIEW ONLY */}
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
@@ -228,27 +182,17 @@ export default function CheckInDetailsPage({
           </h3>
           <div className="space-y-4">
             {[
-              { label: "Energy Level", field: "wellBeing.energyLevel" },
-              { label: "Stress Level", field: "wellBeing.stressLevel" },
-              { label: "Mood Level", field: "wellBeing.moodLevel" },
-              { label: "Sleep Quality", field: "wellBeing.sleepQuality" },
-            ].map(({ label, field }) => {
-              const [section, key] = field.split(".");
-              const val =
-                editData[section as keyof typeof editData][key as any];
-              return (
-                <SliderWithIndicator
-                  key={field}
-                  label={label}
-                  field={field}
-                  value={val}
-                />
-              );
-            })}
+              { label: "Energy Level", value: checkIn.wellBeing.energyLevel },
+              { label: "Stress Level", value: checkIn.wellBeing.stressLevel },
+              { label: "Mood Level", value: checkIn.wellBeing.moodLevel },
+              { label: "Sleep Quality", value: checkIn.wellBeing.sleepQuality },
+            ].map(({ label, value }) => (
+              <SliderWithIndicator key={label} label={label} value={value} />
+            ))}
           </div>
         </div>
 
-        {/* Nutrition Section */}
+        {/* Nutrition Section - VIEW ONLY */}
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
@@ -256,47 +200,24 @@ export default function CheckInDetailsPage({
           </h3>
           <div className="space-y-4 mb-6">
             {[
-              { label: "Diet Level", field: "nutrition.dietLevel" },
-              { label: "Digestion", field: "nutrition.digestion" },
-            ].map(({ label, field }) => {
-              const [section, key] = field.split(".");
-              const val =
-                editData[section as keyof typeof editData][key as any];
-              return (
-                <SliderWithIndicator
-                  key={field}
-                  label={label}
-                  field={field}
-                  value={val}
-                />
-              );
-            })}
+              { label: "Diet Level", value: checkIn.nutrition.dietLevel },
+              { label: "Digestion", value: checkIn.nutrition.digestion },
+            ].map(({ label, value }) => (
+              <SliderWithIndicator key={label} label={label} value={value} />
+            ))}
           </div>
           <div>
             <label className="block text-gray-300 text-sm font-bold mb-2">
               Challenge Diet
             </label>
-            <input
-              type="text"
-              value={editData.nutrition.challengeDiet}
-              onChange={(e) =>
-                setEditData((prev) => ({
-                  ...prev,
-                  nutrition: {
-                    ...prev.nutrition,
-                    challengeDiet: e.target.value,
-                  },
-                }))
-              }
-              disabled={!isEditing}
-              className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
-              placeholder="Type..."
-            />
+            <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
+              {checkIn.nutrition.challengeDiet}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Training Section */}
+      {/* Training Section - VIEW ONLY */}
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
           <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
@@ -307,81 +228,42 @@ export default function CheckInDetailsPage({
           {/* Sliders */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { label: "Feel Strength", field: "training.feelStrength" },
-              { label: "Pumps", field: "training.pumps" },
-            ].map(({ label, field }) => {
-              const [section, key] = field.split(".");
-              const val =
-                editData[section as keyof typeof editData][key as any];
-              return (
-                <SliderWithIndicator
-                  key={field}
-                  label={label}
-                  field={field}
-                  value={val}
-                />
-              );
-            })}
+              { label: "Feel Strength", value: checkIn.training.feelStrength },
+              { label: "Pumps", value: checkIn.training.pumps },
+            ].map(({ label, value }) => (
+              <SliderWithIndicator key={label} label={label} value={value} />
+            ))}
           </div>
 
-          {/* Yes/No Buttons */}
+          {/* Yes/No Displays */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
               <label className="block text-white font-medium mb-4">
                 Training Completed?
               </label>
-              <YesNoButton
-                value={editData.training.trainingCompleted}
-                onChange={(val) =>
-                  setEditData((prev) => ({
-                    ...prev,
-                    training: { ...prev.training, trainingCompleted: val },
-                  }))
-                }
-              />
+              <YesNoDisplay value={checkIn.training.trainingCompleted} />
             </div>
             <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
               <label className="block text-white font-medium mb-4">
                 Cardio Completed?
               </label>
-              <YesNoButton
-                value={editData.training.cardioCompleted}
-                onChange={(val) =>
-                  setEditData((prev) => ({
-                    ...prev,
-                    training: { ...prev.training, cardioCompleted: val },
-                  }))
-                }
-              />
+              <YesNoDisplay value={checkIn.training.cardioCompleted} />
             </div>
           </div>
 
-          {/* Feedback Training */}
+          {/* Feedback Training - VIEW ONLY */}
           <div>
             <label className="block text-gray-300 text-sm font-bold mb-2">
               Feedback Training
             </label>
-            <input
-              type="text"
-              value={editData.training.feedbackTraining}
-              onChange={(e) =>
-                setEditData((prev) => ({
-                  ...prev,
-                  training: {
-                    ...prev.training,
-                    feedbackTraining: e.target.value,
-                  },
-                }))
-              }
-              disabled={!isEditing}
-              className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
-              placeholder="Type..."
-            />
+            <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
+              {checkIn.training.feedbackTraining}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Questions Section */}
+      {/* Questions Section - EDITABLE */}
       <div className="bg-[#08081A]  border border-slate-700/40 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
           <h3 className="text-lg font-bold text-white flex items-center gap-3">
@@ -459,22 +341,22 @@ export default function CheckInDetailsPage({
         </div>
       </div>
 
-      {/* Media Section */}
-      {(editData.images?.length || editData.videos?.length) && (
+      {/* Media Section - VIEW ONLY */}
+      {(checkIn.images?.length || checkIn.videos?.length) && (
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
             Media
           </h3>
 
-          {editData.images && editData.images.length > 0 && (
+          {checkIn.images && checkIn.images.length > 0 && (
             <div className="mb-8">
               <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {editData.images.map((image, idx) => (
+                {checkIn.images.map((image, idx) => (
                   <div
                     key={idx}
-                    className="aspect-square rounded-lg overflow-hidden border border-slate-700/50 hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-500/10"
+                    className="aspect-square rounded-lg overflow-hidden border border-slate-700/50"
                   >
                     <img
                       src={
@@ -490,14 +372,14 @@ export default function CheckInDetailsPage({
             </div>
           )}
 
-          {editData.videos && editData.videos.length > 0 && (
+          {checkIn.videos && checkIn.videos.length > 0 && (
             <div>
               <p className="text-gray-300 text-sm mb-4 font-semibold">Videos</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {editData.videos.map((video, idx) => (
+                {checkIn.videos.map((video, idx) => (
                   <div
                     key={idx}
-                    className="relative aspect-video rounded-lg overflow-hidden border border-slate-700/50 hover:border-emerald-500/50 transition-all bg-slate-900 group"
+                    className="relative aspect-video rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900"
                   >
                     <img
                       src={
@@ -507,8 +389,8 @@ export default function CheckInDetailsPage({
                       alt={`Workout video ${idx + 1}`}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all">
-                      <div className="w-14 h-14 rounded-full bg-emerald-500/80 group-hover:bg-emerald-600 flex items-center justify-center transition-colors shadow-lg">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="w-14 h-14 rounded-full bg-emerald-500/80 flex items-center justify-center shadow-lg">
                         <svg
                           className="w-7 h-7 text-white ml-1"
                           fill="currentColor"
@@ -526,11 +408,11 @@ export default function CheckInDetailsPage({
         </div>
       )}
 
-      {/* Check-in Notes */}
+      {/* Check-in Notes - EDITABLE */}
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <label className="block text-white text-sm font-bold mb-3 flex items-center gap-3">
           <div className="w-1.5 h-6 bg-emerald-500 rounded-full"></div>
-          Check-in Notes
+          Coach's Notes
         </label>
         <textarea
           value={editData.notes}
@@ -539,15 +421,20 @@ export default function CheckInDetailsPage({
           }
           disabled={!isEditing}
           className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 resize-none disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
-          placeholder="Add notes..."
+          placeholder="Add your notes here..."
           rows={3}
         />
       </div>
 
       {/* Complete Check-In Button */}
-      <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 text-lg rounded-lg transition-colors font-semibold">
-        Save Check-In template
-      </button>
+      {isEditing && (
+        <button
+          onClick={handleSave}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 text-lg rounded-lg transition-colors font-semibold"
+        >
+          Save Changes
+        </button>
+      )}
     </div>
   );
 }
