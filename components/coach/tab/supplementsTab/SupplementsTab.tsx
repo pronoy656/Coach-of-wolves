@@ -99,7 +99,7 @@ export default function SupplementsPage() {
           <h1 className="text-3xl font-bold text-white">Supplements</h1>
           <button
             onClick={handleAddSupplement}
-            className="flex items-center gap-2 px-4 py-2 bg-transparent text-emerald-400 rounded-lg hover:bg-emerald-400/10 transition-colors font-medium border border-emerald-400/50 hover:border-emerald-400"
+            className="flex items-center gap-2 text-base px-4 py-2 bg-transparent text-emerald-400 rounded-lg hover:bg-emerald-400/10 transition-colors font-medium border border-emerald-400/50 hover:border-emerald-400"
           >
             <Plus className="w-5 h-5" />
             Add Supplement

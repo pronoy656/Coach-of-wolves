@@ -39,7 +39,7 @@ export default function SupplementsList({
         >
           {/* Supplement Name and Actions */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-white">{supplement.name}</h3>
+            <h3 className="text-2xl font-bold text-white">{supplement.name}</h3>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => onEdit(supplement)}
@@ -62,32 +62,34 @@ export default function SupplementsList({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Dosage */}
             <div>
-              <p className="text-gray-300 mb-1">Dosage</p>
-              <p className="text-emerald-400 font-medium">
+              <p className="text-gray-300 mb-1 text-xl">Dosage</p>
+              <p className="text-emerald-400 font-medium text-base">
                 {supplement.dosage}
               </p>
             </div>
 
             {/* Frequency */}
             <div>
-              <p className="text-gray-300 mb-1">Frequency</p>
-              <p className="text-emerald-400 font-medium">
+              <p className="text-gray-300 mb-1 text-xl">Frequency</p>
+              <p className="text-emerald-400 font-medium text-base">
                 {supplement.frequency}
               </p>
             </div>
 
             {/* Purpose */}
             <div>
-              <p className="text-gray-300 mb-1">Purpose</p>
-              <p className="text-emerald-400 font-medium">
+              <p className="text-gray-300 mb-1 text-xl">Purpose</p>
+              <p className="text-emerald-400 font-medium text-base">
                 {supplement.purpose}
               </p>
             </div>
 
             {/* Note */}
             <div>
-              <p className="text-gray-300 mb-1">Note</p>
-              <p className="text-emerald-400 font-medium">{supplement.note}</p>
+              <p className="text-gray-300 mb-1 text-xl">Note</p>
+              <p className="text-emerald-400 font-medium text-base">
+                {supplement.note}
+              </p>
             </div>
           </div>
         </div>
