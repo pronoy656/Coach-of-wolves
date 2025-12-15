@@ -1,6 +1,3 @@
-// import Navbar from "@/components/admin/navbar/Navbar";
-// import Sidebar from "@/components/admin/sidebar/Sidebar";
-
 import Navbar from "@/components/coach/navbar/Navbar";
 import Sidebar from "@/components/coach/sidebar/Sidebar";
 

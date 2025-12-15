@@ -88,14 +88,14 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
   return (
     <div className="w-full font-sans">
       {/* --- User's ID Display Section --- */}
-      <div className="border-b border-white/20 pb-6 mb-8">
+      {/* <div className="border-b border-white/20 pb-6 mb-8">
         <p className="text-gray-300 text-lg">
           <span className="text-[#8CCA4D] font-medium">ID from URL:</span>{" "}
           <span className="mx-3 inline-block rounded-lg bg-[#16213e] px-4 py-2 text-2xl text-[#8CCA4D]">
             {athleteId}
           </span>
         </p>
-      </div>
+      </div> */}
 
       {/* --- Navigation Tabs --- */}
       <div className="inline-flex w-full items-center rounded-full bg-[#0d0d18] px-2 py-2 sm:w-auto border border-white/5">
