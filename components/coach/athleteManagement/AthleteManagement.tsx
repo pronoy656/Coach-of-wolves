@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { ChevronDown, Search, Plus, Edit2, Trash2 } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import Image from "next/image";
-// import AthleteModal from "@/components/athlete-modal"
 
 interface Athlete {
   id: string;
@@ -183,7 +182,12 @@ export default function AthleteManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSaveAthlete = (athleteData: Athlete) => {
+  const handleSaveAthlete = (
+    athleteData: Omit<Athlete, "id" | "lastCheckIn"> & {
+      id?: string;
+      lastCheckIn?: string;
+    }
+  ) => {
     if (selectedAthlete) {
       setAthletes(
         athletes.map((a) =>

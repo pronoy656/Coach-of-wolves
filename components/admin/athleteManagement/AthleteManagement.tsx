@@ -1,19 +1,13 @@
-// import React from "react";
-
-// export default function AthleteManagement() {
-//   return <div>athleteManagement</div>;
-// }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Search, Plus, Edit2, Trash2 } from "lucide-react";
+import { ChevronDown, Search, Edit2, Trash2 } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import Image from "next/image";
-// import AthleteModal from "@/components/athlete-modal"
 
 interface Athlete {
-  id: string;
+  id?: string;
   name: string;
   category: string;
   phase: string;
@@ -189,7 +183,29 @@ export default function AthleteManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSaveAthlete = (athleteData: Athlete) => {
+  // const handleSaveAthlete = (athleteData: Athlete) => {
+  //   if (selectedAthlete) {
+  //     setAthletes(
+  //       athletes.map((a) =>
+  //         a.id === selectedAthlete.id
+  //           ? { ...athleteData, id: a.id, lastCheckIn: a.lastCheckIn }
+  //           : a
+  //       )
+  //     );
+  //   } else {
+  //     const newAthlete: Athlete = {
+  //       ...athleteData,
+  //       id: Date.now().toString(),
+  //       lastCheckIn: new Date().toLocaleDateString(),
+  //     };
+  //     setAthletes([...athletes, newAthlete]);
+  //   }
+  //   setIsModalOpen(false);
+  //   setSelectedAthlete(null);
+  // };
+
+  // In AthleteManagement.tsx, change handleSaveAthlete to:
+  const handleSaveAthlete = (athleteData: any) => {
     if (selectedAthlete) {
       setAthletes(
         athletes.map((a) =>
@@ -210,7 +226,8 @@ export default function AthleteManagement() {
     setSelectedAthlete(null);
   };
 
-  const handleDeleteAthlete = (id: string) => {
+  const handleDeleteAthlete = (id: string | undefined) => {
+    if (!id) return; // Add a check for undefined/null
     setAthletes(athletes.filter((a) => a.id !== id));
   };
 
