@@ -13,10 +13,19 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { removeToken } from "@/redux/features/auth/authSlice";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+  const handleLogout = async () => {
+    dispatch(removeToken());
+    router.push("/");
+  };
 
   return (
     <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col">
@@ -101,11 +110,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border" onClick={handleLogout}>
         <NavItem
           icon={<LogOut size={20} />}
           label="Logout"
-          href="/logout"
+          href="/"
           active={pathname === "/logout"}
         />
       </div>
