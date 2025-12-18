@@ -20,6 +20,7 @@ interface Athlete {
   trainingDaySteps: number;
   restDaySteps: number;
   checkInDay: string;
+  waterQuantity: number;
   goal: string;
   image?: string;
 }
@@ -40,6 +41,7 @@ const SAMPLE_ATHLETES: Athlete[] = [
     trainingDaySteps: 8000,
     restDaySteps: 6000,
     checkInDay: "Monday",
+    waterQuantity: 2000,
     goal: "Build muscle and strength",
     image: "/avater-1.jpg",
   },
@@ -58,6 +60,7 @@ const SAMPLE_ATHLETES: Athlete[] = [
     trainingDaySteps: 7500,
     restDaySteps: 5500,
     checkInDay: "Tuesday",
+    waterQuantity: 1800,
     goal: "Increase muscle mass",
     image: "/avater-1.jpg",
   },
@@ -76,6 +79,7 @@ const SAMPLE_ATHLETES: Athlete[] = [
     trainingDaySteps: 9000,
     restDaySteps: 7000,
     checkInDay: "Wednesday",
+    waterQuantity: 2200,
     goal: "Peak for competition",
     image: "/avater-1.jpg",
   },
@@ -94,6 +98,7 @@ const SAMPLE_ATHLETES: Athlete[] = [
     trainingDaySteps: 8500,
     restDaySteps: 6500,
     checkInDay: "Thursday",
+    waterQuantity: 2100,
     goal: "Maintain muscle during break",
     image: "/avater-1.jpg",
   },
@@ -113,6 +118,7 @@ const SAMPLE_ATHLETES: Athlete[] = [
     trainingDaySteps: 10000,
     restDaySteps: 8000,
     checkInDay: "Friday",
+    waterQuantity: 2500,
     goal: "Build massive size",
     image: "/avater-1.jpg",
   },
@@ -219,14 +225,14 @@ export default function AthleteManagement() {
   };
 
   return (
-    <main className="min-h-screen bg-black p-6">
-      <div className="">
+    <main className="h-screen bg-black p-6 flex flex-col overflow-hidden">
+      <div className="flex flex-col h-full">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
             Athletes Management
           </h1>
-          <p className="text-slate-400">Full CRUD control over all athletes</p>
+
         </div>
 
         {/* Filters Section */}
@@ -313,16 +319,22 @@ export default function AthleteManagement() {
         </div>
 
         {/* Table */}
-        <div className="rounded-lg border border-[#24273f] overflow-hidden backdrop-blur-sm bg-slate-800/30">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border border-[#24273f] bg-[#020231]">
+        <div className="rounded-lg border border-[#24273f] bg-slate-800/30 flex-1 overflow-hidden flex flex-col">
+          <div className="overflow-auto scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
+            <table className="w-full whitespace-nowrap">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-[#24273f] bg-[#020231]">
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     Profile
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                    Gender
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                    Age
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     Category
@@ -340,7 +352,10 @@ export default function AthleteManagement() {
                     Status
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Last Check in
+                    Last Check-in
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                    Water (L)
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     Action
@@ -351,9 +366,8 @@ export default function AthleteManagement() {
                 {filteredAthletes.map((athlete, index) => (
                   <tr
                     key={athlete.id}
-                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${
-                      index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
-                    }`}
+                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
+                      }`}
                   >
                     <td className="px-6 py-4">
                       {athlete.image ? (
@@ -370,7 +384,12 @@ export default function AthleteManagement() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-white">{athlete.name}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-white font-medium">{athlete.name}</div>
+                      <div className="text-xs text-slate-400">{athlete.email}</div>
+                    </td>
+                    <td className="px-6 py-4 text-white">{athlete.gender}</td>
+                    <td className="px-6 py-4 text-white">{athlete.age}</td>
                     <td className="px-6 py-4 text-green-500">
                       {athlete.category}
                     </td>
@@ -388,6 +407,9 @@ export default function AthleteManagement() {
                     </td>
                     <td className="px-6 py-4 text-white">
                       {athlete.lastCheckIn}
+                    </td>
+                    <td className="px-6 py-4 text-white">
+                      {athlete.waterQuantity}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-3">
@@ -423,7 +445,6 @@ export default function AthleteManagement() {
           </div>
         )}
       </div>
-
       {/* Modal */}
       <AddAthleteModal
         isOpen={isModalOpen}
