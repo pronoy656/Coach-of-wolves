@@ -9,7 +9,7 @@ interface CheckIn {
   athlete: string;
   week: string;
   checkInDate: string;
-  coach: string;
+
   weightChange: string;
   status: string;
 }
