@@ -78,6 +78,12 @@ export default function Sidebar() {
           href="/coach/ped-Database"
           active={pathname === "/coach/ped-Database"}
         />
+        <NavItem
+          icon={<BarChart3 size={20} />}
+          label="Weekly check-ins"
+          href="/coach/weekly-check-ins"
+          active={pathname === "/coach/weekly-check-ins"}
+        />
 
         <NavItem
           icon={<Settings size={20} />}
