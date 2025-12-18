@@ -136,8 +136,7 @@ export default function WeeklyCheckIns() {
     return checkIns.filter((checkIn) => {
       const matchesSearch =
         searchTerm === "" ||
-        checkIn.athlete.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        checkIn.coach.toLowerCase().includes(searchTerm.toLowerCase());
+        checkIn.athlete.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
         selectedStatus.length === 0 || selectedStatus.includes(checkIn.status);
