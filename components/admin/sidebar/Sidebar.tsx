@@ -13,21 +13,36 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { removeToken } from "@/redux/features/auth/authSlice";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+  const handleLogout = async () => {
+    dispatch(removeToken());
+    router.push("/");
+  };
 
   return (
     <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col">
       {/* Logo */}
       <div className="p-4">
-        <Image
-          src="/logo (2).png"
-          alt="Coach of Wolves Logo"
-          width={500}
-          height={350}
-        />
+        {/* Image height increase */}
+        <div className="relative w-full h-24 md:h-32 lg:h-70">
+          {" "}
+          {/* Responsive heights */}
+          <Image
+            src="/logo (2).png"
+            alt="Coach of Wolves Logo"
+            fill
+            className=""
+            priority
+          />
+        </div>
       </div>
 
       {/* Navigation */}
@@ -95,11 +110,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border" onClick={handleLogout}>
         <NavItem
           icon={<LogOut size={20} />}
           label="Logout"
-          href="/logout"
+          href="/"
           active={pathname === "/logout"}
         />
       </div>

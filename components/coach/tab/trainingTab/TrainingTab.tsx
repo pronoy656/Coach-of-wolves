@@ -1,44 +1,27 @@
-// import React from "react";
-
-// export default function TrainingTab() {
-//   return <div>TrainingTab</div>;
-// }
-
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  Pencil,
-  Trash2,
-  Clock,
-  Dumbbell,
-  TrendingUp,
-} from "lucide-react";
+import { Search, Clock, Dumbbell, TrendingUp } from "lucide-react";
 import TrainingPlanPreview from "./TrainingPlanPreview";
 import TrainingSplitPreview from "./TrainingSplitPreview";
 import AddTrainingSplitModal from "./AddTrainingSplitModal";
 import AddTrainingPlanModal from "./AddTrainingPlanModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
-// import { TrainingSplitModal } from "@/components/training-split-modal"
-// import { AddPlanModal } from "@/components/add-plan-modal"
-// import { PlanPreviewCard } from "@/components/plan-preview-card"
-// import { TrainingSplitPreview } from "@/components/training-split-preview"
-// import DeleteModal from "@/components/delete-modal"
 
-interface TrainingPlan {
+// --- Interfaces ---
+interface ExerciseData {
   id: string;
   name: string;
-  exercise: string;
+  sets: string;
+  reps: string;
+  range: string;
 }
 
 interface PlanData {
   id: string;
   title: string;
-  exercise: string;
-  reps: string;
-  sets: string;
-  range: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  exercises: ExerciseData[];
   notes: string;
 }
 
@@ -67,34 +50,179 @@ export default function TrainingPage() {
   const [trainingSplits, setTrainingSplits] = useState<SplitEntry[]>([]);
   const [isEditingSplit, setIsEditingSplit] = useState(false);
 
-  const [trainingPlans, setTrainingPlans] = useState<TrainingPlan[]>([
-    { id: "1", name: "PLACEHOLDER", exercise: "No Exercises" },
-    { id: "2", name: "TRAINING PLAN", exercise: "Leterral Rise (Machine)" },
-    { id: "3", name: "PUSH FULLBODY", exercise: "Lateral Rise (Dumbble)" },
-    { id: "4", name: "TRAININGS PLAN", exercise: "Lateral Rise (Machine)" },
-    { id: "5", name: "PUSH FULLBODY", exercise: "Lateral Rise (Dumbble)" },
+  // --- Initial Data for Small Cards (Training Plans) ---
+  const [trainingPlans, setTrainingPlans] = useState<PlanData[]>([
+    {
+      id: "1",
+      title: "Leg Day Destruction",
+      difficulty: "Advanced",
+      exercises: [
+        {
+          id: "ex_1a",
+          name: "Barbell Squat",
+          sets: "4",
+          reps: "5",
+          range: "5",
+        },
+        {
+          id: "ex_1b",
+          name: "Leg Press",
+          sets: "3",
+          reps: "12",
+          range: "10",
+        },
+        {
+          id: "ex_1c",
+          name: "Romanian Deadlift",
+          sets: "3",
+          reps: "10",
+          range: "8",
+        },
+        {
+          id: "ex_1d",
+          name: "Calf Raises",
+          sets: "4",
+          reps: "15",
+          range: "12",
+        },
+      ],
+      notes: "Focus on depth for squats. Control the negative on leg press.",
+    },
+    {
+      id: "2",
+      title: "Upper Body Power",
+      difficulty: "Intermediate",
+      exercises: [
+        {
+          id: "ex_2a",
+          name: "Bench Press",
+          sets: "4",
+          reps: "6",
+          range: "5",
+        },
+        {
+          id: "ex_2b",
+          name: "Bent Over Row",
+          sets: "4",
+          reps: "8",
+          range: "8",
+        },
+        {
+          id: "ex_2c",
+          name: "Overhead Press",
+          sets: "3",
+          reps: "8",
+          range: "6",
+        },
+      ],
+      notes: "Keep strict form on rows. Don't use momentum.",
+    },
+    {
+      id: "3",
+      title: "Full Body Beginner",
+      difficulty: "Beginner",
+      exercises: [
+        {
+          id: "ex_3a",
+          name: "Goblet Squat",
+          sets: "3",
+          reps: "12",
+          range: "10",
+        },
+        {
+          id: "ex_3b",
+          name: "Push Ups",
+          sets: "3",
+          reps: "10",
+          range: "8",
+        },
+        {
+          id: "ex_3c",
+          name: "Dumbbell Lunges",
+          sets: "3",
+          reps: "10",
+          range: "10",
+        },
+      ],
+      notes: "Focus on learning the movement patterns.",
+    },
   ]);
 
+  // --- Initial Data for Preview Section ---
   const [planPreviews, setPlanPreviews] = useState<PlanData[]>([
     {
       id: "p1",
-      title: "PUSH FULLBODY",
-      exercise: "Lateral Rise (Dumbble)",
-      reps: "8-10 Rep",
-      sets: "Sets(3)",
-      range: "Range(Strength)",
+      title: "PUSH HYPERTROPHY",
+      difficulty: "Advanced",
+      exercises: [
+        {
+          id: "ex_p1a",
+          name: "Incline Dumbbell Press",
+          sets: "4",
+          reps: "10",
+          range: "8",
+        },
+        {
+          id: "ex_p1b",
+          name: "Lateral Raise (Dumbbell)",
+          sets: "4",
+          reps: "15",
+          range: "12",
+        },
+        {
+          id: "ex_p1c",
+          name: "Tricep Pushdown",
+          sets: "3",
+          reps: "12",
+          range: "10",
+        },
+        {
+          id: "ex_p1d",
+          name: "Cable Flys",
+          sets: "3",
+          reps: "15",
+          range: "12",
+        },
+      ],
       notes:
-        "Lorem ipsum dolor sit amet consectetur, adipiscing senor nunc feugiat non ipsum eu interdum non non elit",
+        "Focus on the stretch at the bottom of the movement for flys. Control the eccentric phase.",
     },
     {
       id: "p2",
-      title: "TRAINING PLAN",
-      exercise: "Leterral Rise (Mechine)",
-      reps: "8-10 Rep",
-      sets: "Sets(3)",
-      range: "Range(Strength)",
+      title: "PULL STRENGTH",
+      difficulty: "Intermediate",
+      exercises: [
+        {
+          id: "ex_p2a",
+          name: "Deadlift",
+          sets: "3",
+          reps: "5",
+          range: "3",
+        },
+        {
+          id: "ex_p2b",
+          name: "Pull Ups",
+          sets: "3",
+          reps: "8",
+          range: "6",
+        },
+        {
+          id: "ex_p2c",
+          name: "Face Pulls",
+          sets: "4",
+          reps: "15",
+          range: "12",
+        },
+        {
+          id: "ex_p2d",
+          name: "Bicep Curls",
+          sets: "3",
+          reps: "12",
+          range: "10",
+        },
+      ],
       notes:
-        "Lorem ipsum dolor sit amet consectetur, adipiscing senor nunc feugiat non ipsum eu interdum non non elit",
+        "Ensure neutral spine during deadlifts. Squeeze at the top of the pull up.",
     },
   ]);
 
@@ -106,13 +234,15 @@ export default function TrainingPage() {
   };
 
   const handleDeleteConfirm = () => {
-    if (deleteModal.type === "plan" && deleteModal.id) {
-      setTrainingPlans(
-        trainingPlans.filter((plan) => plan.id !== deleteModal.id)
+    if (
+      (deleteModal.type === "plan" || deleteModal.type === "preview") &&
+      deleteModal.id
+    ) {
+      setTrainingPlans((prev) =>
+        prev.filter((plan) => plan.id !== deleteModal.id)
       );
-    } else if (deleteModal.type === "preview" && deleteModal.id) {
-      setPlanPreviews(
-        planPreviews.filter((plan) => plan.id !== deleteModal.id)
+      setPlanPreviews((prev) =>
+        prev.filter((plan) => plan.id !== deleteModal.id)
       );
     } else if (deleteModal.type === "split") {
       setTrainingSplits([]);
@@ -125,57 +255,21 @@ export default function TrainingPage() {
     setShowAddPlanModal(true);
   };
 
-  const handleEditPlan = (plan: TrainingPlan) => {
-    const fullPlanData = planPreviews.find(
-      (p) => p.title === plan.name && p.exercise === plan.exercise
-    );
-
-    if (fullPlanData) {
-      setEditingPlan(fullPlanData);
-    } else {
-      // Convert TrainingPlan to PlanData format for editing
-      const planData: PlanData = {
-        id: plan.id,
-        title: plan.name,
-        exercise: plan.exercise,
-        reps: "",
-        sets: "",
-        range: "",
-        notes: "",
-      };
-      setEditingPlan(planData);
-    }
-    setShowAddPlanModal(true);
-  };
-
   const handleAddPlan = (planData: PlanData) => {
     if (editingPlan) {
-      // Update in planPreviews
-      setPlanPreviews(
-        planPreviews.map((p) => (p.id === editingPlan.id ? planData : p))
+      // Update in both lists to keep them synchronized
+      setPlanPreviews((prev) =>
+        prev.map((p) => (p.id === editingPlan.id ? planData : p))
       );
-      // Update in trainingPlans
-      setTrainingPlans(
-        trainingPlans.map((p) =>
-          p.name === editingPlan.title && p.exercise === editingPlan.exercise
-            ? { id: p.id, name: planData.title, exercise: planData.exercise }
-            : p
-        )
+      setTrainingPlans((prev) =>
+        prev.map((p) => (p.id === editingPlan.id ? planData : p))
       );
       setEditingPlan(null);
     } else {
-      // Add to planPreviews
+      // Add new plan to BOTH lists
       const newPlanData = { ...planData, id: Date.now().toString() };
-      setPlanPreviews([...planPreviews, newPlanData]);
-      // Add to trainingPlans
-      setTrainingPlans([
-        ...trainingPlans,
-        {
-          id: Date.now().toString(),
-          name: planData.title,
-          exercise: planData.exercise,
-        },
-      ]);
+      setPlanPreviews((prev) => [...prev, newPlanData]);
+      setTrainingPlans((prev) => [...prev, newPlanData]);
     }
   };
 
@@ -230,50 +324,58 @@ export default function TrainingPage() {
         <div className="space-y-6">
           <h2 className="text-3xl font-bold">Training Plan</h2>
 
-          {/* Training Plan Cards */}
+          {/* Training Plan Cards (Small Grid) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {trainingPlans.map((plan) => (
               <div
                 key={plan.id}
-                className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] hover:border-emerald-500/50 transition-all shadow-lg rounded-lg"
+                className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] hover:border-emerald-500/50 transition-all shadow-lg rounded-lg group"
               >
-                <div className="p-6 space-y-4 min-h-[140px]">
+                <div className="p-6 space-y-4 min-h-[140px] flex flex-col justify-between">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 space-y-2">
                       <h3 className="font-bold text-base leading-tight">
-                        {plan.name}
+                        {plan.title}
                       </h3>
                       <p className="text-sm text-gray-400 leading-snug">
-                        {plan.exercise}
+                        {plan.exercises.length > 0
+                          ? plan.exercises[0].name
+                          : "No Exercises"}
+                        {plan.exercises.length > 1 && (
+                          <span className="text-emerald-500 text-xs ml-1">
+                            +{plan.exercises.length - 1} more
+                          </span>
+                        )}
                       </p>
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEditPlan(plan)}
-                        className="w-8 h-8 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all"
-                      >
-                        <Pencil className="w-4 h-4 text-blue-400" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick("plan", plan.id)}
-                        className="w-8 h-8 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
+                  </div>
+
+                  {/* Footer with Difficulty Badge Only */}
+                  <div className="flex items-end mt-auto">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                        plan.difficulty === "Advanced"
+                          ? "border-red-500/30 text-red-400 bg-red-500/10"
+                          : plan.difficulty === "Intermediate"
+                          ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
+                          : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                      }`}
+                    >
+                      {plan.difficulty}
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Plan Preview Cards */}
+          {/* Plan Preview Cards (Detailed List) */}
           {planPreviews.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4 text-gray-300">
                 Preview
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {planPreviews.map((plan) => (
                   <TrainingPlanPreview
                     key={plan.id}
@@ -322,11 +424,6 @@ export default function TrainingPage() {
                       </p>
                       <p className="text-white mt-1">
                         2 × Seated Row (Machine) → Best: 68 kg × 8 @ 10 [F]
-                      </p>
-                    </div>
-                    <div className="text-sm">
-                      <p className="text-white">
-                        2 × Wide Row Machine → Best: 65 kg × 7 @ 10 [F]
                       </p>
                     </div>
                     <div className="text-sm">

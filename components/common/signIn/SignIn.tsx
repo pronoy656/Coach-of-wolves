@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; // Import Next.js Image component
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { loginUser } from "@/redux/features/auth/authSlice";
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,20 +16,22 @@ export default function SignIn() {
     password: "",
     rememberMe: false,
   });
+  const dispatch = useAppDispatch();
+  const authState = useAppSelector((state) => state.auth);
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Start loading
-    setIsLoading(true);
+    const result = await dispatch(loginUser(formData));
 
-    // Simulate an API call (Remove this setTimeout in production)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (loginUser.fulfilled.match(result)) {
+      const { role } = result.payload;
 
-    console.log("Form Submitted", formData);
-
-    // Stop loading
-    setIsLoading(false);
+      if (role === "SUPER_ADMIN") router.push("/admin");
+      else if (role === "COACH") router.push("/coach");
+    }
   };
+
   return (
     <div className="min-h-screen bg-[#05050c] flex flex-col items-center justify-center font-sans text-white">
       <div className="mb-12 w-[250px] h-[280px] flex items-center justify-center bg-transparent">
