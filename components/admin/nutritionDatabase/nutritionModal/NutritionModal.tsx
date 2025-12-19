@@ -1,8 +1,4 @@
-// import React from "react";
 
-// export default function NutritionModal() {
-//   return <div>NutritionModal</div>;
-// }
 
 "use client";
 
@@ -125,22 +121,24 @@ export default function NutritionModal({
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 ">
+            <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-6">
+
+                {/* Row 1 */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Name
-                    </label>
+                    <label className="block text-sm font-semibold mb-2">Name</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Insert a value"
+                      required
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">
                       Brand (Optional)
@@ -154,23 +152,17 @@ export default function NutritionModal({
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Category
-                    </label>
+                    <label className="block text-sm font-semibold mb-2">Category</label>
                     <select
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
+                      required
                       className="w-full bg-input border border-[#303245] rounded px-3 py-2 text-foreground focus:border-[#4A9E4A] focus:ring-2 focus:ring-primary"
                     >
-                      <option
-                        value=""
-                        style={{ backgroundColor: "#1E1F25", color: "white" }}
-                      >
-                        type
-                      </option>
-
+                      <option value="">type</option>
                       {CATEGORIES.map((cat) => (
                         <option
                           key={cat}
@@ -184,10 +176,11 @@ export default function NutritionModal({
                   </div>
                 </div>
 
+                {/* Row 2 */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Default quantity(100g, 1pcs)
+                      Default quantity (100g, 1pcs)
                     </label>
                     <input
                       type="text"
@@ -195,9 +188,11 @@ export default function NutritionModal({
                       value={formData.defaultQuantity}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">
                       Calories per default quantity
@@ -208,11 +203,13 @@ export default function NutritionModal({
                       value={formData.calories}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
                 </div>
 
+                {/* Row 3 */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
@@ -224,9 +221,11 @@ export default function NutritionModal({
                       value={formData.proteins}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">
                       Carbohydrates per default quantity
@@ -237,11 +236,13 @@ export default function NutritionModal({
                       value={formData.carbohydrates}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
                 </div>
 
+                {/* Row 4 */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
@@ -253,9 +254,11 @@ export default function NutritionModal({
                       value={formData.fats}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">
                       Sugar default quantity
@@ -266,11 +269,13 @@ export default function NutritionModal({
                       value={formData.sugar}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
                 </div>
 
+                {/* Row 5 */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
@@ -282,15 +287,14 @@ export default function NutritionModal({
                       value={formData.fiber}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2"></label>
-                    <div />
-                  </div>
+                  <div />
                 </div>
 
+                {/* Row 6 */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
@@ -302,9 +306,11 @@ export default function NutritionModal({
                       value={formData.saturatedFats}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2">
                       Unsaturated fats default quantity
@@ -315,14 +321,17 @@ export default function NutritionModal({
                       value={formData.unsaturatedFats}
                       onChange={handleChange}
                       placeholder="Insert a value"
-                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                      required
+                      className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2"
                     />
                   </div>
                 </div>
 
+                {/* Submit */}
                 <button
                   type="submit"
                   className="mt-9 w-full flex items-center justify-center bg-[#4040D3] hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors gap-2"
+                  disabled={loading}
                 >
                   {loading ? (
                     <>
