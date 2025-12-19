@@ -54,7 +54,10 @@ export default function NutritionCard({
             {nutrition.name}
           </h3>
           {nutrition.brand && (
-            <p className="text-sm text-muted-foreground">{nutrition.brand}</p>
+            <p className="text-sm text-muted-foreground">
+              Brand Name:{" "}
+              <span className="text-red-500">{nutrition.brand}</span>
+            </p>
           )}
           <div className="mt-2 mb-2">
             <span
