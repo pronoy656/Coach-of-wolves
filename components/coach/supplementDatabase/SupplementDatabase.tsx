@@ -188,7 +188,7 @@ export default function SupplementDatabase() {
               setEditingId(null);
               setIsModalOpen(true);
             }}
-            className="px-6 py-2 border-2 border-[#4A9E4A] text-primary hover:bg-primary/10 rounded-full font-medium transition-colors"
+            className="px-6 py-2 border-2 border-green-500 text-green-500 hover:bg-green-500/10 rounded-full font-medium transition-colors"
           >
             + Add Supplement
           </button>
