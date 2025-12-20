@@ -228,7 +228,7 @@ export default function AddAthleteModal({
             </div>
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Gender
+                Gender/male
               </label>
               <select
                 name="gender"
