@@ -212,21 +212,6 @@ export default function AddAthleteModal({
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Email *
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter email"
-                required
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
-              />
-            </div>
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 Gender
@@ -239,6 +224,23 @@ export default function AddAthleteModal({
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                Phase
+              </label>
+              <select
+                name="phase"
+                value={formData.phase}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+              >
+                {PHASE_OPTIONS.map((phase) => (
+                  <option key={phase} value={phase}>
+                    {phase}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -342,20 +344,17 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Phase
+                Email *
               </label>
-              <select
-                name="phase"
-                value={formData.phase}
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
-              >
-                {PHASE_OPTIONS.map((phase) => (
-                  <option key={phase} value={phase}>
-                    {phase}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter email"
+                required
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -387,19 +386,6 @@ export default function AddAthleteModal({
                 ))}
               </select>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-emerald-300 mb-2">
-              Water Quantity (Liters)
-            </label>
-            <input
-              type="number"
-              name="waterQuantity"
-              value={formData.waterQuantity}
-              onChange={handleChange}
-              placeholder="Enter daily water intake"
-              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
-            />
           </div>
 
           {/* Goal */}
