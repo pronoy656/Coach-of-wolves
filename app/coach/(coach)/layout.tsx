@@ -1,5 +1,4 @@
 "use client";
-
 import Navbar from "@/components/coach/navbar/Navbar";
 import Sidebar from "@/components/coach/sidebar/Sidebar";
 import ToastProvider from "@/components/providers/ToastProvider";

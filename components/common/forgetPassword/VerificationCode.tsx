@@ -1,12 +1,6 @@
-// import React from "react";
-
-// export default function VerificationCode() {
-//   return <div>VerificationCode</div>;
-// }
-
 "use client";
 
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import {
   useState,
@@ -14,25 +8,30 @@ import {
   KeyboardEvent,
   ChangeEvent,
   ClipboardEvent,
+  FormEvent,
 } from "react";
+import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { verifyEmail } from "@/redux/features/auth/authSlice";
 
 export default function VerificationCode() {
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { forgotPasswordSuccess } = useAppSelector((state) => state.auth);
   // Handle input change
   const handleChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Allow only numbers
     if (isNaN(Number(value))) return;
 
     const newOtp = [...otp];
-    // Take only the last character entered
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
-    // Move to next input if value is entered
     if (value && index < 4 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -40,39 +39,67 @@ export default function VerificationCode() {
 
   // Handle backspace navigation
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (
-      e.key === "Backspace" &&
-      !otp[index] &&
-      index > 0 &&
-      inputRefs.current[index - 1]
-    ) {
-      // Move to previous input if current is empty
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Handle paste functionality
+  // Handle paste
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text").slice(0, 5);
-
-    if (!/^\d+$/.test(pastedData)) return; // Only allow numbers
+    if (!/^\d+$/.test(pastedData)) return;
 
     const newOtp = [...otp];
     pastedData.split("").forEach((char, index) => {
-      if (index < 5) newOtp[index] = char;
+      if (index < 4) newOtp[index] = char;
     });
     setOtp(newOtp);
 
-    // Focus the last filled input or the first empty one
     const focusIndex = Math.min(pastedData.length, 4);
     inputRefs.current[focusIndex]?.focus();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle submit
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const code = otp.join("");
-    console.log("Verifying code:", code);
+
+    // Join OTP inputs into a single code
+    const oneTimeCode = otp.join("");
+    const email = searchParams.get("email");
+
+    if (!email) {
+      console.error("No email provided in query params");
+      return;
+    }
+
+    try {
+      // Dispatch verifyEmail thunk
+      const resultAction = await dispatch(verifyEmail({ email, oneTimeCode }));
+
+      // Check if thunk was fulfilled
+      if (verifyEmail.fulfilled.match(resultAction)) {
+        const token = resultAction.payload;
+
+        if (!token) {
+          console.error("No token returned from verification");
+          return;
+        }
+
+        console.log("Verification successful, token:", token);
+
+        // Redirect to create-password with token and email as query params
+        router.push(
+          `/create-password?token=${encodeURIComponent(
+            token
+          )}&email=${encodeURIComponent(email)}`
+        );
+      } else {
+        console.error("Verification failed:", resultAction.payload);
+      }
+    } catch (error) {
+      console.error("Unexpected error during verification:", error);
+    }
   };
 
   return (
@@ -136,14 +163,12 @@ export default function VerificationCode() {
           </div>
 
           {/* Submit Button */}
-          <Link href="/create-password">
-            <button
-              type="submit"
-              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-4"
-            >
-              Verify
-            </button>
-          </Link>
+          <button
+            type="submit"
+            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-4"
+          >
+            Verify
+          </button>
         </form>
       </div>
     </div>

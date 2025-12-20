@@ -1,20 +1,30 @@
-// import React from "react";
-
-// export default function EmailVerification() {
-//   return <div>EmailVerification</div>;
-// }
-
 "use client";
-
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { FormEvent } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { forgotPassword } from "@/redux/features/auth/authSlice";
 
 export default function EmailVerification() {
-  const handleSubmit = (e: FormEvent) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { forgotPasswordSuccess } = useAppSelector((state) => state.auth);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle password reset logic here
-    console.log("Reset link requested");
+
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+
+    const resultAction = await dispatch(forgotPassword({ email }));
+
+    if (forgotPassword.fulfilled.match(resultAction)) {
+      // build string URL for app router
+      router.push(`/code-verification?email=${encodeURIComponent(email)}`);
+    } else {
+      console.error("Forgot password request failed:", resultAction.payload);
+    }
   };
 
   return (
@@ -22,7 +32,7 @@ export default function EmailVerification() {
       <div className="w-full max-w-[550px]">
         {/* Back to Login Link */}
         <Link
-          href="/login"
+          href="/"
           className="group flex items-center text-sm font-medium text-gray-200 hover:text-white transition-colors mb-10 w-fit"
         >
           <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
@@ -58,14 +68,13 @@ export default function EmailVerification() {
               required
             />
           </div>
-          <Link href="/code-verification">
-            <button
-              type="submit"
-              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
-            >
-              Submit
-            </button>
-          </Link>
+
+          <button
+            type="submit"
+            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
+          >
+            Submit
+          </button>
         </form>
       </div>
     </div>
