@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Search, Plus, Edit2, Trash2 } from "lucide-react";
+import { ChevronDown, Search, Edit2, Trash2 } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import Image from "next/image";
 
@@ -232,7 +232,6 @@ export default function AthleteManagement() {
           <h1 className="text-4xl font-bold text-white mb-2">
             Athletes Management
           </h1>
-
         </div>
 
         {/* Filters Section */}
@@ -366,8 +365,9 @@ export default function AthleteManagement() {
                 {filteredAthletes.map((athlete, index) => (
                   <tr
                     key={athlete.id}
-                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
-                      }`}
+                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${
+                      index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
+                    }`}
                   >
                     <td className="px-6 py-4">
                       {athlete.image ? (
@@ -385,8 +385,12 @@ export default function AthleteManagement() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-white font-medium">{athlete.name}</div>
-                      <div className="text-xs text-slate-400">{athlete.email}</div>
+                      <div className="text-white font-medium">
+                        {athlete.name}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {athlete.email}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-white">{athlete.gender}</td>
                     <td className="px-6 py-4 text-white">{athlete.age}</td>
