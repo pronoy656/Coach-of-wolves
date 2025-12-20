@@ -105,6 +105,7 @@ export const getAllSupplements = createAsyncThunk<
     }
 
     const response = await axiosInstance.get<SupplementListResponseWrapper>(url);
+    console.log("Supplements response:", response.data.data);
     return response.data.data;
   } catch (error: any) {
     if (error.response?.data?.message)
