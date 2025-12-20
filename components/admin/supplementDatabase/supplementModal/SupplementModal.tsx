@@ -12,6 +12,7 @@ interface SupplementModalProps {
     name: string;
     dosage: string;
     time: string;
+    frequency: string;
     purpose: string;
     brand: string;
     comment: string;
@@ -20,6 +21,7 @@ interface SupplementModalProps {
     name: string;
     dosage: string;
     time: string;
+    frequency: string;
     purpose: string;
     brand: string;
     comment: string;
@@ -36,6 +38,7 @@ export default function SupplementModal({
     name: "",
     dosage: "",
     time: "",
+    frequency: "",
     purpose: "",
     brand: "",
     comment: "",
@@ -49,6 +52,7 @@ export default function SupplementModal({
         name: "",
         dosage: "",
         time: "",
+        frequency: "",
         purpose: "",
         brand: "",
         comment: "",
@@ -59,7 +63,9 @@ export default function SupplementModal({
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -106,6 +112,7 @@ export default function SupplementModal({
                 onChange={handleChange}
                 placeholder="Insert a value"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                required
               />
             </div>
             <div>
@@ -117,6 +124,7 @@ export default function SupplementModal({
                 onChange={handleChange}
                 placeholder="Insert a value"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                required
               />
             </div>
             <div>
@@ -128,11 +136,12 @@ export default function SupplementModal({
                 onChange={handleChange}
                 placeholder="Insert a value"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                required
               />
             </div>
           </div>
 
-          {/* Row 2: Purpose, Brand, Comment */}
+          {/* Row 2: Purpose, Brand, Frequency */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Purpose</label>
@@ -143,6 +152,7 @@ export default function SupplementModal({
                 onChange={handleChange}
                 placeholder="Insert a value"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                required
               />
             </div>
             <div>
@@ -154,19 +164,95 @@ export default function SupplementModal({
                 onChange={handleChange}
                 placeholder="Insert a value"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Comment</label>
-              <input
-                type="text"
-                name="comment"
-                value={formData.comment}
+              <label className="block text-sm font-medium mb-2">
+                Frequency
+              </label>
+              <select
+                name="frequency"
+                value={formData.frequency}
                 onChange={handleChange}
-                placeholder="Insert a value"
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-              />
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4A9E4A]"
+                required
+              >
+                <option value="" className="bg-[#08081A] text-foreground">
+                  Select Frequency
+                </option>
+                <option
+                  value="Once daily"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  Once daily
+                </option>
+                <option
+                  value="2x Daily"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  2x Daily
+                </option>
+                <option
+                  value="3x Daily"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  3x Daily
+                </option>
+                <option
+                  value="4x Daily"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  4x Daily
+                </option>
+                <option
+                  value="As needed"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  As needed
+                </option>
+                <option value="Weekly" className="bg-[#08081A] text-foreground">
+                  Weekly
+                </option>
+                <option
+                  value="Every other day"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  Every other day
+                </option>
+                <option
+                  value="Before meals"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  Before meals
+                </option>
+                <option
+                  value="After meals"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  After meals
+                </option>
+                <option
+                  value="With meals"
+                  className="bg-[#08081A] text-foreground"
+                >
+                  With meals
+                </option>
+              </select>
             </div>
+          </div>
+
+          {/* Row 3: Comment (Full width textarea) */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Comment</label>
+            <textarea
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              placeholder="Insert a value"
+              rows={3}
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] resize-none"
+            />
           </div>
 
           {/* Save Button */}
@@ -174,6 +260,7 @@ export default function SupplementModal({
             <button
               type="submit"
               className="w-full px-6 py-3 bg-[#4040D3] hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center"
+              disabled={loading}
             >
               {loading ? <Loader className="w-5 h-5 animate-spin" /> : "Save"}
             </button>

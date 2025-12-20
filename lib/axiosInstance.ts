@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { BASE_API } from "./config";
 import type { InternalAxiosRequestConfig } from "axios";

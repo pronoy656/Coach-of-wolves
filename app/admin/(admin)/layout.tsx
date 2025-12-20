@@ -5,6 +5,7 @@ import Sidebar from "@/components/admin/sidebar/Sidebar";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 export default function AdminLayout({
   children,
@@ -41,6 +42,7 @@ export default function AdminLayout({
         <div className="flex-1 flex flex-col">
           <Navbar />
           {children}
+          <Toaster position="top-right" />
         </div>
       </div>
     </>

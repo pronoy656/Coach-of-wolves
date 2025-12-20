@@ -33,17 +33,16 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05050c] flex flex-col items-center justify-center font-sans text-white">
-      <div className="mb-12 w-[250px] h-[280px] flex items-center justify-center bg-transparent">
-        <div className="relative w-full h-full">
-          <Image
-            src="/wolves-logo-gym.png"
-            alt="Coach of Wolves"
-            fill
-            className="w-full h-full"
-            priority
-          />
-        </div>
+    <div className="mt-8 bg-[#05050c] flex flex-col items-center justify-center font-sans text-white">
+      <div className="mb-12 flex items-center justify-center bg-transparent">
+        <Image
+          src="/wolves-logo-gym.png"
+          alt="Coach of Wolves"
+          width={250}
+          height={330}
+          className="object-contain"
+          priority
+        />
       </div>
 
       {/* --- LOGIN FORM --- */}

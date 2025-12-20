@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/coach/navbar/Navbar";
 import Sidebar from "@/components/coach/sidebar/Sidebar";
+import ToastProvider from "@/components/providers/ToastProvider";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -42,6 +43,7 @@ export default function AdminLayout({
         <div className="flex-1 flex flex-col">
           <Navbar />
           {children}
+          <ToastProvider />
         </div>
       </div>
     </>

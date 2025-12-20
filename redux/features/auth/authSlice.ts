@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // store/authSlice.ts
 import axiosInstance from "@/lib/axiosInstance";
 import { admin_email } from "@/lib/config";
