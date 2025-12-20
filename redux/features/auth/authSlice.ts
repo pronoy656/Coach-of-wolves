@@ -2,6 +2,7 @@
 import axiosInstance from "@/lib/axiosInstance";
 import { admin_email } from "@/lib/config";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
 
 /* ================= TYPES ================= */
 
@@ -74,7 +75,16 @@ export const forgotPassword = createAsyncThunk<
   { rejectValue: string }
 >("auth/forgot-password", async (data, { rejectWithValue }) => {
   try {
-    await axiosInstance.post("/auth/forgot-password", data);
+    if (data.email === admin_email) {
+      const response = await axiosInstance.post("/auth/forget-password", data);
+      console.log(response.data.success);
+    } else {
+      const response = await axiosInstance.post(
+        "/auth/coach/forget-password",
+        data
+      );
+      console.log(response.data.success);
+    }
   } catch (error: any) {
     if (error.response?.data?.message)
       return rejectWithValue(error.response.data.message);
@@ -85,26 +95,62 @@ export const forgotPassword = createAsyncThunk<
 /* ---------- RESET PASSWORD ---------- */
 export const resetPassword = createAsyncThunk<
   void,
-  { token: string; password: string },
+  {
+    email: string;
+    token: string;
+    newPassword: string;
+    confirmPassword: string;
+  },
   { rejectValue: string }
->("auth/reset-password", async (data, { rejectWithValue }) => {
-  try {
-    await axiosInstance.post("/auth/reset-password", data);
-  } catch (error: any) {
-    if (error.response?.data?.message)
-      return rejectWithValue(error.response.data.message);
-    return rejectWithValue("Reset failed");
+>(
+  "auth/reset-password",
+  async (
+    { email, token, newPassword, confirmPassword },
+    { rejectWithValue }
+  ) => {
+    console.log(email, token, newPassword, confirmPassword);
+    try {
+      if (email === admin_email) {
+        await axiosInstance.post(
+          "/auth/reset-password",
+          { newPassword, confirmPassword },
+          { headers: { authorization: `${token}` } }
+        );
+      } else {
+        await axiosInstance.post(
+          "/auth/coach/reset-password",
+          { newPassword, confirmPassword },
+          { headers: { authorization: `${token}` } }
+        );
+      }
+    } catch (error: any) {
+      if (error.response?.data?.message)
+        return rejectWithValue(error.response.data.message);
+      return rejectWithValue("Reset failed");
+    }
   }
-});
+);
 
 /* ---------- VERIFY EMAIL ---------- */
 export const verifyEmail = createAsyncThunk<
-  void,
-  { token: string },
+  string, // <- the token as a string
+  { email: string; oneTimeCode: string },
   { rejectValue: string }
->("auth/verify-email", async (data, { rejectWithValue }) => {
+>("auth/verify-email", async ({ email, oneTimeCode }, { rejectWithValue }) => {
   try {
-    await axiosInstance.post("/auth/verify-email", data);
+    if (email === admin_email) {
+      const response = await axiosInstance.post("/auth/verify-email", {
+        email,
+        oneTimeCode: Number(oneTimeCode),
+      });
+      return response.data.data;
+    } else {
+      const response = await axiosInstance.post("/auth/coach/verify-email", {
+        email,
+        oneTimeCode,
+      });
+      return response.data.data;
+    }
   } catch (error: any) {
     if (error.response?.data?.message)
       return rejectWithValue(error.response.data.message);
