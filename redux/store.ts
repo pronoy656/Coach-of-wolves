@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import nutritionReducer from "./features/nutrition/nutritionSlice";
+import supplementReducer from "./features/supplement/supplementSlice"; 
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     nutrition: nutritionReducer,
+    supplement: supplementReducer,
   },
 });
 
