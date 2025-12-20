@@ -70,6 +70,7 @@ export default function AddCoachModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Form Data:", JSON.stringify(formData, null, 2));
 
     setTimeout(() => {
       onSave(formData);
