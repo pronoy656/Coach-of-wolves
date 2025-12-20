@@ -101,7 +101,7 @@ export const updateNutrition = createAsyncThunk<
 >("nutrition/update", async ({ id, data }, { rejectWithValue }) => {
   try {
     // Your backend returns data: null on update, so we return the payload to update state manually
-    await axiosInstance.patch(`/food/nutrition/${id}`, data);
+    await axiosInstance.put(`/food/nutrition/${id}`, data);
     return { id, data };
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || "Update failed");
@@ -160,7 +160,7 @@ const nutritionSlice = createSlice({
       .addCase(createNutrition.fulfilled, (state, action) => {
         state.loading = false;
         state.nutritions.unshift(action.payload); // Add new item to start
-        state.successMessage = "Food item created successfully";
+        // state.successMessage = "Food item created successfully";
       })
       .addCase(createNutrition.rejected, (state, action) => {
         state.loading = false;
@@ -173,13 +173,13 @@ const nutritionSlice = createSlice({
         if (index !== -1) {
           state.nutritions[index] = { ...state.nutritions[index], ...action.payload.data };
         }
-        state.successMessage = "Food item updated successfully";
+        // state.successMessage = "Food item updated successfully";
       })
 
       /* DELETE */
       .addCase(deleteNutrition.fulfilled, (state, action) => {
         state.nutritions = state.nutritions.filter((n) => n._id !== action.payload);
-        state.successMessage = "Food item deleted successfully";
+        // state.successMessage = "Food item deleted successfully";
       });
   },
 });
