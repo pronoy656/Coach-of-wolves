@@ -249,7 +249,7 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Weight (kg)
+                Weight (kg/lbs)
               </label>
               <input
                 type="number"
