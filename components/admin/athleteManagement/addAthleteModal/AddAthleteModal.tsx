@@ -1,35 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
-import { X, Upload } from "lucide-react";
-
-interface Athlete {
-  id?: string;
-  name: string;
-  category: string;
-  phase: string;
-  weight: number;
-  height: number;
-  status: "Natural" | "Enhanced";
-  gender: string;
-  email: string;
-  age: number;
-  trainingDaySteps: number;
-  restDaySteps: number;
-  checkInDay: string;
-  goal: string;
-  waterQuantity: number;
-  lastCheckIn?: string;
-  image?: string;
-}
+import { X, Upload, Loader2 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import {
+  createAthlete,
+  updateAthlete,
+  Athlete as ReduxAthlete,
+  AthleteFormData,
+} from "@/redux/features/athlete/athleteSlice";
+import toast from "react-hot-toast";
 
 interface AthleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (athlete: Athlete) => void;
-  athlete?: Athlete | null;
+  athlete?: ReduxAthlete | null;
 }
 
 const STATUS_OPTIONS = ["Natural", "Enhanced"];
@@ -73,55 +61,108 @@ const CHECK_IN_DAYS = [
 export default function AddAthleteModal({
   isOpen,
   onClose,
-  onSave,
   athlete,
 }: AthleteModalProps) {
-  const [formData, setFormData] = useState<Athlete>({
+  const dispatch = useDispatch<AppDispatch>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    gender: string;
+    category: string;
+    phase: string;
+    weight: number;
+    height: number;
+    status: "Natural" | "Enhanced";
+    age: number;
+    waterQuantity: number;
+    trainingDaySteps: number;
+    restDaySteps: number;
+    checkInDay: string;
+    goal: string;
+    password: string;
+  }>({
     name: "",
+    email: "",
+    gender: "Male",
     category: "",
     phase: "Offseason",
     weight: 0,
     height: 0,
     status: "Natural",
-    gender: "Male",
-    email: "",
     age: 0,
     waterQuantity: 0,
     trainingDaySteps: 0,
     restDaySteps: 0,
     checkInDay: "Monday",
     goal: "",
-    image: "",
+    password: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
   useEffect(() => {
-    if (athlete) {
-      setFormData(athlete);
+    if (athlete && isOpen) {
+      // Populate form with athlete data for editing
+      setFormData({
+        name: athlete.name,
+        email: athlete.email,
+        gender: athlete.gender,
+        category: athlete.category,
+        phase: athlete.phase,
+        weight: athlete.weight,
+        height: athlete.height,
+        status: athlete.status,
+        age: athlete.age,
+        waterQuantity: athlete.waterQuantity,
+        trainingDaySteps: athlete.trainingDaySteps,
+        restDaySteps: athlete.restDaySteps,
+        checkInDay: athlete.checkInDay,
+        goal: athlete.goal,
+        password: "", // Don't prefill password for security
+      });
+
+      // Set image preview if athlete has an image
       if (athlete.image) {
-        setImagePreview(athlete.image);
+        // If it's a full URL, use it directly
+        if (athlete.image.startsWith("http")) {
+          setImagePreview(athlete.image);
+        } else if (athlete.image.startsWith("/")) {
+          // If it's a relative path, construct full URL
+          setImagePreview(
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}${
+              athlete.image
+            }`
+          );
+        } else {
+          setImagePreview(athlete.image);
+        }
       } else {
         setImagePreview("");
       }
+      setImageFile(null);
     } else {
+      // Reset form for adding new athlete
       setFormData({
         name: "",
+        email: "",
+        gender: "Male",
         category: "",
         phase: "Offseason",
         weight: 0,
         height: 0,
         status: "Natural",
-        gender: "Male",
-        email: "",
         age: 0,
         waterQuantity: 0,
         trainingDaySteps: 0,
         restDaySteps: 0,
         checkInDay: "Monday",
         goal: "",
-        image: "",
+        password: "",
       });
+      setImageFile(null);
       setImagePreview("");
     }
   }, [athlete, isOpen]);
@@ -149,46 +190,132 @@ export default function AddAthleteModal({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        setFormData((prev) => ({
-          ...prev,
-          image: result,
-        }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email) {
-      console.log("[v0] Missing required fields");
-      return;
-    }
-    console.log(formData);
-    onSave(formData);
+  const handleRemoveImage = () => {
+    setImageFile(null);
     setImagePreview("");
   };
 
-  const categoryOptions =
-    formData.gender === "Male" ? CATEGORY_MALE : CATEGORY_FEMALE;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate required fields
+    if (!formData.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (!formData.category) {
+      toast.error("Category is required");
+      return;
+    }
+
+    // For new athletes, password is required
+    if (!athlete && !formData.password) {
+      toast.error("Password is required for new athletes");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare athlete form data
+      const athleteFormData: AthleteFormData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        gender: formData.gender,
+        category: formData.category,
+        phase: formData.phase,
+        weight: formData.weight,
+        height: formData.height,
+        status: formData.status,
+        age: formData.age,
+        waterQuantity: formData.waterQuantity,
+        trainingDaySteps: formData.trainingDaySteps,
+        restDaySteps: formData.restDaySteps,
+        checkInDay: formData.checkInDay,
+        goal: formData.goal.trim(),
+        image: imageFile || undefined,
+      };
+
+      // Add password only for new athletes
+      if (!athlete) {
+        (athleteFormData as any).password = formData.password;
+      }
+
+      if (athlete) {
+        // Update existing athlete
+        await dispatch(
+          updateAthlete({
+            id: athlete._id,
+            data: athleteFormData,
+          })
+        ).unwrap();
+        toast.success("Athlete updated successfully");
+      } else {
+        // Create new athlete
+        await dispatch(
+          createAthlete({
+            data: athleteFormData,
+          })
+        ).unwrap();
+        toast.success("Athlete created successfully");
+      }
+
+      // Close modal and reset form
+      onClose();
+    } catch (error: any) {
+      console.error("Failed to save athlete:", error);
+      toast.error(error.message || "Failed to save athlete. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getCategoryOptions = () => {
+    return formData.gender === "Male" ? CATEGORY_MALE : CATEGORY_FEMALE;
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 ">
-      <div className="bg-[#08081A] border border-[#303245]  max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-[#08081A] border border-[#303245] max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#303245] backdrop-blur-sm  sticky top-0 bg-[#08081A]">
+        <div className="flex items-center justify-between p-6 border-b border-[#303245] backdrop-blur-sm sticky top-0 bg-[#08081A]">
           <h2 className="text-2xl font-bold text-white">
             {athlete ? "Edit Athlete" : "Add Athlete"}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-emerald-500/20 rounded-lg transition-colors"
+            disabled={isSubmitting}
+            className="p-2 hover:bg-emerald-500/20 rounded-lg transition-colors disabled:opacity-50"
           >
             <X className="w-6 h-6 text-emerald-400" />
           </button>
@@ -196,7 +323,7 @@ export default function AddAthleteModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Row 1 */}
+          {/* Row 1: Name, Email, Gender */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -209,7 +336,8 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 placeholder="Enter name"
                 required
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
 
@@ -224,18 +352,21 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 placeholder="Enter email"
                 required
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting || !!athlete} // Disable email editing for existing athletes
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Gender/male
+                Gender
               </label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -243,7 +374,7 @@ export default function AddAthleteModal({
             </div>
           </div>
 
-          {/* Row 2 */}
+          {/* Row 2: Weight, Height, Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -255,9 +386,11 @@ export default function AddAthleteModal({
                 value={formData.weight}
                 onChange={handleChange}
                 placeholder="Enter weight"
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 Height (cm)
@@ -268,9 +401,11 @@ export default function AddAthleteModal({
                 value={formData.height}
                 onChange={handleChange}
                 placeholder="Enter height"
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 Status
@@ -279,7 +414,8 @@ export default function AddAthleteModal({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
                 {STATUS_OPTIONS.map((status) => (
                   <option key={status} value={status}>
@@ -290,7 +426,7 @@ export default function AddAthleteModal({
             </div>
           </div>
 
-          {/* Row 3 */}
+          {/* Row 3: Training Steps, Rest Steps, Category */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -302,9 +438,11 @@ export default function AddAthleteModal({
                 value={formData.trainingDaySteps}
                 onChange={handleChange}
                 placeholder="Enter steps"
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 Rest Day Steps
@@ -315,21 +453,25 @@ export default function AddAthleteModal({
                 value={formData.restDaySteps}
                 onChange={handleChange}
                 placeholder="Enter steps"
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Category
+                Category *
               </label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                required
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
                 <option value="">Select category</option>
-                {categoryOptions.map((cat) => (
+                {getCategoryOptions().map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
@@ -338,7 +480,7 @@ export default function AddAthleteModal({
             </div>
           </div>
 
-          {/* Row 4 */}
+          {/* Row 4: Phase, Age, Check-in Day */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -348,7 +490,8 @@ export default function AddAthleteModal({
                 name="phase"
                 value={formData.phase}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
                 {PHASE_OPTIONS.map((phase) => (
                   <option key={phase} value={phase}>
@@ -357,6 +500,7 @@ export default function AddAthleteModal({
                 ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 Age
@@ -367,18 +511,21 @@ export default function AddAthleteModal({
                 value={formData.age}
                 onChange={handleChange}
                 placeholder="Enter age"
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Check in Day
+                Check-in Day
               </label>
               <select
                 name="checkInDay"
                 value={formData.checkInDay}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
                 {CHECK_IN_DAYS.map((day) => (
                   <option key={day} value={day}>
@@ -388,6 +535,8 @@ export default function AddAthleteModal({
               </select>
             </div>
           </div>
+
+          {/* Row 5: Water Quantity */}
           <div>
             <label className="block text-sm font-semibold text-emerald-300 mb-2">
               Water Quantity (Liters)
@@ -398,9 +547,29 @@ export default function AddAthleteModal({
               value={formData.waterQuantity}
               onChange={handleChange}
               placeholder="Enter daily water intake"
-              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
             />
           </div>
+
+          {/* Password (only for new athletes) */}
+          {!athlete && (
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                Password *
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter password"
+                required
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
+              />
+            </div>
+          )}
 
           {/* Goal */}
           <div>
@@ -413,14 +582,15 @@ export default function AddAthleteModal({
               onChange={handleChange}
               placeholder="Enter goal"
               rows={3}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors resize-none"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors resize-none disabled:opacity-50"
             />
           </div>
 
           {/* Upload Image */}
           <div>
             <label className="block text-sm font-semibold text-emerald-300 mb-3">
-              Upload Image
+              Profile Image
             </label>
             <input
               type="file"
@@ -428,13 +598,23 @@ export default function AddAthleteModal({
               onChange={handleImageUpload}
               className="hidden"
               id="image-upload"
+              disabled={isSubmitting}
             />
             <label htmlFor="image-upload" className="cursor-pointer block">
-              <div className="w-full px-6 py-8 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/40 rounded-lg hover:border-emerald-400/60 transition-colors flex flex-col items-center justify-center gap-3 group">
+              <div
+                className={`w-full px-6 py-8 bg-linear-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/40 rounded-lg hover:border-emerald-400/60 transition-colors flex flex-col items-center justify-center gap-3 group ${
+                  isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
                 <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
                   <Upload className="w-6 h-6 text-emerald-400" />
                 </div>
-                <span className="text-white font-semibold">Select File</span>
+                <span className="text-white font-semibold">
+                  {imagePreview ? "Change Image" : "Select Profile Image"}
+                </span>
+                <span className="text-slate-400 text-sm">
+                  JPG, PNG (Max 5MB)
+                </span>
               </div>
             </label>
 
@@ -442,16 +622,14 @@ export default function AddAthleteModal({
               <div className="mt-4 relative">
                 <img
                   src={imagePreview || "/placeholder.svg"}
-                  alt="Preview"
+                  alt="Profile Preview"
                   className="w-full h-48 object-cover rounded-lg border border-emerald-500/40"
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    setImagePreview("");
-                    setFormData((prev) => ({ ...prev, image: "" }));
-                  }}
-                  className="absolute top-2 right-2 p-1 bg-rose-500/80 hover:bg-rose-600 rounded-lg transition-colors"
+                  onClick={handleRemoveImage}
+                  disabled={isSubmitting}
+                  className="absolute top-2 right-2 p-1 bg-rose-500/80 hover:bg-rose-600 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
@@ -464,15 +642,26 @@ export default function AddAthleteModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white font-semibold hover:border-emerald-400 hover:bg-slate-800/70 transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white font-semibold hover:border-emerald-400 hover:bg-slate-800/70 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50"
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Save
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {athlete ? "Updating..." : "Creating..."}
+                </>
+              ) : athlete ? (
+                "Update Athlete"
+              ) : (
+                "Create Athlete"
+              )}
             </button>
           </div>
         </form>
