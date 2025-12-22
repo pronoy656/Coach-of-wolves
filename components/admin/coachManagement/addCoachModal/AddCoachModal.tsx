@@ -1,56 +1,296 @@
+// "use client";
+
+// import type React from "react";
+// import { useState, useEffect } from "react";
+// import { Loader, X } from "lucide-react";
+// import { useSelector } from "react-redux";
+// import { RootState } from "@/redux/store";
+// import Image from "next/image";
+
+// interface CoachModalProps {
+//   coach?: {
+//     _id: string;
+//     name: string;
+//     email: string;
+//     image?: string;
+//   } | null;
+//   onSave: (data: {
+//     name: string;
+//     email: string;
+//     image?: File | string;
+//   }) => void;
+//   onClose: () => void;
+//   loading?: boolean;
+// }
+
+// export default function AddCoachModal({
+//   coach,
+//   onSave,
+//   onClose,
+//   loading: externalLoading,
+// }: CoachModalProps) {
+//   const { loading: reduxLoading } = useSelector(
+//     (state: RootState) => state.coach
+//   );
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     email: "",
+//     image: null as File | null,
+//   });
+
+//   const [fileName, setFileName] = useState("");
+//   const [previewImage, setPreviewImage] = useState<string>("");
+//   const [loading, setLoading] = useState(false);
+
+//   // Calculate final loading state
+//   const isLoading = externalLoading || reduxLoading || loading;
+
+//   useEffect(() => {
+//     if (coach) {
+//       setFormData({
+//         name: coach.name,
+//         email: coach.email,
+//         image: null, // Don't pre-populate file input for security
+//       });
+//       setPreviewImage(coach.image || "");
+//       setFileName(coach.image ? "Current Image" : "");
+//     }
+//   }, [coach]);
+
+//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       setFileName(file.name);
+//       setFormData((prev) => ({ ...prev, image: file }));
+
+//       // Create preview
+//       const reader = new FileReader();
+//       reader.onloadend = () => {
+//         setPreviewImage(reader.result as string);
+//       };
+//       reader.readAsDataURL(file);
+//     }
+//   };
+
+//   const handleSubmit = (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     const saveData = {
+//       name: formData.name.trim(),
+//       email: formData.email.trim(),
+//       image:
+//         formData.image ||
+//         (coach?.image && !formData.image ? coach.image : undefined),
+//     };
+
+//     onSave(saveData);
+//     // Note: The modal closing should be handled by the parent component after successful API call
+//   };
+
+//   return (
+//     <>
+//       <div
+//         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+//         onClick={onClose}
+//       />
+//       <div className="fixed inset-0 flex items-center justify-center z-50">
+//         <div className="bg-[#08081A] border border-[#303245] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-none">
+//           <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card/95 backdrop-blur-sm">
+//             <h2 className="text-xl font-bold">
+//               {coach ? "Edit Coach" : "Add Coach"}
+//             </h2>
+//             <button
+//               onClick={onClose}
+//               className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+//               disabled={isLoading}
+//               type="button"
+//             >
+//               <X size={20} />
+//             </button>
+//           </div>
+
+//           <form onSubmit={handleSubmit} className="p-6 space-y-4">
+//             <div>
+//               <label className="block text-sm font-medium mb-2">Name</label>
+//               <input
+//                 type="text"
+//                 name="name"
+//                 value={formData.name}
+//                 onChange={handleInputChange}
+//                 placeholder="Enter coach name"
+//                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+//                 required
+//                 disabled={isLoading}
+//               />
+//             </div>
+
+//             <div>
+//               <label className="block text-sm font-medium mb-2">Email</label>
+//               <input
+//                 type="email"
+//                 name="email"
+//                 value={formData.email}
+//                 onChange={handleInputChange}
+//                 placeholder="Enter coach email"
+//                 className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+//                 required
+//                 disabled={isLoading}
+//               />
+//             </div>
+
+//             <div>
+//               <label className="block text-sm font-medium items-center gap-2 mb-4">
+//                 <span>Upload Image</span>
+//                 <span className="text-xs text-muted-foreground">
+//                   (Optional)
+//                 </span>
+//               </label>
+
+//               {/* Image Preview */}
+//               {(previewImage || coach?.image) && (
+//                 <div className="mb-4">
+//                   <div className="relative w-32 h-32 mx-auto">
+//                     <Image
+//                       src={previewImage || coach?.image || "/placeholder.svg"}
+//                       alt="Preview"
+//                       fill
+//                       className="rounded-lg object-cover border border-[#303245]"
+//                       sizes="128px"
+//                     />
+//                   </div>
+//                 </div>
+//               )}
+
+//               <label className="block w-full cursor-pointer">
+//                 <div className="border-2 border-dashed border-[#4A9E4A] bg-[#4A9E4A]/20 rounded-lg p-8 text-center hover:bg-primary/20 transition-colors">
+//                   <input
+//                     type="file"
+//                     accept="image/*"
+//                     onChange={handleImageUpload}
+//                     className="hidden"
+//                     disabled={isLoading}
+//                   />
+//                   <svg
+//                     className="w-8 h-8 mx-auto mb-2 text-primary"
+//                     fill="none"
+//                     stroke="currentColor"
+//                     viewBox="0 0 24 24"
+//                   >
+//                     <path
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       strokeWidth={2}
+//                       d="M12 4v16m8-8H4"
+//                     />
+//                   </svg>
+//                   <p className="text-primary font-medium mb-1">
+//                     {fileName || "Select File"}
+//                   </p>
+//                   <p className="text-xs text-muted-foreground">
+//                     Click to upload an image (JPG, PNG, etc.)
+//                   </p>
+//                 </div>
+//               </label>
+//             </div>
+
+//             <button
+//               type="submit"
+//               disabled={isLoading}
+//               className="w-full bg-[#4040D3] hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+//             >
+//               {isLoading ? (
+//                 <>
+//                   <Loader className="w-5 h-5 animate-spin" />
+//                   {coach ? "Updating..." : "Creating..."}
+//                 </>
+//               ) : (
+//                 <span>{coach ? "Update Coach" : "Create Coach"}</span>
+//               )}
+//             </button>
+//           </form>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { Loader, X } from "lucide-react";
+import { getFullImageUrl } from "@/lib/utils";
+import Image from "next/image";
+// import { getFullImageUrl } from "@/utils/imageUrl";
 
 interface CoachModalProps {
   coach?: {
-    id: string;
+    _id: string;
     name: string;
     email: string;
-    status: "Active" | "Inactive";
     image?: string;
   } | null;
   onSave: (data: {
     name: string;
     email: string;
-    status: "Active" | "Inactive";
-    image?: string;
+    image?: File | string;
   }) => void;
   onClose: () => void;
+  loading?: boolean;
 }
 
 export default function AddCoachModal({
   coach,
   onSave,
   onClose,
+  loading = false,
 }: CoachModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    status: "Active" as "Active" | "Inactive",
-    image: "",
+    image: null as File | null,
   });
 
   const [fileName, setFileName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>("");
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [imgSrc, setImgSrc] = useState(previewImage);
 
   useEffect(() => {
-    if (coach) {
+    if (!isInitialized && coach) {
       setFormData({
         name: coach.name,
         email: coach.email,
-        status: coach.status,
-        image: coach.image || "",
+        image: null,
       });
-    }
-  }, [coach]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+      if (coach.image) {
+        const fullImageUrl = getFullImageUrl(coach.image);
+        setPreviewImage(fullImageUrl);
+        setFileName("Current Image");
+      }
+
+      setIsInitialized(true);
+    } else if (!isInitialized && !coach) {
+      setFormData({
+        name: "",
+        email: "",
+        image: null,
+      });
+      setPreviewImage("");
+      setFileName("");
+      setIsInitialized(true);
+    }
+  }, [coach, isInitialized]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -59,9 +299,11 @@ export default function AddCoachModal({
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
+      setFormData((prev) => ({ ...prev, image: file }));
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result as string }));
+        setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -69,20 +311,31 @@ export default function AddCoachModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    console.log("Form Data:", JSON.stringify(formData, null, 2));
 
-    setTimeout(() => {
-      onSave(formData);
-      setLoading(false);
-    }, 800);
+    if (!formData.name.trim() || !formData.email.trim()) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const saveData = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      image: formData.image || undefined,
+    };
+
+    onSave(saveData);
+  };
+
+  const handleClose = () => {
+    setIsInitialized(false);
+    onClose();
   };
 
   return (
     <>
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-        onClick={onClose}
+        onClick={handleClose}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50">
         <div className="bg-[#08081A] border border-[#303245] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-none">
@@ -91,8 +344,10 @@ export default function AddCoachModal({
               {coach ? "Edit Coach" : "Add Coach"}
             </h2>
             <button
-              onClick={onClose}
-              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+              onClick={handleClose}
+              className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              disabled={loading}
+              type="button"
             >
               <X size={20} />
             </button>
@@ -100,58 +355,89 @@ export default function AddCoachModal({
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Name</label>
+              <label className="block text-sm font-medium mb-2">
+                Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Insert a value"
+                placeholder="Enter coach name"
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
+                disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Insert a value"
+                placeholder="Enter coach email"
                 className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
+                disabled={loading}
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium items-center gap-2 mb-4">
                 <span>Upload Image</span>
+                <span className="text-xs text-muted-foreground">
+                  (Optional)
+                </span>
               </label>
+
+              {previewImage && (
+                <div className="mb-4">
+                  {/* <div className="relative w-32 h-32 mx-auto">
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-full h-full rounded-lg object-cover border border-[#303245]"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      }}
+                    />
+                  </div> */}
+                  <div className="relative w-32 h-32 mx-auto">
+                    <Image
+                      src={imgSrc || "/placeholder.svg"}
+                      alt="Preview"
+                      fill
+                      className="rounded-lg object-cover border border-[#303245]"
+                      sizes="128px"
+                      onError={() => setImgSrc("/placeholder.svg")}
+                    />
+                  </div>
+                </div>
+              )}
+
               <label className="block w-full cursor-pointer">
-                <div className="border-2 border-dashed border-[#4A9E4A] bg-[#4A9E4A]/20 rounded-lg p-8 text-center hover:bg-primary/20 transition-colors ">
+                <div
+                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                    loading
+                      ? "border-gray-600 bg-gray-600/20 cursor-not-allowed"
+                      : "border-[#4A9E4A] bg-[#4A9E4A]/20 hover:bg-primary/20"
+                  }`}
+                >
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
+                    disabled={loading}
                   />
                   <svg
-                    className="w-8 h-8 mx-auto mb-2 text-primary"
+                    className={`w-8 h-8 mx-auto mb-2 ${
+                      loading ? "text-gray-500" : "text-primary"
+                    }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -163,8 +449,15 @@ export default function AddCoachModal({
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  <p className="text-primary font-medium">
+                  <p
+                    className={`font-medium mb-1 ${
+                      loading ? "text-gray-500" : "text-primary"
+                    }`}
+                  >
                     {fileName || "Select File"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Click to upload an image (JPG, PNG, etc.)
                   </p>
                 </div>
               </label>
@@ -173,12 +466,12 @@ export default function AddCoachModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#4040D3] hover:bg-blue-700 disabled:bg-primary/60 text-primary-foreground font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-[#4040D3] hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin" />
-                  Saving...
+                  {coach ? "Updating..." : "Creating..."}
                 </>
               ) : (
                 <span>{coach ? "Update Coach" : "Create Coach"}</span>
