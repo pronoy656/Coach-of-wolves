@@ -136,6 +136,33 @@ const initialState: AthleteState = {
 
 /* ================= ASYNC THUNKS ================= */
 
+/* ---------- GET RECENT ATHLETES (WITH DATE FILTER) ---------- */
+/* ---------- GET RECENT ATHLETES ---------- */
+export const getRecentAthletes = createAsyncThunk<
+  Athlete[],
+  void,
+  { rejectValue: string }
+>("athlete/getRecent", async (_, { rejectWithValue }) => {
+  try {
+    // You can modify this endpoint if your backend supports a recent athletes endpoint
+    // For now, we'll fetch all and filter on frontend
+    const response = await axiosInstance.get<AthleteListResponse>('/athlete');
+    
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      return rejectWithValue(response.data.message || "Failed to fetch athletes");
+    }
+  } catch (error: any) {
+    console.error("Error fetching athletes:", error);
+    if (error.response?.data?.message)
+      return rejectWithValue(error.response.data.message);
+    return rejectWithValue("Failed to fetch athletes");
+  }
+});
+
+
+
 /* ---------- GET ALL ATHLETES ---------- */
 export const getAllAthletes = createAsyncThunk<
   Athlete[],

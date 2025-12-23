@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import { getImageUrl } from "@/utils/imageUtils";
 import Image from "next/image";
+import { getFullImageUrl } from "@/lib/utils";
 // import { getAthleteImageUrl } from "@/utils/imageUtils";
 
 const STATUS_OPTIONS = ["All Status", "Natural", "Enhanced"];
@@ -344,7 +345,7 @@ export default function AthleteManagement() {
           <button
             onClick={handleAddAthlete}
             disabled={loading}
-            className="px-6 py-2 border-2 border-[#4A9E4A] text-primary hover:bg-primary/10 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="px-6 py-3 border-2 border-green-500 text-green-500 rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Loading..." : "+ Add Athlete"}
           </button>
@@ -412,7 +413,7 @@ export default function AthleteManagement() {
                         <td className="px-6 py-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden relative">
                             <Image
-                              src={getImageUrl(athlete.image)}
+                              src={getFullImageUrl(athlete.image)}
                               alt={athlete.name}
                               width={40}
                               height={40}
