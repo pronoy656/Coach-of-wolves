@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -19,15 +20,29 @@ export default function DeleteModal({
   onConfirm,
   onCancel,
 }: DeleteConfirmationModalProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
         onClick={onCancel}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-sm w-full mx-4 p-6">
+        <div
+          className={`bg-[#08081A] border border-[#303245] rounded-lg max-w-sm w-full mx-4 p-6 transition-all duration-300 transform ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"
+            }`}
+        >
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500/30 mx-auto mb-4">
             <AlertCircle className="w-6 h-6 text-red-500" />
           </div>

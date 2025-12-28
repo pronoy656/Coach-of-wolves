@@ -1,16 +1,31 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { useAppSelector } from "@/redux/hooks";
+import {
+  clearSupplementError,
+  clearSupplementSuccess,
+  createSupplement,
+  CreateSupplementPayload,
+  deleteSupplement,
+  getAllSupplements,
+  Supplement as ReduxSupplement,
+  updateSupplement,
+} from "@/redux/features/supplement/supplementSlice";
+import toast from "react-hot-toast";
 import { Edit2, Trash2, Search } from "lucide-react";
 import SupplementModal from "./supplementModal/SupplementModal";
 import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
 
-interface Supplement {
-  id: string;
+interface ComponentSupplement {
+  id?: string;
   name: string;
   dosage: string;
   time: string;
+  frequency: string;
   purpose: string;
   brand: string;
   comment: string;
@@ -19,133 +34,73 @@ interface Supplement {
 const ITEMS_PER_PAGE = 8;
 
 export default function SupplementDatabase() {
-  const [supplements, setSupplements] = useState<Supplement[]>([
-    {
-      id: "1",
-      name: "Whey Protein",
-      dosage: "30g",
-      time: "Morning",
-      purpose: "Muscle Growth",
-      brand: "Gold Standard",
-      comment: "With milk",
-    },
-    {
-      id: "2",
-      name: "Creatine Monohydrate",
-      dosage: "5g",
-      time: "Post Workout",
-      purpose: "Strength & Power",
-      brand: "MuscleTech",
-      comment: "With glucose",
-    },
-    {
-      id: "3",
-      name: "Whey Isolate",
-      dosage: "25g",
-      time: "Evening",
-      purpose: "Recovery",
-      brand: "ON",
-      comment: "With water",
-    },
-    {
-      id: "4",
-      name: "BCAA Complex",
-      dosage: "10g",
-      time: "Before Workout",
-      purpose: "Endurance",
-      brand: "Optimum",
-      comment: "Lemon flavor",
-    },
-    {
-      id: "5",
-      name: "Vitamin D3",
-      dosage: "2000 IU",
-      time: "Morning",
-      purpose: "Bone Health",
-      brand: "Nature Made",
-      comment: "With breakfast",
-    },
-    {
-      id: "6",
-      name: "Zinc",
-      dosage: "30mg",
-      time: "Morning",
-      purpose: "Immune Support",
-      brand: "Nutricost",
-      comment: "With food",
-    },
-    {
-      id: "7",
-      name: "Omega-3",
-      dosage: "2g",
-      time: "Morning",
-      purpose: "Heart Health",
-      brand: "Nature's Bounty",
-      comment: "Fish oil",
-    },
-    {
-      id: "8",
-      name: "Magnesium",
-      dosage: "400mg",
-      time: "Evening",
-      purpose: "Sleep & Recovery",
-      brand: "Calm",
-      comment: "Before bed",
-    },
-    {
-      id: "9",
-      name: "B12 Complex",
-      dosage: "1000mcg",
-      time: "Morning",
-      purpose: "Energy Boost",
-      brand: "Methyl",
-      comment: "Sublingual",
-    },
-    {
-      id: "10",
-      name: "Multivitamin",
-      dosage: "1 tablet",
-      time: "Morning",
-      purpose: "General Health",
-      brand: "Centrum",
-      comment: "With breakfast",
-    },
-  ]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { supplements, loading, error, successMessage, total } = useAppSelector(
+    (state) => state.supplement
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    show: boolean;
-    id?: string;
-  }>({ show: false });
 
-  const filteredSupplements = supplements.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    dispatch(
+      getAllSupplements({
+        search: searchTerm || undefined, // optional param
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      })
+    );
+  }, [dispatch, currentPage, searchTerm]);
 
-  const totalPages = Math.ceil(filteredSupplements.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedSupplements = filteredSupplements.slice(startIndex, endIndex);
-
-  const handleSave = (data: Omit<Supplement, "id">) => {
-    if (editingId) {
-      setSupplements(
-        supplements.map((s) =>
-          s.id === editingId ? { ...data, id: editingId } : s
-        )
-      );
-      setEditingId(null);
-    } else {
-      setSupplements([...supplements, { ...data, id: Date.now().toString() }]);
+  // Handle errors and success messages
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearSupplementError());
     }
-    setIsModalOpen(false);
-    setCurrentPage(1);
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearSupplementSuccess());
+    }
+  }, [error, successMessage, dispatch]);
+
+  const handleSave = async (data: ComponentSupplement) => {
+    try {
+      const backendPayload: CreateSupplementPayload = {
+        name: data.name,
+        brand: data.brand,
+        dosage: data.dosage,
+        frequency: data.frequency,
+        time: data.time,
+        purpose: data.purpose,
+        note: data.comment,
+      };
+
+      if (editingId) {
+        await dispatch(
+          updateSupplement({ id: editingId, data: backendPayload })
+        ).unwrap();
+      } else {
+        await dispatch(createSupplement(backendPayload)).unwrap();
+      }
+
+      setIsModalOpen(false);
+      setEditingId(null);
+
+      dispatch(
+        getAllSupplements({
+          search: searchTerm || undefined,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+        })
+      );
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save supplement");
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -156,21 +111,63 @@ export default function SupplementDatabase() {
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteModalOpen(true);
-    setDeleteConfirm({ show: true, id });
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteId) {
-      setSupplements(supplements.filter((s) => s.id !== deleteId));
-      setDeleteModalOpen(false);
-      setDeleteId(null);
-      setCurrentPage(1);
+      try {
+        await dispatch(deleteSupplement(deleteId)).unwrap();
+        toast.success("Supplement deleted successfully");
+
+        // If deleting last item on page, go to previous page if needed
+        if (supplements.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        } else {
+          // Refetch current page
+          dispatch(
+            getAllSupplements({
+              search: searchTerm || undefined,
+              page: currentPage,
+              limit: ITEMS_PER_PAGE,
+            })
+          );
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete supplement");
+      }
     }
+    setDeleteModalOpen(false);
+    setDeleteId(null);
   };
 
-  const editingSuplement = editingId
-    ? supplements.find((s) => s.id === editingId)
+  const convertToComponentSupplement = (
+    reduxSupplement: ReduxSupplement
+  ): ComponentSupplement => {
+    return {
+      id: reduxSupplement._id,
+      name: reduxSupplement.name,
+      brand: reduxSupplement.brand || "",
+      dosage: reduxSupplement.dosage,
+      time: reduxSupplement.time,
+      frequency: reduxSupplement.frequency,
+      purpose: reduxSupplement.purpose,
+      comment: reduxSupplement.note || "",
+    };
+  };
+
+  const editingSupplement = editingId
+    ? supplements.find((s) => s._id === editingId)
     : null;
+
+  // Calculate total pages from backend `total`
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // Use supplements directly — already paginated by backend
+  const displayedSupplements = supplements;
+
+  // Calculate showing range
+  const startIndex = total === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, total);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
@@ -183,9 +180,10 @@ export default function SupplementDatabase() {
               setEditingId(null);
               setIsModalOpen(true);
             }}
-            className="px-6 py-2 border-2 border-[#4A9E4A] text-primary hover:bg-primary/10 rounded-full font-medium transition-colors"
+            disabled={loading}
+            className="px-6 py-2 border-2 border-green-500 text-green-500 hover:bg-green-500/10 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            + Add Supplement
+            {loading ? "Loading..." : "+ Add Supplement"}
           </button>
         </div>
 
@@ -195,10 +193,7 @@ export default function SupplementDatabase() {
             type="text"
             placeholder="Search Here..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
           />
           <Search className="absolute right-4 top-3.5 w-5 h-5 text-muted-foreground" />
@@ -206,7 +201,11 @@ export default function SupplementDatabase() {
 
         {/* Supplements Table */}
         <div className="border border-[#303245] rounded-lg overflow-hidden bg-[#08081A] mt-10">
-          {filteredSupplements.length === 0 ? (
+          {loading && supplements.length === 0 ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4A9E4A]"></div>
+            </div>
+          ) : displayedSupplements.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               No supplements found
             </div>
@@ -225,6 +224,9 @@ export default function SupplementDatabase() {
                       Time
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
+                      Frequency
+                    </th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">
                       Purpose
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
@@ -239,63 +241,80 @@ export default function SupplementDatabase() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedSupplements.map((supplement, index) => (
-                    <tr
-                      key={supplement.id}
-                      className={`border-b bg-[#212133] border-[#303245] hover:bg-[#212133] transition-colors ${
-                        index % 2 === 0 ? "bg-background/50" : "bg-background"
-                      }`}
-                    >
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.name}
-                      </td>
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.dosage}
-                      </td>
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.time}
-                      </td>
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.purpose}
-                      </td>
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.brand}
-                      </td>
-                      <td className="py-3 px-4 text-primary font-medium">
-                        {supplement.comment}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(supplement.id)}
-                            className="p-2 bg-blue-500/20 text-blue-400 rounded-full hover:bg-blue-500/30 transition-colors"
+                  {displayedSupplements.map((supplement, index) => {
+                    const componentSupplement =
+                      convertToComponentSupplement(supplement);
+                    return (
+                      <tr
+                        key={supplement._id}
+                        className={`border-b bg-[#212133] border-[#303245] hover:bg-[#212133] transition-colors ${
+                          index % 2 === 0 ? "bg-background/50" : "bg-background"
+                        }`}
+                      >
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.name}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.dosage}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.time}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              componentSupplement.frequency === "Once daily"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : componentSupplement.frequency === "2x Daily"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-purple-500/20 text-purple-400"
+                            }`}
                           >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(supplement.id)}
-                            className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {componentSupplement.frequency}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.purpose}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.brand}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.comment}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(supplement._id)}
+                              className="p-2 bg-blue-500/20 text-blue-400 rounded-full hover:bg-blue-500/30 transition-colors"
+                              disabled={loading}
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(supplement._id)}
+                              className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors"
+                              disabled={loading}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
               {/* Pagination */}
               <div className="flex items-center justify-between bg-card border-t border-[#303245] px-4 py-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {paginatedSupplements.length > 0 ? startIndex + 1 : 0}{" "}
-                  to {Math.min(endIndex, filteredSupplements.length)} of{" "}
-                  {filteredSupplements.length} supplements
+                  Showing {startIndex} to {endIndex} of {total} supplements
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
+                    disabled={currentPage === 1 || loading}
                     className="p-2 border border-[#4A9E4A] rounded-lg hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Previous
@@ -305,9 +324,11 @@ export default function SupplementDatabase() {
                   </div>
                   <button
                     onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      setCurrentPage((p) => Math.min(totalPages || 1, p + 1))
                     }
-                    disabled={currentPage === totalPages || totalPages === 0}
+                    disabled={
+                      currentPage === totalPages || totalPages === 0 || loading
+                    }
                     className="p-2 border border-[#4A9E4A] rounded-lg hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Next
@@ -328,14 +349,17 @@ export default function SupplementDatabase() {
             setEditingId(null);
           }}
           onSave={handleSave}
-          initialData={editingSuplement || undefined}
+          initialData={
+            editingSupplement
+              ? convertToComponentSupplement(editingSupplement)
+              : undefined
+          }
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
         <DeleteModal
-          isOpen={deleteConfirm.show}
+          isOpen={deleteModalOpen}
           title="Delete Supplement"
           message="Are you sure you want to delete this supplement? This action cannot be undone."
           onConfirm={confirmDelete}

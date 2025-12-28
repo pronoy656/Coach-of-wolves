@@ -1,23 +1,66 @@
-// import React from "react";
-
-// export default function ConfirmPassword() {
-//   return <div>ConfirmPassword</div>;
-// }
-
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
+import { useAppDispatch } from "@/redux/hooks";
+import { resetPassword } from "@/redux/features/auth/authSlice";
 
 export default function ConfirmPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle password update logic here
-    console.log("Password reset submitted");
+
+    console.log("Form submitted");
+
+    const token = searchParams.get("token");
+    const email = searchParams.get("email");
+
+    if (!token || !email) {
+      console.error("Token or email missing in URL");
+      return;
+    }
+
+    const form = e.currentTarget;
+
+    const newPassword = (
+      form.elements.namedItem("password") as HTMLInputElement
+    )?.value;
+
+    const confirmPassword = (
+      form.elements.namedItem("confirmPassword") as HTMLInputElement
+    )?.value;
+
+    if (!newPassword || !confirmPassword) {
+      console.error("Password fields are empty");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      console.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      const resultAction = await dispatch(
+        resetPassword({ email, token, newPassword, confirmPassword })
+      );
+
+      if (resetPassword.fulfilled.match(resultAction)) {
+        console.log("Password reset successful");
+        router.push("/");
+      } else {
+        console.error("Password reset failed:", resultAction.payload);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    }
   };
 
   return (
@@ -36,7 +79,7 @@ export default function ConfirmPassword() {
 
         {/* Form Section */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {/* Create Password Field */}
+          {/* Create Password */}
           <div className="flex flex-col gap-2">
             <label
               htmlFor="password"
@@ -44,18 +87,19 @@ export default function ConfirmPassword() {
             >
               Create Password
             </label>
+
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
-                defaultValue="7789BM6X@@H&$K_" // Pre-filled to match image style
-                className="w-full bg-[#0A0A16] border border-gray-700/50 text-white placeholder-gray-400 rounded-lg px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-900/50 focus:border-blue-800 transition-all"
+                className="w-full bg-[#0A0A16] border border-gray-700/50 text-white rounded-lg px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-900/50 focus:border-blue-800 transition-all"
                 required
               />
+
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
               >
                 {showPassword ? (
@@ -67,7 +111,7 @@ export default function ConfirmPassword() {
             </div>
           </div>
 
-          {/* Re-enter Password Field */}
+          {/* Confirm Password */}
           <div className="flex flex-col gap-2">
             <label
               htmlFor="confirmPassword"
@@ -75,18 +119,19 @@ export default function ConfirmPassword() {
             >
               Re-enter Password
             </label>
+
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 name="confirmPassword"
-                defaultValue="7789BM6X@@H&$K_" // Pre-filled to match image style
-                className="w-full bg-[#0A0A16] border border-gray-700/50 text-white placeholder-gray-400 rounded-lg px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-900/50 focus:border-blue-800 transition-all"
+                className="w-full bg-[#0A0A16] border border-gray-700/50 text-white rounded-lg px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-900/50 focus:border-blue-800 transition-all"
                 required
               />
+
               <button
                 type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
               >
                 {showConfirmPassword ? (
@@ -99,14 +144,12 @@ export default function ConfirmPassword() {
           </div>
 
           {/* Submit Button */}
-          <Link href="/">
-            <button
-              type="submit"
-              className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
-            >
-              Set Password
-            </button>
-          </Link>
+          <button
+            type="submit"
+            className="w-full bg-[#0F0F4A] hover:bg-[#15155a] text-white font-semibold py-3.5 rounded-lg transition-colors duration-200 shadow-[0_0_15px_rgba(15,15,74,0.5)] mt-2"
+          >
+            Set Password
+          </button>
         </form>
       </div>
     </div>

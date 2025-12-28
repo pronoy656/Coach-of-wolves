@@ -1,28 +1,22 @@
-// import React from "react";
-
-// export default function AddExerciseModal() {
-//   return <div>AddExerciseModal</div>;
-// }
-
 "use client";
 
 import type React from "react";
 import { X, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Exercise {
   id?: string;
   name: string;
-  group?: string;
   category: string;
   subcategories: string[];
   iconName?: string;
   description: string;
   image?: File | null;
   video?: File | null;
-  muscleGroup?: string;
-  muscleGroups?: string[];
-  equipment?: string;
+  muscleGroup: string;
+  equipment: string;
+  difficulty: string;
 }
 
 interface ExerciseModalProps {
@@ -50,6 +44,7 @@ const SUBCATEGORIES = [
   "Legs",
   "Triceps",
 ];
+const DIFFICULTY_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
 export default function AddExerciseModal({
   exercise,
@@ -58,7 +53,6 @@ export default function AddExerciseModal({
 }: ExerciseModalProps) {
   const [formData, setFormData] = useState<Omit<Exercise, "id">>({
     name: "",
-    group: "",
     category: "",
     subcategories: [],
     iconName: "",
@@ -67,17 +61,22 @@ export default function AddExerciseModal({
     video: null,
     muscleGroup: "",
     equipment: "",
+    difficulty: "Intermediate",
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     if (exercise) {
       setFormData({
         name: exercise.name || "",
-        group: exercise.group || "",
         category: exercise.category || "",
         subcategories: exercise.subcategories || [],
         iconName: exercise.iconName || "dumbbell",
@@ -86,13 +85,13 @@ export default function AddExerciseModal({
         video: exercise.video || null,
         muscleGroup: exercise.muscleGroup || "",
         equipment: exercise.equipment || "",
+        difficulty: exercise.difficulty || "Intermediate",
       });
       setImagePreview(null);
       setVideoFile(null);
     } else {
       setFormData({
         name: "",
-        group: "",
         category: "",
         subcategories: [],
         iconName: "dumbbell",
@@ -101,6 +100,7 @@ export default function AddExerciseModal({
         video: null,
         muscleGroup: "",
         equipment: "",
+        difficulty: "Intermediate",
       });
       setImagePreview(null);
       setVideoFile(null);
@@ -170,19 +170,38 @@ export default function AddExerciseModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    setTimeout(() => {
+    // Validate required fields
+    if (!formData.name || !formData.muscleGroup || !formData.difficulty) {
+      alert(
+        "Please fill in all required fields (Name, Muscle Group, and Difficulty)"
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
       onSave(formData);
+    } catch (error) {
+      alert("Failed to save exercise. Please try again.");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#08081A] border border-[#303245] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none shadow-2xl">
+    <div
+      className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+        }`}
+    >
+      <div
+        className={`bg-[#08081A] border border-[#303245] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none shadow-2xl transition-all duration-300 transform ${isVisible
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 translate-y-4"
+          }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card/95 backdrop-blur-sm">
           <h2 className="text-2xl font-bold">
@@ -190,15 +209,16 @@ export default function AddExerciseModal({
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            disabled={loading}
+            className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Row 1: Exercise Name, Group, Category */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Row 1: Exercise Name and Muscle Group */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-foreground">
                 Exercise Name *
@@ -210,20 +230,8 @@ export default function AddExerciseModal({
                 onChange={handleChange}
                 placeholder="e.g. Barbell Bench Press"
                 required
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-foreground">
-                Group
-              </label>
-              <input
-                type="text"
-                name="group"
-                value={formData.group}
-                onChange={handleChange}
-                placeholder="e.g. Compound"
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                disabled={loading}
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -231,13 +239,14 @@ export default function AddExerciseModal({
                 Muscle Group *
               </label>
               <select
-                name="category"
-                value={formData.category}
+                name="muscleGroup"
+                value={formData.muscleGroup}
                 onChange={handleChange}
                 required
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                disabled={loading}
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Select a category...</option>
+                <option value="">Select a muscle group...</option>
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
@@ -247,19 +256,42 @@ export default function AddExerciseModal({
             </div>
           </div>
 
-          {/* Equipment */}
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-foreground">
-              Equipment
-            </label>
-            <input
-              type="text"
-              name="equipment"
-              value={formData.equipment || ""}
-              onChange={handleChange}
-              placeholder="e.g. Barbell, Dumbbell..."
-              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-            />
+          {/* Row 2: Difficulty and Equipment */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-foreground">
+                Difficulty Level *
+              </label>
+              <select
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Select difficulty...</option>
+                {DIFFICULTY_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-foreground">
+                Equipment
+              </label>
+              <input
+                type="text"
+                name="equipment"
+                value={formData.equipment}
+                onChange={handleChange}
+                placeholder="e.g. Barbell, Dumbbell, Bodyweight..."
+                disabled={loading}
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
           </div>
 
           {/* Description */}
@@ -272,7 +304,9 @@ export default function AddExerciseModal({
               value={formData.description}
               onChange={handleChange}
               placeholder="Describe the exercise in detail..."
-              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+              disabled={loading}
+              rows={3}
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -291,7 +325,8 @@ export default function AddExerciseModal({
                     type="checkbox"
                     checked={formData.subcategories.includes(subcat)}
                     onChange={() => handleSubcategoryChange(subcat)}
-                    className="w-5 h-5 rounded border-border bg-card accent-primary cursor-pointer"
+                    disabled={loading}
+                    className="w-5 h-5 rounded border-border bg-card accent-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium group-hover:text-primary transition-colors">
                     {subcat}
@@ -321,7 +356,10 @@ export default function AddExerciseModal({
                 Upload Image
               </label>
             </div>
-            <label className="block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 hover:border-primary transition-all">
+            <label
+              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 hover:border-primary transition-all ${loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+            >
               <div className="flex flex-col items-center">
                 <svg
                   className="w-12 h-12 text-green-500/60 mb-2"
@@ -347,15 +385,19 @@ export default function AddExerciseModal({
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
+                disabled={loading}
                 className="hidden"
               />
             </label>
             {imagePreview && (
               <div className="mt-4 relative rounded-lg overflow-hidden border border-border">
-                <img
-                  src={imagePreview || "/placeholder.svg"}
-                  alt="Preview"
+                <Image
+                  src={imagePreview}
+                  alt="Exercise preview"
+                  width={400}
+                  height={128}
                   className="w-full h-32 object-cover"
+                  unoptimized // Required for data URLs/blobs
                 />
               </div>
             )}
@@ -390,7 +432,8 @@ export default function AddExerciseModal({
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleVideoDrop}
-              className="block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer"
+              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer ${loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               <div className="flex flex-col items-center">
                 <svg
@@ -423,6 +466,7 @@ export default function AddExerciseModal({
                 type="file"
                 accept="video/*"
                 onChange={handleVideoChange}
+                disabled={loading}
                 className="hidden"
               />
             </div>
@@ -437,7 +481,7 @@ export default function AddExerciseModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full  bg-[#4040D3] hover:bg-blue-700 disabled:bg-primary/60 text-primary-foreground font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-[#4040D3] hover:bg-blue-700 disabled:bg-primary/60 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

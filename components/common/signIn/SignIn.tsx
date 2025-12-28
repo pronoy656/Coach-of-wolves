@@ -1,93 +1,105 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // Import Next.js Image component
+import Image from "next/image";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { loginUser } from "@/redux/features/auth/authSlice";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Start loading
-    setIsLoading(true);
+    try {
+      const result = await dispatch(loginUser(formData)).unwrap();
 
-    // Simulate an API call (Remove this setTimeout in production)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      toast.success("Login successful 🎉");
 
-    console.log("Form Submitted", formData);
-
-    // Stop loading
-    setIsLoading(false);
+      const { role } = result;
+      if (role === "SUPER_ADMIN") router.push("/admin");
+      else if (role === "COACH") router.push("/coach");
+    } catch (err: any) {
+      toast.error(err || "Invalid email or password");
+    }
   };
+
   return (
-    <div className="mt-8 bg-[#05050c] flex flex-col items-center justify-center font-sans text-white">
-      <div className="mb-12 flex items-center justify-center bg-transparent">
+    <div className="mt-8 bg-[#05050c] flex flex-col items-center justify-center text-white">
+      <div className="mb-12">
         <Image
           src="/wolves-logo-gym.png"
           alt="Coach of Wolves"
           width={250}
           height={330}
-          className="object-contain"
           priority
         />
       </div>
 
-      {/* --- LOGIN FORM --- */}
       <div className="w-full max-w-[500px]">
-        <h2 className="text-4xl font-bold mb-8 text-white">Login</h2>
+        <h2 className="text-4xl font-bold mb-8">Login</h2>
+
+        <div className="flex items-center gap-6 text-xl mb-6">
+          <div>
+            <h2>
+              <span className="text-green-500">Admin:</span>{" "}
+              litonakash13@gmail.com
+            </h2>
+            <h2>Password: 123456789</h2>
+          </div>
+          <div>
+            <h2>
+              <span className="text-green-500">Coach:</span>{" "}
+              pronoypl56@gmail.com
+            </h2>
+            <h2>Password: 123456789</h2>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Input */}
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-gray-300 text-sm">
-              Email
-            </label>
+          {/* Email */}
+          <input
+            type="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            className="w-full bg-[#0b0b14] border border-[#2e2e48] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4b4b7c] transition-colors pr-10"
+          />
+          {/* Password */}
+          <div className="relative">
             <input
-              id="email"
-              type="email"
-              placeholder="john.doe@gmail.com"
-              value={formData.email}
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={formData.password}
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setFormData({ ...formData, password: e.target.value })
               }
-              className="w-full bg-[#0b0b14] border border-[#2e2e48] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4b4b7c] transition-colors"
+              className="w-full bg-[#0b0b14] border border-[#2e2e48] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4b4b7c] transition-colors pr-10"
             />
-          </div>
-
-          {/* Password Input */}
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-gray-300 text-sm">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••••••••••••••••••"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full bg-[#0b0b14] border border-[#2e2e48] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4b4b7c] transition-colors pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>{" "}
           {/* Checkbox & Forgot Password */}
           <div className="flex items-center justify-between pt-1">
             <label className="flex items-center gap-2 cursor-pointer group">
@@ -128,15 +140,17 @@ export default function SignIn() {
               Forgot Password ?
             </Link>
           </div>
-
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#10103b] hover:bg-[#1a1a5e] text-white font-bold py-3.5 rounded-lg border border-[#1e1e50] shadow-[0_0_15px_rgba(16,16,59,0.5)] transition-all mt-4 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="w-full flex justify-center items-center gap-2 bg-[#10103b] py-3 rounded-lg disabled:opacity-60"
           >
-            {isLoading ? (
-              <Loader2 className="animate-spin h-5 w-5 text-white" />
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin h-5 w-5" />
+                Logging in...
+              </>
             ) : (
               "Login"
             )}

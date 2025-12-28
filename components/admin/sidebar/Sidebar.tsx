@@ -13,10 +13,19 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { removeToken } from "@/redux/features/auth/authSlice";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+  const handleLogout = async () => {
+    dispatch(removeToken());
+    router.push("/");
+  };
 
   return (
     <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col">
@@ -101,13 +110,14 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-border">
-        <NavItem
-          icon={<LogOut size={20} />}
-          label="Logout"
-          href="/logout"
-          active={pathname === "/logout"}
-        />
+      <div className="p-4 border-t border-[#2F312F]">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition border border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500 group"
+        >
+          <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-medium">Logout</span>
+        </button>
       </div>
     </aside>
   );
@@ -131,11 +141,10 @@ function NavItem({
   return (
     <Link
       href={href}
-      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${
-        active
-          ? "bg-[#4C8B1B] text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-      }`}
+      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${active
+        ? "bg-[#4C8B1B] text-primary-foreground"
+        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+        }`}
     >
       {icon}
       <span className="text-sm font-medium">{label}</span>
