@@ -67,6 +67,11 @@ export default function AddExerciseModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     if (exercise) {
@@ -187,8 +192,16 @@ export default function AddExerciseModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#08081A] border border-[#303245] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none shadow-2xl">
+    <div
+      className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+        }`}
+    >
+      <div
+        className={`bg-[#08081A] border border-[#303245] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none shadow-2xl transition-all duration-300 transform ${isVisible
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 translate-y-4"
+          }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card/95 backdrop-blur-sm">
           <h2 className="text-2xl font-bold">
@@ -344,9 +357,8 @@ export default function AddExerciseModal({
               </label>
             </div>
             <label
-              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 hover:border-primary transition-all ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 hover:border-primary transition-all ${loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               <div className="flex flex-col items-center">
                 <svg
@@ -420,9 +432,8 @@ export default function AddExerciseModal({
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleVideoDrop}
-              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`block w-full border-2 border-dashed border-green-500/60 rounded-lg p-8 text-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer ${loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               <div className="flex flex-col items-center">
                 <svg

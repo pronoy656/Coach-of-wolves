@@ -423,10 +423,10 @@ export default function CoachManagement() {
               </div>
               <button
                 onClick={handleAddCoach}
-                className="px-6 py-3 border-2 border-[#4A9E4A] text-[#4A9E4A] rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium disabled:opacity-50"
+                className="px-6 py-3 border-2 border-green-500 text-green-500 rounded-3xl hover:bg-green-500/10 transition-colors font-medium disabled:opacity-50"
                 disabled={loading}
               >
-                {loading ? "Loading..." : "+ Add Coach"}
+                + Add Coach
               </button>
             </div>
 
@@ -541,7 +541,7 @@ export default function CoachManagement() {
         message="Are you sure you want to delete this coach? This action cannot be undone."
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteConfirm({ show: false })}
-        // loading={loading}
+      // loading={loading}
       />
     </div>
   );

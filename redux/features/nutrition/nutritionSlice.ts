@@ -68,14 +68,19 @@ const initialState: NutritionState = {
 // Get All Nutritions (matches your get response)
 export const getAllNutritions = createAsyncThunk<
   { items: Nutrition[]; total: number; page: number; limit: number },
-  void,
+  { search?: string } | void,
   { rejectValue: string }
->("nutrition/getAll", async (_, { rejectWithValue }) => {
+>("nutrition/getAll", async (params, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/food/nutrition");
+    const search = params && "search" in params ? params.search : "";
+    const response = await axiosInstance.get("/food/nutrition", {
+      params: { search },
+    });
     return response.data.data; // This contains { items, total, page, limit }
   } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || "Failed to fetch nutrition database");
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch nutrition database"
+    );
   }
 });
 

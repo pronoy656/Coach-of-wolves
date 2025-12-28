@@ -139,23 +139,25 @@ export default function NutritionDatabase() {
       <div className="flex-1 overflow-hidden flex flex-col">
         <main className="flex-1 overflow-auto">
           <div className="p-6">
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold">Nutrition Database</h1>
-              <div className="flex items-center gap-4">
-                <input
-                  type="text"
-                  placeholder="Search nutrition items..."
-                  value={searchQuery}
-                  onChange={handleSearch}
-                  className="px-4 py-2 bg-input border border-[#303245] rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-                />
+            <div className="flex flex-col gap-6 mb-8">
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold">Nutrition Database</h1>
                 <button
                   onClick={handleAddNutrition}
                   disabled={loading}
                   className="px-6 py-3 border-2 border-green-500 text-green-500 rounded-3xl hover:bg-green-500/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Loading..." : "+ Add Nutrition"}
+                  + Add Nutrition
                 </button>
+              </div>
+              <div className="w-full">
+                <input
+                  type="text"
+                  placeholder="Search nutrition items..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="w-full px-4 py-3 bg-input border border-[#303245] rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+                />
               </div>
             </div>
 

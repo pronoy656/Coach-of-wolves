@@ -39,6 +39,17 @@ export default function AddCoachModal({
   const [isInitialized, setIsInitialized] = useState(false);
   const [imgSrc, setImgSrc] = useState(previewImage);
 
+  /* Animation State */
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    setImgSrc(previewImage);
+  }, [previewImage]);
+
   useEffect(() => {
     if (!isInitialized && coach) {
       setFormData({
@@ -110,11 +121,15 @@ export default function AddCoachModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
         onClick={handleClose}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="bg-[#08081A] border border-[#303245] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-none">
+        <div
+          className={`bg-[#08081A] border border-[#303245] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-none transition-all duration-300 transform ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"
+            }`}
+        >
           <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card/95 backdrop-blur-sm">
             <h2 className="text-xl font-bold">
               {coach ? "Edit Coach" : "Add Coach"}
@@ -197,11 +212,10 @@ export default function AddCoachModal({
 
               <label className="block w-full cursor-pointer">
                 <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    loading
-                      ? "border-gray-600 bg-gray-600/20 cursor-not-allowed"
-                      : "border-[#4A9E4A] bg-[#4A9E4A]/20 hover:bg-primary/20"
-                  }`}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${loading
+                    ? "border-gray-600 bg-gray-600/20 cursor-not-allowed"
+                    : "border-[#4A9E4A] bg-[#4A9E4A]/20 hover:bg-primary/20"
+                    }`}
                 >
                   <input
                     type="file"
@@ -211,9 +225,8 @@ export default function AddCoachModal({
                     disabled={loading}
                   />
                   <svg
-                    className={`w-8 h-8 mx-auto mb-2 ${
-                      loading ? "text-gray-500" : "text-primary"
-                    }`}
+                    className={`w-8 h-8 mx-auto mb-2 ${loading ? "text-gray-500" : "text-primary"
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -226,9 +239,8 @@ export default function AddCoachModal({
                     />
                   </svg>
                   <p
-                    className={`font-medium mb-1 ${
-                      loading ? "text-gray-500" : "text-primary"
-                    }`}
+                    className={`font-medium mb-1 ${loading ? "text-gray-500" : "text-primary"
+                      }`}
                   >
                     {fileName || "Select File"}
                   </p>

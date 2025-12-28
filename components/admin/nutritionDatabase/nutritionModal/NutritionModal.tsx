@@ -353,7 +353,7 @@
 
 import { Loader, X } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Exact backend interface
 interface Nutrition {
@@ -412,6 +412,11 @@ export default function NutritionModal({
   );
 
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -454,11 +459,15 @@ export default function NutritionModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
         onClick={onClose}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div
+          className={`bg-[#08081A] border border-[#303245] rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto transition-all duration-300 transform ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"
+            }`}
+        >
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">

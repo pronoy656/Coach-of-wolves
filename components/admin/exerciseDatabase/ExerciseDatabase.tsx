@@ -306,7 +306,6 @@ export default function AdminExerciseDatabase() {
                   placeholder="Search Exercise..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  disabled={loading}
                   className="w-full pl-10 bg-[#08081A] border border-[#303245] rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -517,11 +516,10 @@ export default function AdminExerciseDatabase() {
                                 return (
                                   <span
                                     key={sub}
-                                    className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                                      isEven
+                                    className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${isEven
                                         ? "bg-linear-to-r from-green-400/20 to-emerald-500/20 text-green-600 dark:text-green-400 border-green-400/40 hover:border-green-400/60"
                                         : "bg-linear-to-r from-blue-400/20 to-blue-400/20 text-blue-600 dark:text-blue-400 border-blue-400/40 hover:border-blue-400/60"
-                                    }`}
+                                      }`}
                                   >
                                     {sub}
                                   </span>
