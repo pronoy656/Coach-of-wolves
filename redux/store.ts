@@ -8,7 +8,8 @@ import mealPlanReducer from "./features/mealPlan/mealplanSlice";
 import coachReducer from "./features/coach/coachSlice"; 
 import athleteReducer from "./features/athlete/athleteSlice";
 import dailyTrackingReducer from "./features/tab/dailyTrackingSlice";
-import dashboardReducer from "./features/admin/dashboard/dashboardSlice"; // Add this line
+import dashboardReducer from "./features/admin/dashboard/dashboardSlice"; 
+import alertReducer from "./features/admin/dashboard/alertSlice"; 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -19,7 +20,8 @@ export const store = configureStore({
     coach: coachReducer, 
     athlete: athleteReducer, 
     dailyTracking:dailyTrackingReducer,
-      dashboard: dashboardReducer,
+    dashboard: dashboardReducer,
+    alert: alertReducer, 
   },
 });
 
