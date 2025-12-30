@@ -7,6 +7,8 @@ import exerciseReducer from "./features/exercise/exerciseSlice";
 import mealPlanReducer from "./features/mealPlan/mealplanSlice"; 
 import coachReducer from "./features/coach/coachSlice"; 
 import athleteReducer from "./features/athlete/athleteSlice";
+import dailyTrackingReducer from "./features/tab/dailyTrackingSlice";
+import dashboardReducer from "./features/admin/dashboard/dashboardSlice"; // Add this line
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -16,6 +18,8 @@ export const store = configureStore({
     mealPlan: mealPlanReducer, 
     coach: coachReducer, 
     athlete: athleteReducer, 
+    dailyTracking:dailyTrackingReducer,
+      dashboard: dashboardReducer,
   },
 });
 

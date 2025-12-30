@@ -89,29 +89,43 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface AthleteCardProps {
-  id: string;
+  _id: string;
   name: string;
   status: "Natural" | "Enhanced";
   category: string;
   phase: string;
-  daysAway: string;
+  createdAt: string;
   image: string;
   gender: string;
 }
+function formatToShortDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  const day = date.getUTCDate(); // day of month
+  const month = date.toLocaleString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  }); // short month
+  const year = date.getUTCFullYear(); // year
+
+  return `${day} ${month} ${year}`;
+}
 
 export default function AthleteCard({
-  id,
+  _id,
   name,
   status,
   category,
   phase,
-  daysAway,
+  createdAt,
   image,
 }: AthleteCardProps) {
   const statusColor = status === "Natural" ? "bg-green-600" : "bg-orange-500";
 
+  console.log(_id, name, status, category, phase, createdAt, image);
+
   return (
-    <Link href={`/coach/details/${id}`} className="block">
+    <Link href={`/coach/details/${_id}`} className="block">
       <div className="border border-[#4C8B1B]/60 bg-[#08081A] rounded-lg p-5 hover:border-[#4C8B1B] transition-all duration-200 group">
         <div className="flex items-center justify-between gap-6">
           {/* Left: Avatar + Info */}
@@ -146,9 +160,11 @@ export default function AthleteCard({
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs mb-1">
-                    Show Date
+                    Created Date
                   </p>
-                  <p className="text-[#8CCA4D] font-semibold">{daysAway}</p>
+                  <p className="text-[#8CCA4D] font-semibold">
+                    {formatToShortDate(createdAt)}
+                  </p>
                 </div>
               </div>
             </div>

@@ -224,6 +224,41 @@ export const getAllAthletes = createAsyncThunk<
   }
 });
 
+
+
+export const getAllAthletesByCoach = createAsyncThunk<
+  Athlete[],
+  void,
+  { rejectValue: string }
+>(
+  "athlete/getAllByCoach",
+  async (_, { rejectWithValue }) => {
+    try {
+      const url = `/athlete/coachId`;
+      console.log("Fetching athletes with URL:", url);
+
+      const response = await axiosInstance.get<AthleteListResponse>(url);
+
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        return rejectWithValue(
+          response.data.message || "Failed to fetch athletes"
+        );
+      }
+    } catch (error: any) {
+      console.error("Error fetching athletes:", error);
+
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+
+      return rejectWithValue("Failed to fetch athletes");
+    }
+  }
+);
+
+
 /* ---------- CREATE ATHLETE ---------- */
 export const createAthlete = createAsyncThunk<
   Athlete,
@@ -470,6 +505,20 @@ const athleteSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to fetch athletes";
       })
+
+            /* GET ALL ATHLETES By coach  */
+    .addCase(getAllAthletesByCoach.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(getAllAthletesByCoach.fulfilled, (state, action) => {
+      state.loading = false;
+      state.athletes = action.payload;
+    })
+    .addCase(getAllAthletesByCoach.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "Failed to fetch athletes";
+    })
 
       /* CREATE ATHLETE */
       .addCase(createAthlete.pending, (state) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const CalendarIcon = () => (
   <svg
@@ -646,8 +646,23 @@ const LabelCell = ({
 );
 
 // --- Main Dashboard Component ---
-
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
 export default function Dashboard() {
+  const params = useParams();
+  const userId = params.id as string;
+  const dispatch = useAppDispatch();
+  const { weekData, averages, loading, error } = useAppSelector(
+    (state) => state.dailyTracking
+  );
+  console.log(weekData);
+  console.log(averages);
+
+  useEffect(() => {
+    dispatch(fetchDailyWeekData(userId));
+  }, [dispatch, userId]);
+
   return (
     <div className="min-h-screen bg-[#0B0C15] p-6 font-sans text-white">
       {/* Top Header Button */}
