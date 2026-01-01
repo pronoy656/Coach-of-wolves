@@ -38,7 +38,12 @@ interface CheckIn {
     cardioCompleted: boolean;
     feedbackTraining: string;
   };
-  questions: Array<{ id: string; question: string; answer: string }>;
+  questions: Array<{
+    id: string;
+    question: string;
+    answer: string;
+    isMandatory?: boolean;
+  }>;
   images?: string[];
   videos?: string[];
 }
@@ -73,22 +78,26 @@ const mockCheckIns: CheckIn[] = [
         id: "1",
         question: "What went well last week?",
         answer: "AI: Training went well and my routine was pretty solid.",
+        isMandatory: true,
       },
       {
         id: "2",
         question: "What are you proud of?",
         answer:
           "A2: I'm proud that I stayed consistent and showed up even on the days I didn't feel like it.",
+        isMandatory: true,
       },
       {
         id: "3",
         question: "What do you want to share with me?",
         answer: "A3: I'm proud of my hard work and perseverance.",
+        isMandatory: false,
       },
       {
         id: "4",
         question: "What went well last week?",
         answer: "A4: I completed all my tasks on time.",
+        isMandatory: false,
       },
     ],
     images: [
