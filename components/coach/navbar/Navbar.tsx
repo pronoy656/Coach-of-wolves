@@ -1,17 +1,54 @@
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Bell, Upload, X } from "lucide-react";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import {
+  getCoachProfile,
+  updateCoachProfile,
+  clearCoachProfileError,
+} from "@/redux/features/coachProfile/coachProfileSlice";
+import toast from "react-hot-toast";
+import { useAppDispatch } from "@/redux/hooks";
 
 export default function Header() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userName, setUserName] = useState("John Doe");
-  const [profileImage, setProfileImage] = useState<string>(
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+  const { profile, loading, error, updateLoading, updateError } = useSelector(
+    (state: RootState) => state.coachProfile
   );
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tempName, setTempName] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
+  // Fetch coach profile on component mount
+
+  useEffect(() => {
+    dispatch(getCoachProfile());
+  }, [dispatch]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 4000,
+        position: "top-right",
+      });
+      dispatch(clearCoachProfileError());
+    }
+
+    if (updateError) {
+      toast.error(updateError, {
+        duration: 4000,
+        position: "top-right",
+      });
+      dispatch(clearCoachProfileError());
+    }
+  }, [error, updateError, dispatch]);
 
   const handleProfileClick = () => {
     setIsModalOpen(true);
@@ -20,11 +57,18 @@ export default function Header() {
   const handleModalClose = () => {
     setIsModalOpen(false);
     setPreviewImage(null);
+    setSelectedFile(null);
+    // Reset to original profile data
+    if (profile) {
+      setTempName(profile.name);
+    }
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
@@ -33,22 +77,52 @@ export default function Header() {
     }
   };
 
-  const handleSave = () => {
-    // In a real app, you would save to your backend here
-    if (previewImage) {
-      setProfileImage(previewImage);
+  const handleSave = async () => {
+    const formData = new FormData();
+
+    // Append name if changed
+    if (tempName !== profile?.name) formData.append("name", tempName);
+
+    // Append image if selected
+    if (selectedFile) formData.append("image", selectedFile);
+
+    // No changes check
+    if ([...formData.keys()].length === 0) {
+      toast.success("No changes to save", {
+        duration: 2000,
+        position: "top-right",
+      });
+      return;
     }
 
-    // Show success message
-    alert("Profile updated successfully!");
+    const toastId = toast.loading("Updating profile...", {
+      position: "top-right",
+    });
 
-    // Close modal and reset preview
-    handleModalClose();
+    try {
+      // ✅ Send FormData to backend
+      await dispatch(updateCoachProfile(formData)).unwrap();
+
+      toast.success("Profile updated successfully!", {
+        id: toastId,
+        duration: 3000,
+      });
+
+      dispatch(getCoachProfile());
+      handleModalClose();
+    } catch (err) {
+      toast.error("Failed to update profile", { id: toastId, duration: 4000 });
+      console.error(err);
+    }
   };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
+
+  // Get display image (preview or profile image)
+  const displayImage = previewImage || profile?.image || "/default-avatar.png";
+  const displayName = profile?.name || "Loading...";
 
   return (
     <>
@@ -67,18 +141,30 @@ export default function Header() {
               onClick={handleProfileClick}
             >
               <div className="relative">
-                <Image
-                  src={profileImage}
-                  alt="User"
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="absolute inset-0 rounded-full border-2 border-transparent hover:border-white/30 transition-all"></div>
+                {loading && !profile ? (
+                  <div className="w-10 h-10 rounded-full bg-gray-700 animate-pulse"></div>
+                ) : (
+                  <>
+                    <Image
+                      src={displayImage}
+                      alt={profile?.name || "Coach"}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent hover:border-white/30 transition-all"></div>
+                  </>
+                )}
               </div>
               <div>
-                <p className="font-semibold text-sm">{userName}</p>
-                <p className="text-xs text-muted-foreground">Admin</p>
+                <p className="font-semibold text-sm">
+                  {loading && !profile ? (
+                    <span className="inline-block w-20 h-4 bg-gray-700 rounded animate-pulse"></span>
+                  ) : (
+                    displayName
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">Coach</p>
               </div>
             </div>
           </div>
@@ -100,6 +186,7 @@ export default function Header() {
               <button
                 onClick={handleModalClose}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                disabled={updateLoading}
               >
                 <X size={20} className="text-white" />
               </button>
@@ -113,17 +200,22 @@ export default function Header() {
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#2F312F]">
-                    <Image
-                      src={previewImage || profileImage}
-                      alt="Profile Preview"
-                      width={128}
-                      height={128}
-                      className="w-full h-full object-cover"
-                    />
+                    {loading && !profile ? (
+                      <div className="w-full h-full bg-gray-700 animate-pulse"></div>
+                    ) : (
+                      <Image
+                        src={displayImage}
+                        alt="Profile Preview"
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <button
                     onClick={triggerFileInput}
                     className="absolute bottom-0 right-0 bg-[#4A9E4A] hover:bg-[#3d8b3d] p-2 rounded-full transition-colors"
+                    disabled={updateLoading}
                   >
                     <Upload size={16} className="text-white" />
                   </button>
@@ -134,10 +226,17 @@ export default function Header() {
                   onChange={handleImageChange}
                   accept="image/*"
                   className="hidden"
+                  disabled={updateLoading}
                 />
                 <p className="text-xs text-gray-400 text-center">
-                  Click the upload icon to change profile picture
+                  Click the upload icon to change profile picture (Max 5MB)
                 </p>
+                {selectedFile && (
+                  <p className="text-xs text-green-400">
+                    Selected: {selectedFile.name} (
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
               </div>
             </div>
 
@@ -148,28 +247,55 @@ export default function Header() {
               </label>
               <input
                 type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full bg-[#0a0a14] border border-[#2F312F] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#4A9E4A] transition-colors"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                className="w-full bg-[#0a0a14] border border-[#2F312F] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#4A9E4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter your name"
+                disabled={updateLoading || loading}
               />
+              {tempName !== profile?.name && (
+                <p className="text-xs text-yellow-400 mt-1">
+                  Name changed from `{profile?.name}` to `{tempName}`
+                </p>
+              )}
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleModalClose}
-                className="flex-1 px-4 py-3 bg-[#0a0a14] border border-[#2F312F] text-white rounded-lg font-medium hover:bg-[#12121d] transition-colors"
+                className="flex-1 px-4 py-3 bg-[#0a0a14] border border-[#2F312F] text-white rounded-lg font-medium hover:bg-[#12121d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={updateLoading}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-3 bg-[#4A9E4A] hover:bg-[#3d8b3d] text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                disabled={
+                  updateLoading || (tempName === profile?.name && !selectedFile)
+                }
+                className="flex-1 px-4 py-3 bg-[#4A9E4A] hover:bg-[#3d8b3d] disabled:bg-gray-600 disabled:hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Changes
+                {updateLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
             </div>
+
+            {/* Debug info - remove in production */}
+            {process.env.NODE_ENV === "development" && profile && (
+              <div className="mt-6 p-3 bg-gray-800/50 rounded text-xs">
+                <p className="text-yellow-400 mb-2">Debug Info:</p>
+                <p>Profile ID: {profile._id}</p>
+                <p>Current Image: {profile.image}</p>
+                <p>Update Loading: {updateLoading.toString()}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -206,3 +332,5 @@ export default function Header() {
     </>
   );
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
