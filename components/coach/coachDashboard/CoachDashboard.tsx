@@ -59,7 +59,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
       case "Nutrition":
         return (
           <div className="">
-            <NutritionTab />
+            <NutritionTab athleteId={athleteId} />
           </div>
         );
       case "Supplements":
@@ -80,6 +80,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
             <PedTab />
           </div>
         );
+
       default:
         return null;
     }
@@ -106,10 +107,9 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
               onClick={() => setActiveTab(tab)}
               className={`
                 whitespace-nowrap rounded-full px-12 py-3 text-sm font-medium transition-all duration-200 min-w-[120px] text-center
-                ${
-                  activeTab === tab
-                    ? "bg-[#4f961f] text-white shadow-sm"
-                    : "text-gray-300 hover:text-white hover:bg-white/5"
+                ${activeTab === tab
+                  ? "bg-[#4f961f] text-white shadow-sm"
+                  : "text-gray-300 hover:text-white hover:bg-white/5"
                 }
               `}
             >

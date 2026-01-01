@@ -2,32 +2,36 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import nutritionReducer from "./features/nutrition/nutritionSlice";
-import supplementReducer from "./features/supplement/supplementSlice"; 
-import exerciseReducer from "./features/exercise/exerciseSlice"; 
-import mealPlanReducer from "./features/mealPlan/mealplanSlice"; 
-import coachReducer from "./features/coach/coachSlice"; 
+import supplementReducer from "./features/supplement/supplementSlice";
+import exerciseReducer from "./features/exercise/exerciseSlice";
+import mealPlanReducer from "./features/mealPlan/mealplanSlice";
+import coachReducer from "./features/coach/coachSlice";
 import athleteReducer from "./features/athlete/athleteSlice";
 import dailyTrackingReducer from "./features/tab/dailyTrackingSlice";
-import dashboardReducer from "./features/admin/dashboard/dashboardSlice"; 
-import alertReducer from "./features/admin/dashboard/alertSlice"; 
+import dashboardReducer from "./features/admin/dashboard/dashboardSlice";
+import alertReducer from "./features/admin/dashboard/alertSlice";
 import coachProfileReducer from "./features/coachProfile/coachProfileSlice";
-import coachDashboardReducer from "./features/coachDashboard/coachDashBoardSlice"; // Add this line
+import coachDashboardReducer from "./features/coachDashboard/coachDashBoardSlice";
+import oneNutritionPlanReducer from "./features/tab/oneNutritionPlanSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     nutrition: nutritionReducer,
     supplement: supplementReducer,
     exercise: exerciseReducer,
-    mealPlan: mealPlanReducer, 
-    coach: coachReducer, 
-    athlete: athleteReducer, 
-    dailyTracking:dailyTrackingReducer,
+    mealPlan: mealPlanReducer,
+    coach: coachReducer,
+    athlete: athleteReducer,
+    dailyTracking: dailyTrackingReducer,
     dashboard: dashboardReducer,
-    alert: alertReducer, 
-    coachProfile: coachProfileReducer, 
+    alert: alertReducer,
+    coachProfile: coachProfileReducer,
     coachDashboard: coachDashboardReducer,
+    oneNutritionPlan: oneNutritionPlanReducer,
   },
 });
+
 
 // Infer types from the store
 export type RootState = ReturnType<typeof store.getState>;
