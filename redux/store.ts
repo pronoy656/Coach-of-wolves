@@ -14,6 +14,7 @@ import coachProfileReducer from "./features/coachProfile/coachProfileSlice";
 import coachDashboardReducer from "./features/coachDashboard/coachDashBoardSlice";
 import oneNutritionPlanReducer from "./features/tab/oneNutritionPlanSlice";
 import showReducer from "./features/show/showSlice"; // Add this import
+import weeklyCheckinReducer from "./features/weeklyCheckin/weeklyCheckinSlice";
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +32,7 @@ export const store = configureStore({
     coachDashboard: coachDashboardReducer,
     oneNutritionPlan: oneNutritionPlanReducer,
     show: showReducer, // Add this line
+    weeklyCheckin: weeklyCheckinReducer,
   },
 });
 
