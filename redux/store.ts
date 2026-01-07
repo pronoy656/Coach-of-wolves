@@ -13,6 +13,7 @@ import alertReducer from "./features/admin/dashboard/alertSlice";
 import coachProfileReducer from "./features/coachProfile/coachProfileSlice";
 import coachDashboardReducer from "./features/coachDashboard/coachDashBoardSlice";
 import oneNutritionPlanReducer from "./features/tab/oneNutritionPlanSlice";
+import showReducer from "./features/show/showSlice"; // Add this import
 
 export const store = configureStore({
   reducer: {
@@ -29,6 +30,7 @@ export const store = configureStore({
     coachProfile: coachProfileReducer,
     coachDashboard: coachDashboardReducer,
     oneNutritionPlan: oneNutritionPlanReducer,
+    show: showReducer, // Add this line
   },
 });
 
