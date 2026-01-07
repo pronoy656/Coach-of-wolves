@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { Plus, Trash2, Edit2, Loader2 } from "lucide-react";
 
 interface CheckIn {
   id: string;
@@ -29,7 +29,12 @@ interface CheckIn {
     cardioCompleted: boolean;
     feedbackTraining: string;
   };
-  questions: Array<{ id: string; question: string; answer: string }>;
+  questions: Array<{
+    id: string;
+    question: string;
+    answer: string;
+    isMandatory?: boolean;
+  }>;
   images?: string[];
   videos?: string[];
 }
@@ -44,20 +49,18 @@ interface CheckInDetailProps {
 const YesNoDisplay = ({ value }: { value: boolean }) => (
   <div className="flex gap-3">
     <div
-      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${
-        value
-          ? "bg-green-600/20 text-green-400 border border-green-600/30"
-          : "bg-slate-700/50 text-gray-400 border border-slate-600"
-      }`}
+      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${value
+        ? "bg-green-600/20 text-green-400 border border-green-600/30"
+        : "bg-slate-700/50 text-gray-400 border border-slate-600"
+        }`}
     >
       {value ? "Yes" : "No"}
     </div>
     <div
-      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${
-        !value
-          ? "bg-red-600/20 text-red-400 border border-red-600/30"
-          : "bg-slate-700/50 text-gray-400 border border-slate-600"
-      }`}
+      className={`flex-1 px-2 py-2 rounded-lg font-semibold ${!value
+        ? "bg-red-600/20 text-red-400 border border-red-600/30"
+        : "bg-slate-700/50 text-gray-400 border border-slate-600"
+        }`}
     >
       {value ? "No" : "Yes"}
     </div>
@@ -73,6 +76,8 @@ export default function CheckInDetailsPage({
   const [editData, setEditData] = useState(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
   const [showAddQuestion, setShowAddQuestion] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
@@ -80,6 +85,7 @@ export default function CheckInDetailsPage({
         id: Date.now().toString(),
         question: newQuestionInput,
         answer: "",
+        isMandatory: false,
       };
       setEditData((prev) => ({
         ...prev,
@@ -106,9 +112,18 @@ export default function CheckInDetailsPage({
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
+    // Simulate a brief delay for the "Complete Check-in" action
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     onUpdate(editData);
-    setIsEditing(false);
+    setIsSaving(false);
+    setIsSaved(true);
+    // Wait a moment so the user can see the "Completed" state before closing edit mode
+    setTimeout(() => {
+      setIsEditing(false);
+      setIsSaved(false);
+    }, 1500);
   };
 
   const SliderWithIndicator = ({
@@ -137,11 +152,9 @@ export default function CheckInDetailsPage({
           readOnly
           className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-not-allowed opacity-50"
           style={{
-            background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${
-              ((value - 1) / 9) * 100
-            }%, rgb(30, 41, 59) ${
-              ((value - 1) / 9) * 100
-            }%, rgb(30, 41, 59) 100%)`,
+            background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${((value - 1) / 9) * 100
+              }%, rgb(30, 41, 59) ${((value - 1) / 9) * 100
+              }%, rgb(30, 41, 59) 100%)`,
           }}
         />
       </div>
@@ -161,11 +174,10 @@ export default function CheckInDetailsPage({
               setIsEditing(true);
             }
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-            isEditing
-              ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
-              : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${isEditing
+            ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
+            : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
+            }`}
         >
           <Edit2 className="w-4 h-4" />
           {isEditing ? "Save Changes" : "Edit Questions & Notes"}
@@ -311,9 +323,64 @@ export default function CheckInDetailsPage({
                 className="bg-[#0B0B22] rounded-lg p-5 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <p className="text-white font-semibold">
-                    Q{index + 1}. {q.question}
-                  </p>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-white font-semibold">
+                      Q{index + 1}. {q.question}{" "}
+                      {q.isMandatory && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                    </p>
+                    {isEditing && (
+                      <div className="flex gap-4 mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={q.isMandatory === true}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                console.log(true);
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  questions: prev.questions.map((quest) =>
+                                    quest.id === q.id
+                                      ? { ...quest, isMandatory: true }
+                                      : quest
+                                  ),
+                                }));
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0"
+                          />
+                          <span className="text-xs text-gray-400">
+                            Mandatory
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={q.isMandatory === false}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                console.log(false);
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  questions: prev.questions.map((quest) =>
+                                    quest.id === q.id
+                                      ? { ...quest, isMandatory: false }
+                                      : quest
+                                  ),
+                                }));
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0"
+                          />
+                          <span className="text-xs text-gray-400">
+                            Non-Mandatory
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                   {isEditing && (
                     <button
                       onClick={() => handleDeleteQuestion(q.id)}
@@ -430,9 +497,22 @@ export default function CheckInDetailsPage({
       {isEditing && (
         <button
           onClick={handleSave}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 text-lg rounded-lg transition-colors font-semibold"
+          disabled={isSaving || isSaved}
+          className={`w-full flex items-center justify-center gap-2 py-3 text-lg rounded-lg transition-colors font-semibold ${isSaved
+              ? "bg-green-600 text-white cursor-default"
+              : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed"
+            }`}
         >
-          Save Changes
+          {isSaving ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Completing...
+            </>
+          ) : isSaved ? (
+            "Completed"
+          ) : (
+            "Complete Check-in"
+          )}
         </button>
       )}
     </div>

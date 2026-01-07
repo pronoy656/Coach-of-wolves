@@ -16,22 +16,24 @@ const initialState: WeekState = {
   error: null,
 };
 
-// ✅ FIXED generic syntax
+// ✅ Updated to support optional date query parameter
 export const fetchDailyWeekData = createAsyncThunk<
-  WeekApiResponse, 
-  string,          
+  WeekApiResponse,
+  { userId: string; date?: string },
   { rejectValue: string }
->("week/fetchWeekData", async (userId, { rejectWithValue }) => {
+>("week/fetchWeekData", async ({ userId, date }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.get(
-      `/daily/tracking/${userId}`
-    );
+    const url = date
+      ? `/daily/tracking/${userId}?date=${date}`
+      : `/daily/tracking/${userId}`;
+    const res = await axiosInstance.get(url);
     console.log("Fetched week data:", res.data.data);
     return res.data.data as WeekApiResponse;
   } catch (error) {
     return rejectWithValue("Failed to fetch week data");
   }
 });
+
 
 
 const weekSlice = createSlice({

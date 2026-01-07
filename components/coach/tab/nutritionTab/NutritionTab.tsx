@@ -1,30 +1,36 @@
+
 // "use client";
 
-// import { useState } from "react";
-// import { Search, Pencil, Trash2 } from "lucide-react";
+// import { useState, useEffect } from "react";
+// import { Search, Pencil, Trash2, Loader2 } from "lucide-react";
+// import toast from "react-hot-toast";
 // import AddModal from "./AddModal";
 // import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
+// import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+// import {
+//   fetchNutritionPlans,
+//   addNutritionPlan,
+//   updateNutritionPlan,
+//   deleteNutritionPlan,
+//   clearMessages,
+// } from "@/redux/features/tab/oneNutritionPlanSlice";
+// import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
 
-// type DayType = "Training Day" | "Rest Day" | "Special Day";
-
-// interface MealData {
-//   id: string;
-//   mealsName: string;
-//   foodNames: string[];
-//   time: string;
-//   day: DayType;
-//   calories: number;
-//   protein: number;
-//   carbs: number;
-//   fats: number;
-//   foodItems: string[];
+// interface NutritionTabProps {
+//   athleteId: string;
 // }
 
-// export default function NutritionTab() {
-//   const [activeDay, setActiveDay] = useState<DayType>("Training Day");
+// export default function NutritionTab({ athleteId }: NutritionTabProps) {
+//   const dispatch = useAppDispatch();
+//   const { plans, totals, loading, error, successMessage } = useAppSelector(
+//     (state) => state.oneNutritionPlan
+//   );
+
+//   const [activeDay, setActiveDay] = useState<string>("All");
 //   const [searchQuery, setSearchQuery] = useState("");
 //   const [showMealModal, setShowMealModal] = useState(false);
-//   const [editingMeal, setEditingMeal] = useState<MealData | null>(null);
+//   const [editingMeal, setEditingMeal] = useState<NutritionPlan | null>(null);
+//   const [isProcessing, setIsProcessing] = useState(false);
 
 //   const [deleteModal, setDeleteModal] = useState<{
 //     isOpen: boolean;
@@ -34,63 +40,47 @@
 //     id: null,
 //   });
 
-//   const [meals, setMeals] = useState<MealData[]>([
-//     {
-//       id: "1",
-//       mealsName: "BREAKFAST",
-//       foodNames: ["Oats", "Whey Protein", "Banana", "Almonds"],
-//       time: "7:00",
-//       day: "Training Day",
-//       calories: 550,
-//       protein: 35,
-//       carbs: 75,
-//       fats: 5,
-//       foodItems: [
-//         "Oats (30g)",
-//         "Whey Protein (30g)",
-//         "Banana (1 Piece)",
-//         "Almonds (20g)",
-//       ],
-//     },
-//     {
-//       id: "2",
-//       mealsName: "SNACK 1",
-//       foodNames: ["Protein Shake", "Apple"],
-//       time: "10:30",
-//       day: "Training Day",
-//       calories: 550,
-//       protein: 35,
-//       carbs: 75,
-//       fats: 5,
-//       foodItems: ["Protein (40g)", "Apple (1 Piece)"],
-//     },
-//     {
-//       id: "3",
-//       mealsName: "LUNCH",
-//       foodNames: ["Chicken Breast", "Mixed Vegetables", "Rice", "Olive Oil"],
-//       time: "13:00",
-//       day: "Training Day",
-//       calories: 550,
-//       protein: 35,
-//       carbs: 75,
-//       fats: 5,
-//       foodItems: [
-//         "Chicken breast (200g)",
-//         "Mixed Vegetables (200g)",
-//         "Rice (150g)",
-//         "Olive oil (10ml)",
-//       ],
-//     },
-//   ]);
+//   // Fetch plans on mount and when athleteId changes
+//   useEffect(() => {
+//     if (athleteId) {
+//       dispatch(fetchNutritionPlans(athleteId));
+//     }
+//   }, [dispatch, athleteId]);
 
-//   const activeDayMeals = meals.filter((meal) => meal.day === activeDay);
+//   // Handle success/error messages
+//   useEffect(() => {
+//     if (successMessage) {
+//       toast.success(successMessage);
+//       dispatch(clearMessages());
+//       // Refetch after successful operations to get updated totals
+//       if (athleteId && (isProcessing || !loading)) {
+//         dispatch(fetchNutritionPlans(athleteId));
+//         setIsProcessing(false);
+//       }
+//     }
+//     if (error) {
+//       toast.error(error);
+//       dispatch(clearMessages());
+//       setIsProcessing(false);
+//     }
+//   }, [error, successMessage, dispatch, athleteId, loading, isProcessing]);
 
-//   // Calculate macro summary
+//   // Filter meals based on active day and search
+//   const activeDayMeals = plans.filter(
+//     (meal) =>
+//       (activeDay === "All" || meal.trainingDay === activeDay) &&
+//       (meal.mealName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//         meal.food.some((f) =>
+//           f.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+//         ))
+//   );
+
+//   // Calculate macro summary for active day
 //   const macroSummary = {
-//     calories: activeDayMeals.reduce((sum, meal) => sum + meal.calories, 0),
-//     protein: activeDayMeals.reduce((sum, meal) => sum + meal.protein, 0),
-//     carbs: activeDayMeals.reduce((sum, meal) => sum + meal.carbs, 0),
-//     fats: activeDayMeals.reduce((sum, meal) => sum + meal.fats, 0),
+//     calories: activeDayMeals.reduce((sum, meal) => sum + (meal.totalCalories || 0), 0),
+//     protein: activeDayMeals.reduce((sum, meal) => sum + (meal.totalProtein || 0), 0),
+//     carbs: activeDayMeals.reduce((sum, meal) => sum + (meal.totalCarbs || 0), 0),
+//     fats: activeDayMeals.reduce((sum, meal) => sum + (meal.totalFats || 0), 0),
 //     mealCount: activeDayMeals.length,
 //   };
 
@@ -99,43 +89,54 @@
 //   };
 
 //   const handleDeleteConfirm = () => {
-//     if (deleteModal.id) {
-//       setMeals(meals.filter((meal) => meal.id !== deleteModal.id));
+//     if (deleteModal.id && athleteId) {
+//       setIsProcessing(true);
+//       dispatch(deleteNutritionPlan({ planId: deleteModal.id, athleteId }));
 //     }
 //     setDeleteModal({ isOpen: false, id: null });
 //   };
 
-//   const handleEditMeal = (meal: MealData) => {
+//   const handleEditMeal = (meal: NutritionPlan) => {
 //     setEditingMeal(meal);
 //     setShowMealModal(true);
 //   };
 
-//   const handleSaveMeal = (mealData: MealData) => {
+//   const handleSaveMeal = (mealData: any) => {
 //     if (editingMeal) {
-//       setMeals(meals.map((m) => (m.id === editingMeal.id ? mealData : m)));
+//       setIsProcessing(true);
+//       dispatch(
+//         updateNutritionPlan({
+//           planId: editingMeal._id,
+//           athleteId,
+//           data: mealData,
+//         })
+//       );
 //       setEditingMeal(null);
 //     } else {
-//       const newMeal = { ...mealData, id: Date.now().toString() };
-//       setMeals([...meals, newMeal]);
+//       setIsProcessing(true);
+//       dispatch(addNutritionPlan({ athleteId, data: mealData }));
 //     }
+//     setShowMealModal(false);
 //   };
 
-//   const dayTypes: DayType[] = ["Training Day", "Rest Day", "Special Day"];
-//   const dayColors: Record<DayType, string> = {
-//     "Training Day": "bg-emerald-600 hover:bg-emerald-700",
-//     "Rest Day": "bg-gray-600 hover:bg-gray-700",
-//     "Special Day": "bg-purple-600 hover:bg-purple-700",
-//   };
-
-//   const getDayBadgeColor = (day: DayType) => {
-//     if (day === "Training Day") return "bg-emerald-500";
-//     if (day === "Rest Day") return "bg-gray-500";
-//     return "bg-purple-500";
-//   };
+//   const dayTypes = [
+//     { label: "All", value: "All" },
+//     { label: "Training Day", value: "training day" },
+//     { label: "Rest Day", value: "rest day" },
+//     { label: "Special Day", value: "special day" },
+//   ];
 
 //   return (
 //     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
 //       <div className="space-y-8">
+//         {/* Loading State */}
+//         {loading && !isProcessing && (
+//           <div className="flex justify-center items-center py-8">
+//             <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+//             <span className="ml-2">Loading nutrition plans...</span>
+//           </div>
+//         )}
+
 //         {/* Search Bar */}
 //         <div className="relative">
 //           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -145,22 +146,23 @@
 //             value={searchQuery}
 //             onChange={(e) => setSearchQuery(e.target.value)}
 //             className="w-full pl-12 bg-[#111111] border border-[#2a2a2a] rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+//             disabled={loading}
 //           />
 //         </div>
 
 //         {/* Day Type Tabs */}
-//         <div className="flex gap-3">
+//         <div className="flex gap-3 flex-wrap">
 //           {dayTypes.map((dayType) => (
 //             <button
-//               key={dayType}
-//               onClick={() => setActiveDay(dayType)}
-//               className={`px-6 py-3 rounded-full font-medium transition-all text-sm ${
-//                 activeDay === dayType
-//                   ? "bg-[#4f961f] hover:bg-[#3c7913]"
-//                   : "bg-transparent border border-gray-600 hover:bg-gray-800"
-//               }`}
+//               key={dayType.value}
+//               onClick={() => setActiveDay(dayType.value)}
+//               disabled={loading}
+//               className={`px-6 py-3 rounded-full font-medium transition-all text-sm ${activeDay === dayType.value
+//                 ? "bg-[#4f961f] hover:bg-[#3c7913]"
+//                 : "bg-transparent border border-gray-600 hover:bg-gray-800"
+//                 } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
 //             >
-//               {dayType}
+//               {dayType.label}
 //             </button>
 //           ))}
 //         </div>
@@ -172,7 +174,8 @@
 //               setEditingMeal(null);
 //               setShowMealModal(true);
 //             }}
-//             className="bg-transparent border border-green-500 text-green-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 font-medium transition-colors"
+//             disabled={loading}
+//             className="bg-transparent border border-green-500 text-green-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 //           >
 //             + Add More
 //           </button>
@@ -180,56 +183,54 @@
 
 //         {/* Macro Summary */}
 //         <div className="space-y-4">
-//           <h2 className="text-3xl font-bold">Macro Summary</h2>
+//           <h2 className="text-3xl font-bold">
+//             {activeDay === "All" ? "Total" : activeDay.charAt(0).toUpperCase() + activeDay.slice(1)} Macro Summary
+//           </h2>
 
 //           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 //             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
 //               <h3 className="mb-2 text-emerald-400">Calories</h3>
 //               <p className="text-xl">
-//                 Total: {macroSummary.calories.toLocaleString()} kcal
+//                 {activeDay === "All"
+//                   ? totals.totalCalories.toLocaleString()
+//                   : macroSummary.calories.toLocaleString()} kcal
 //               </p>
 //             </div>
 
 //             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-//               <h3 className=" mb-2 text-blue-400">Protein</h3>
-//               <p className="text-xl ">
-//                 Total: {macroSummary.protein}g (
-//                 {macroSummary.mealCount > 0
-//                   ? Math.round(macroSummary.protein / macroSummary.mealCount)
-//                   : 0}{" "}
-//                 x {macroSummary.mealCount})
-//               </p>
-//             </div>
-
-//             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-//               <h3 className="text-gray-400  mb-2 text-yellow-400">Carbs</h3>
+//               <h3 className="mb-2 text-blue-400">Protein</h3>
 //               <p className="text-xl">
-//                 Total: {macroSummary.carbs}g (
-//                 {macroSummary.mealCount > 0
-//                   ? Math.round(macroSummary.carbs / macroSummary.mealCount)
-//                   : 0}{" "}
-//                 x {macroSummary.mealCount})
+//                 {activeDay === "All" ? totals.totalProtein.toFixed(1) : macroSummary.protein.toFixed(1)}g
+//               </p>
+//             </div>
+
+//             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
+//               <h3 className="mb-2 text-yellow-400">Carbs</h3>
+//               <p className="text-xl">
+//                 {activeDay === "All" ? totals.totalCarbs.toFixed(1) : macroSummary.carbs.toFixed(1)}g
 //               </p>
 //             </div>
 
 //             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
 //               <h3 className="text-orange-400 mb-2">Fats</h3>
 //               <p className="text-xl">
-//                 Total: {macroSummary.fats}g (
-//                 {macroSummary.mealCount > 0
-//                   ? Math.round(macroSummary.fats / macroSummary.mealCount)
-//                   : 0}{" "}
-//                 x {macroSummary.mealCount})
+//                 {activeDay === "All" ? totals.totalFats.toFixed(1) : macroSummary.fats.toFixed(1)}g
 //               </p>
 //             </div>
 //           </div>
+//         </div>
+
+//         {/* Meal Count */}
+//         <div className="text-sm text-gray-400">
+//           Showing {activeDayMeals.length} meal{activeDayMeals.length !== 1 ? 's' : ''}
+//           {activeDay !== "All" && ` for ${activeDay}`}
 //         </div>
 
 //         {/* Meal Cards */}
 //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 //           {activeDayMeals.map((meal) => (
 //             <div
-//               key={meal.id}
+//               key={meal._id}
 //               className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#222233] rounded-lg overflow-hidden"
 //             >
 //               <div className="p-6 space-y-4">
@@ -241,34 +242,35 @@
 //                         {meal.time}
 //                       </span>
 //                       <h3 className="text-xl font-bold flex items-center gap-2">
-//                         {meal.mealsName}
+//                         {meal.mealName}
 //                         <span
-//                           className={`px-3 py-1 rounded-full text-xs font-medium ${
-//                             meal.day === "Training Day"
-//                               ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700/50"
-//                               : meal.day === "Rest Day"
+//                           className={`px-3 py-1 rounded-full text-xs font-medium ${meal.trainingDay === "training day"
+//                             ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700/50"
+//                             : meal.trainingDay === "rest day"
 //                               ? "bg-gray-800/30 text-gray-300 border border-gray-700/50"
 //                               : "bg-purple-900/30 text-purple-300 border border-purple-700/50"
-//                           }`}
+//                             }`}
 //                         >
-//                           {meal.day}
+//                           {meal.trainingDay === "training day" ? "Training Day" : meal.trainingDay === "rest day" ? "Rest Day" : "Special Day"}
 //                         </span>
 //                       </h3>
 //                     </div>
 //                     <p className="text-sm text-emerald-400">
-//                       {meal.calories} kcal
+//                       {(meal.totalCalories || 0).toLocaleString()} kcal
 //                     </p>
 //                   </div>
 //                   <div className="flex gap-2 flex-shrink-0">
 //                     <button
 //                       onClick={() => handleEditMeal(meal)}
-//                       className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all"
+//                       disabled={loading}
+//                       className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 //                     >
 //                       <Pencil className="w-4 h-4 text-blue-400" />
 //                     </button>
 //                     <button
-//                       onClick={() => handleDeleteClick(meal.id)}
-//                       className="w-10 h-10 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all"
+//                       onClick={() => handleDeleteClick(meal._id)}
+//                       disabled={loading}
+//                       className="w-10 h-10 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 //                     >
 //                       <Trash2 className="w-4 h-4 text-red-400" />
 //                     </button>
@@ -276,25 +278,27 @@
 //                 </div>
 
 //                 {/* Macros */}
-//                 <div className="flex gap-2">
+//                 <div className="flex gap-2 flex-wrap">
 //                   <span className="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">
-//                     P: {meal.protein}g
+//                     P: {(meal.totalProtein || 0).toFixed(1)}g
 //                   </span>
 //                   <span className="bg-yellow-600/20 text-yellow-400 text-xs px-3 py-1 rounded-full">
-//                     C: {meal.carbs}g
+//                     C: {(meal.totalCarbs || 0).toFixed(1)}g
 //                   </span>
 //                   <span className="bg-orange-600/20 text-orange-400 text-xs px-3 py-1 rounded-full">
-//                     F: {meal.fats}g
+//                     F: {(meal.totalFats || 0).toFixed(1)}g
 //                   </span>
 //                 </div>
 
 //                 {/* Food Items */}
 //                 <div className="pt-4 border-t border-[#2a2a2a]">
 //                   <div className="space-y-2">
-//                     {meal.foodItems.map((item, index) => (
+//                     {meal.food.map((item, index) => (
 //                       <div key={index} className="flex items-center gap-2">
 //                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-//                         <span className="text-sm text-gray-300">{item}</span>
+//                         <span className="text-sm text-gray-300">
+//                           {item.foodName} ({item.quantity}g)
+//                         </span>
 //                       </div>
 //                     ))}
 //                   </div>
@@ -304,10 +308,10 @@
 //           ))}
 //         </div>
 
-//         {activeDayMeals.length === 0 && (
+//         {!loading && activeDayMeals.length === 0 && (
 //           <div className="text-center py-12">
 //             <p className="text-gray-500 text-lg">
-//               No meals added for {activeDay} yet.
+//               No meals added for {activeDay === "All" ? "any day" : dayTypes.find(d => d.value === activeDay)?.label} yet.
 //             </p>
 //             <button
 //               onClick={() => {
@@ -331,7 +335,8 @@
 //         }}
 //         onSave={handleSaveMeal}
 //         editingMeal={editingMeal}
-//         currentDay={activeDay}
+//         currentDay={activeDay === "All" ? "training day" : activeDay}
+//         loading={loading || isProcessing}
 //       />
 
 //       <DeleteModal
@@ -345,57 +350,44 @@
 //   );
 // }
 
+
+
+
+
+
+
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Pencil, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 import AddModal from "./AddModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/redux/store";
-
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  getMealPlansByAthleteId,
-  createMealPlan,
-  updateMealPlan,
-  deleteMealPlan,
-  clearMealPlanError,
-  clearMealPlanSuccess,
-  setFilterDay,
-  normalizeTrainingDay,
-  MealPlanWithTotals,
-} from "@/redux/features/mealPlan/mealplanSlice";
+  fetchNutritionPlans,
+  addNutritionPlan,
+  updateNutritionPlan,
+  deleteNutritionPlan,
+  clearMessages,
+} from "@/redux/features/tab/oneNutritionPlanSlice";
+import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
 
-// Types
-type DayType = "training day" | "rest day" | "special day" | "All";
-
-interface FoodItem {
-  foodName: string;
-  quantity: number;
+interface NutritionTabProps {
+  athleteId: string;
 }
 
-interface MealData {
-  id: string;
-  mealName: string;
-  food: FoodItem[];
-  time: string;
-  day: DayType;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  foodItems: string[];
-}
+export default function NutritionTab({ athleteId }: NutritionTabProps) {
+  const dispatch = useAppDispatch();
+  const { plans, totals, loading, error, successMessage } = useAppSelector(
+    (state) => state.oneNutritionPlan
+  );
 
-export default function NutritionTab({ athleteId }: { athleteId: string }) {
-  const dispatch = useDispatch<AppDispatch>();
-  const { mealPlans, loading, error, successMessage, totals, filterDay } =
-    useSelector((state: RootState) => state.mealPlan);
-
-  const [activeDay, setActiveDay] = useState<DayType>("training day");
+  const [activeDay, setActiveDay] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [showMealModal, setShowMealModal] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<MealData | null>(null);
+  const [editingMeal, setEditingMeal] = useState<NutritionPlan | null>(null);
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     id: string | null;
@@ -404,50 +396,48 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
     id: null,
   });
 
-  // Fetch meal plans on component mount and when athleteId changes
-  useEffect(() => {
+  // Refetch function
+  const refetchPlans = useCallback(() => {
     if (athleteId) {
-      dispatch(getMealPlansByAthleteId(athleteId));
+      dispatch(fetchNutritionPlans(athleteId));
     }
   }, [dispatch, athleteId]);
 
-  // Clear messages after 3 seconds
+  // Fetch plans on mount and when athleteId changes
   useEffect(() => {
-    if (error || successMessage) {
-      const timer = setTimeout(() => {
-        if (error) dispatch(clearMealPlanError());
-        if (successMessage) dispatch(clearMealPlanSuccess());
-      }, 3000);
-      return () => clearTimeout(timer);
+    refetchPlans();
+  }, [refetchPlans]);
+
+  // Handle success/error messages
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearMessages());
     }
   }, [error, successMessage, dispatch]);
 
-  // Filter meal plans based on active day
-  const filteredMealPlans = mealPlans.filter((plan) => {
-    if (filterDay === "All") return true;
-    return normalizeTrainingDay(plan.trainingDay) === filterDay;
-  });
+  // Filter meals based on active day and search
+  const activeDayMeals = plans.filter(
+    (meal) =>
+      (activeDay === "All" || meal.trainingDay === activeDay) &&
+      (meal.mealName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        meal.food.some((f) =>
+          f.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+  );
 
-  // Convert backend data to frontend format
-  const convertToMealData = (plan: MealPlanWithTotals): MealData => {
-    return {
-      id: plan._id,
-      mealName: plan.mealName,
-      food: plan.food,
-      time: plan.time,
-      day: normalizeTrainingDay(plan.trainingDay) as DayType,
-      calories: plan.totalCalories || 0,
-      protein: plan.totalProtein || 0,
-      carbs: plan.totalCarbs || 0,
-      fats: plan.totalFats || 0,
-      foodItems: plan.food.map(
-        (item: FoodItem) => `${item.foodName} (${item.quantity}g)`
-      ),
-    };
+  // Calculate macro summary for active day
+  const macroSummary = {
+    calories: activeDayMeals.reduce((sum, meal) => sum + (meal.totalCalories || 0), 0),
+    protein: activeDayMeals.reduce((sum, meal) => sum + (meal.totalProtein || 0), 0),
+    carbs: activeDayMeals.reduce((sum, meal) => sum + (meal.totalCarbs || 0), 0),
+    fats: activeDayMeals.reduce((sum, meal) => sum + (meal.totalFats || 0), 0),
+    mealCount: activeDayMeals.length,
   };
-
-  // Convert filtered backend plans to MealData format
-  const activeDayMeals = filteredMealPlans.map(convertToMealData);
 
   const handleDeleteClick = (id: string) => {
     setDeleteModal({ isOpen: true, id });
@@ -456,116 +446,65 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
   const handleDeleteConfirm = async () => {
     if (deleteModal.id && athleteId) {
       try {
-        await dispatch(
-          deleteMealPlan({
-            athleteId,
-            planId: deleteModal.id,
-          })
-        ).unwrap();
-      } catch (err) {
-        console.error("Failed to delete meal plan:", err);
+        await dispatch(deleteNutritionPlan({
+          planId: deleteModal.id,
+          athleteId
+        })).unwrap();
+        toast.success("Meal deleted successfully");
+      } catch (error) {
+        toast.error("Failed to delete meal");
       }
     }
     setDeleteModal({ isOpen: false, id: null });
   };
 
-  const handleEditMeal = (meal: MealData) => {
+  const handleEditMeal = (meal: NutritionPlan) => {
     setEditingMeal(meal);
     setShowMealModal(true);
   };
 
-  const handleSaveMeal = async (mealData: MealData) => {
-    if (!athleteId) return;
-
-    const mealPlanData = {
-      mealName: mealData.mealName,
-      food: mealData.food.map((item) => ({
-        foodName: item.foodName,
-        quantity:
-          typeof item.quantity === "string"
-            ? parseInt(item.quantity) || 0
-            : item.quantity,
-      })),
-      time: mealData.time,
-      trainingDay: mealData.day,
-    };
-
+  const handleSaveMeal = async (mealData: any) => {
     try {
       if (editingMeal) {
-        // Update existing meal
         await dispatch(
-          updateMealPlan({
+          updateNutritionPlan({
+            planId: editingMeal._id,
             athleteId,
-            planId: editingMeal.id,
-            data: mealPlanData,
+            data: mealData,
           })
         ).unwrap();
+        toast.success("Meal updated successfully");
+        setEditingMeal(null);
       } else {
-        // Create new meal
-        await dispatch(
-          createMealPlan({
-            athleteId,
-            data: mealPlanData,
-          })
-        ).unwrap();
+        await dispatch(addNutritionPlan({ athleteId, data: mealData })).unwrap();
+        toast.success("Meal added successfully");
       }
       setShowMealModal(false);
-      setEditingMeal(null);
-    } catch (err) {
-      console.error("Failed to save meal plan:", err);
+    } catch (error) {
+      toast.error("Failed to save meal");
     }
   };
 
-  const handleDayChange = (dayType: DayType) => {
-    setActiveDay(dayType);
-    dispatch(setFilterDay(dayType === "All" ? "All" : dayType));
-  };
-
-  const dayTypes: DayType[] = [
-    "training day",
-    "rest day",
-    "special day",
-    "All",
+  const dayTypes = [
+    { label: "All", value: "All" },
+    { label: "Training Day", value: "training day" },
+    { label: "Rest Day", value: "rest day" },
+    { label: "Special Day", value: "special day" },
   ];
-
-  const dayDisplayNames: Record<DayType, string> = {
-    "training day": "Training Day",
-    "rest day": "Rest Day",
-    "special day": "Special Day",
-    All: "All Days",
-  };
-
-  const getDayBadgeColor = (day: DayType) => {
-    if (day === "training day") return "bg-emerald-500";
-    if (day === "rest day") return "bg-gray-500";
-    if (day === "special day") return "bg-purple-500";
-    return "bg-blue-500";
-  };
-
-  // Calculate macro summary from filtered plans
-  const macroSummary = {
-    calories: activeDayMeals.reduce((sum, meal) => sum + meal.calories, 0),
-    protein: activeDayMeals.reduce((sum, meal) => sum + meal.protein, 0),
-    carbs: activeDayMeals.reduce((sum, meal) => sum + meal.carbs, 0),
-    fats: activeDayMeals.reduce((sum, meal) => sum + meal.fats, 0),
-    mealCount: activeDayMeals.length,
-  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
-      {/* Error and Success Messages */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-300">
-          {error}
-        </div>
-      )}
-      {successMessage && (
-        <div className="mb-4 p-3 bg-emerald-500/20 border border-emerald-500 rounded-lg text-emerald-300">
-          {successMessage}
-        </div>
-      )}
-
       <div className="space-y-8">
+        {/* Loading State */}
+        {loading && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-[#1a1a2e] p-6 rounded-lg flex flex-col items-center">
+              <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
+              <span className="text-gray-300">Loading...</span>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -575,6 +514,7 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 bg-[#111111] border border-[#2a2a2a] rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+            disabled={loading}
           />
         </div>
 
@@ -582,15 +522,15 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
         <div className="flex gap-3 flex-wrap">
           {dayTypes.map((dayType) => (
             <button
-              key={dayType}
-              onClick={() => handleDayChange(dayType)}
-              className={`px-6 py-3 rounded-full font-medium transition-all text-sm ${
-                activeDay === dayType
-                  ? "bg-[#4f961f] hover:bg-[#3c7913]"
-                  : "bg-transparent border border-gray-600 hover:bg-gray-800"
-              }`}
+              key={dayType.value}
+              onClick={() => setActiveDay(dayType.value)}
+              disabled={loading}
+              className={`px-6 py-3 rounded-full font-medium transition-all text-sm ${activeDay === dayType.value
+                ? "bg-[#4f961f] hover:bg-[#3c7913]"
+                : "bg-transparent border border-gray-600 hover:bg-gray-800"
+                } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {dayDisplayNames[dayType]}
+              {dayType.label}
             </button>
           ))}
         </div>
@@ -602,151 +542,144 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
               setEditingMeal(null);
               setShowMealModal(true);
             }}
-            className="bg-transparent border border-green-500 text-green-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 font-medium transition-colors"
             disabled={loading}
+            className="bg-transparent border border-green-500 text-green-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Loading..." : "+ Add More"}
+            + Add More
           </button>
         </div>
 
         {/* Macro Summary */}
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold">Macro Summary</h2>
+          <h2 className="text-3xl font-bold">
+            {activeDay === "All" ? "Total" : activeDay.charAt(0).toUpperCase() + activeDay.slice(1)} Macro Summary
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
               <h3 className="mb-2 text-emerald-400">Calories</h3>
               <p className="text-xl">
-                Total: {macroSummary.calories.toLocaleString()} kcal
-              </p>
-              <p className="text-sm text-gray-400">
-                Daily: {totals.totalCalories.toLocaleString()} kcal
+                {activeDay === "All"
+                  ? totals.totalCalories.toLocaleString()
+                  : macroSummary.calories.toLocaleString()} kcal
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
               <h3 className="mb-2 text-blue-400">Protein</h3>
-              <p className="text-xl">Total: {macroSummary.protein}g</p>
-              <p className="text-sm text-gray-400">
-                Daily: {totals.totalProtein}g
+              <p className="text-xl">
+                {activeDay === "All" ? totals.totalProtein.toFixed(1) : macroSummary.protein.toFixed(1)}g
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
               <h3 className="mb-2 text-yellow-400">Carbs</h3>
-              <p className="text-xl">Total: {macroSummary.carbs}g</p>
-              <p className="text-sm text-gray-400">
-                Daily: {totals.totalCarbs}g
+              <p className="text-xl">
+                {activeDay === "All" ? totals.totalCarbs.toFixed(1) : macroSummary.carbs.toFixed(1)}g
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
               <h3 className="text-orange-400 mb-2">Fats</h3>
-              <p className="text-xl">Total: {macroSummary.fats}g</p>
-              <p className="text-sm text-gray-400">
-                Daily: {totals.totalFats}g
+              <p className="text-xl">
+                {activeDay === "All" ? totals.totalFats.toFixed(1) : macroSummary.fats.toFixed(1)}g
               </p>
             </div>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-            <p className="mt-4 text-gray-400">Loading meal plans...</p>
-          </div>
-        )}
+        {/* Meal Count */}
+        <div className="text-sm text-gray-400">
+          Showing {activeDayMeals.length} meal{activeDayMeals.length !== 1 ? 's' : ''}
+          {activeDay !== "All" && ` for ${activeDay}`}
+        </div>
 
         {/* Meal Cards */}
-        {!loading && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {activeDayMeals.map((meal) => (
-              <div
-                key={meal.id}
-                className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#222233] rounded-lg overflow-hidden"
-              >
-                <div className="p-6 space-y-4">
-                  {/* Meal Header */}
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="bg-emerald-600/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium">
-                          {meal.time}
-                        </span>
-                        <h3 className="text-xl font-bold flex items-center gap-2">
-                          {meal.mealName}
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              meal.day === "training day"
-                                ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700/50"
-                                : meal.day === "rest day"
-                                ? "bg-gray-800/30 text-gray-300 border border-gray-700/50"
-                                : "bg-purple-900/30 text-purple-300 border border-purple-700/50"
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {activeDayMeals.map((meal) => (
+            <div
+              key={meal._id}
+              className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#222233] rounded-lg overflow-hidden"
+            >
+              <div className="p-6 space-y-4">
+                {/* Meal Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-emerald-600/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium">
+                        {meal.time}
+                      </span>
+                      <h3 className="text-xl font-bold flex items-center gap-2">
+                        {meal.mealName}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${meal.trainingDay === "training day"
+                            ? "bg-emerald-900/30 text-emerald-300 border border-emerald-700/50"
+                            : meal.trainingDay === "rest day"
+                              ? "bg-gray-800/30 text-gray-300 border border-gray-700/50"
+                              : "bg-purple-900/30 text-purple-300 border border-purple-700/50"
                             }`}
-                          >
-                            {dayDisplayNames[meal.day]}
-                          </span>
-                        </h3>
+                        >
+                          {meal.trainingDay === "training day" ? "Training Day" : meal.trainingDay === "rest day" ? "Rest Day" : "Special Day"}
+                        </span>
+                      </h3>
+                    </div>
+                    <p className="text-sm text-emerald-400">
+                      {(meal.totalCalories || 0).toLocaleString()} kcal
+                    </p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleEditMeal(meal)}
+                      disabled={loading}
+                      className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Pencil className="w-4 h-4 text-blue-400" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(meal._id)}
+                      disabled={loading}
+                      className="w-10 h-10 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Macros */}
+                <div className="flex gap-2 flex-wrap">
+                  <span className="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">
+                    P: {(meal.totalProtein || 0).toFixed(1)}g
+                  </span>
+                  <span className="bg-yellow-600/20 text-yellow-400 text-xs px-3 py-1 rounded-full">
+                    C: {(meal.totalCarbs || 0).toFixed(1)}g
+                  </span>
+                  <span className="bg-orange-600/20 text-orange-400 text-xs px-3 py-1 rounded-full">
+                    F: {(meal.totalFats || 0).toFixed(1)}g
+                  </span>
+                </div>
+
+                {/* Food Items */}
+                <div className="pt-4 border-t border-[#2a2a2a]">
+                  <div className="space-y-2">
+                    {meal.food.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                        <span className="text-sm text-gray-300">
+                          {item.foodName} ({item.quantity}g)
+                        </span>
                       </div>
-                      <p className="text-sm text-emerald-400">
-                        {meal.calories} kcal
-                      </p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEditMeal(meal)}
-                        className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all"
-                        disabled={loading}
-                      >
-                        <Pencil className="w-4 h-4 text-blue-400" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(meal.id)}
-                        className="w-10 h-10 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all"
-                        disabled={loading}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Macros */}
-                  <div className="flex gap-2">
-                    <span className="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">
-                      P: {meal.protein}g
-                    </span>
-                    <span className="bg-yellow-600/20 text-yellow-400 text-xs px-3 py-1 rounded-full">
-                      C: {meal.carbs}g
-                    </span>
-                    <span className="bg-orange-600/20 text-orange-400 text-xs px-3 py-1 rounded-full">
-                      F: {meal.fats}g
-                    </span>
-                  </div>
-
-                  {/* Food Items */}
-                  <div className="pt-4 border-t border-[#2a2a2a]">
-                    <div className="space-y-2">
-                      {meal.food.map((item, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                          <span className="text-sm text-gray-300">
-                            {item.foodName} ({item.quantity}g)
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
         {!loading && activeDayMeals.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
-              No meals added for {dayDisplayNames[activeDay]} yet.
+              No meals added for {activeDay === "All" ? "any day" : dayTypes.find(d => d.value === activeDay)?.label} yet.
             </p>
             <button
               onClick={() => {
@@ -754,7 +687,6 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
                 setShowMealModal(true);
               }}
               className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              disabled={loading}
             >
               Add Your First Meal
             </button>
@@ -771,7 +703,7 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
         }}
         onSave={handleSaveMeal}
         editingMeal={editingMeal}
-        currentDay={activeDay}
+        currentDay={activeDay === "All" ? "training day" : activeDay}
         loading={loading}
       />
 
@@ -781,7 +713,6 @@ export default function NutritionTab({ athleteId }: { athleteId: string }) {
         message="Are you sure you want to delete this meal? This action cannot be undone."
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModal({ isOpen: false, id: null })}
-        // loading={loading}
       />
     </div>
   );

@@ -4,7 +4,7 @@ export interface EnergyAndWellBeing {
   muscelLevel: number;
   mood: number;
   motivation: number;
-  bodyTemperature: number;
+  bodyTemperature: string | number;
 }
 
 export interface Training {
@@ -26,10 +26,15 @@ export interface Nutrition {
 }
 
 export interface BloodPressure {
-  systolic: number;
-  diastolic: number;
-  restingHeartRate: number;
-  bloodGlucose: number;
+  systolic: string | number;
+  diastolic: string | number;
+  restingHeartRate: string | number;
+  bloodGlucose: string | number;
+}
+
+export interface Ped {
+  dailyDosage: string;
+  sideEffect: string;
 }
 
 export interface Woman {
@@ -55,6 +60,7 @@ export interface WeekItem {
   nutrition: Nutrition;
   woman: Woman;
   bloodPressure: BloodPressure;
+  ped: Ped;
   dailyNotes: string;
   day: string;
 }

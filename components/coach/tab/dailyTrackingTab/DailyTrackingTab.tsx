@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
+import { Loader2, ChevronDown } from "lucide-react";
 
 const CalendarIcon = () => (
   <svg
@@ -22,14 +26,6 @@ const CalendarIcon = () => (
 );
 
 type CellType = "text" | "number" | "dropdown" | "input" | "read-only";
-type ColorVariant =
-  | "default"
-  | "purple"
-  | "green"
-  | "orange"
-  | "yellow"
-  | "red"
-  | "dark";
 
 interface RowData {
   id: string;
@@ -47,530 +43,6 @@ interface SectionData {
   title: string;
   rows: RowData[];
 }
-
-// --- Mock Data Construction (Matching Image) ---
-
-const HEADER_DATES = [
-  "MO.13/1/25",
-  "DI.13/1/25",
-  "MI.13/1/25",
-  "DO.13/1/25",
-  "FR.13/1/25",
-  "SA.13/1/25",
-  "SO.13/1/25",
-];
-
-const DATA_SECTIONS: SectionData[] = [
-  {
-    title: "", // Top section (Weight)
-    rows: [
-      {
-        id: "weight",
-        label: "WEIGHT",
-        unit: "(kg)",
-        type: "read-only",
-        values: ["80.3", "80.3", "80.3", "80.3", "80.3", "80.3", "80.3"],
-        average: "80.3",
-        rowColor: "#593C62", // Purple background from image
-      },
-    ],
-  },
-  {
-    title: "Nutrition & Digestion",
-    rows: [
-      {
-        id: "cal",
-        label: "CALORIE",
-        type: "read-only",
-        values: [2471, 2471, 2471, 2471, 2471, 2471, 2471],
-        average: 2471,
-      },
-      {
-        id: "e",
-        label: "E",
-        unit: "(g)",
-        type: "read-only",
-        values: [244, 244, 244, 244, 244, 244, 244],
-        average: 244,
-        rowColor: "#593C62",
-      },
-      {
-        id: "k",
-        label: "K",
-        unit: "(g)",
-        type: "read-only",
-        values: [241, 241, 241, 241, 241, 241, 241],
-        average: 241,
-      },
-      {
-        id: "f",
-        label: "F",
-        unit: "(g)",
-        type: "read-only",
-        values: [60, 60, 60, 60, 60, 60, 60],
-        average: 60,
-        rowColor: "#593C62",
-      },
-      {
-        id: "salt",
-        label: "Salt",
-        unit: "(g)",
-        type: "read-only",
-        values: [60, 60, 60, 60, 60, "", ""], // Empty for Sat/Sun in image
-        average: "",
-      },
-      {
-        id: "hunger",
-        label: "HUNGER",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#D97706",
-          "#D97706",
-          "#B45309",
-          "#EAB308",
-          "#EAB308",
-          "#EAB308",
-          "#EAB308",
-        ], // Orange/Yellow mix
-      },
-      {
-        id: "digestion",
-        label: "Digestion",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#D97706",
-          "#D97706",
-          "#B45309",
-          "#EAB308",
-          "#EAB308",
-          "#EAB308",
-          "#EAB308",
-        ],
-      },
-    ],
-  },
-  {
-    title: "ACTIVITY",
-    rows: [
-      {
-        id: "steps",
-        label: "Steps",
-        type: "read-only",
-        values: [3000, 3000, 3000, 3000, 3000, 3000, 3000],
-        average: 3000,
-      },
-      {
-        id: "cardio",
-        label: "CARDIO",
-        unit: "(min)",
-        type: "read-only",
-        values: [0, 0, 0, 0, 0, 0, 0],
-        average: 0,
-        rowColor: "#593C62",
-      },
-      {
-        id: "training",
-        label: "TRAINING",
-        type: "text",
-        values: ["", "", "", "PULL FULL BODY", "PULL FULL BODY", "", ""],
-        average: "",
-      },
-    ],
-  },
-  {
-    title: "Sleep",
-    rows: [
-      {
-        id: "sleep_dur",
-        label: "Sleep duration",
-        subLabel: "subjective perception",
-        type: "text",
-        values: [
-          "8:15",
-          "8:15",
-          "8:15",
-          "8:15",
-          "8:15",
-          "8:15",
-          "8:15",
-          "8:15",
-        ],
-        average: "8:15",
-      },
-      {
-        id: "sleep_qual",
-        label: "Sleep quality",
-        type: "text",
-        values: [9, 9, 9, 9, 9, 9, 9],
-        average: 9,
-        rowColor: "#593C62",
-      },
-    ],
-  },
-  {
-    title: "Sick",
-    rows: [
-      {
-        id: "sickness",
-        label: "Sickness",
-        subLabel: "YES / NO",
-        type: "dropdown",
-        values: ["YES", "YES", "YES", "YES", "YES", "YES", "YES"],
-        average: 4,
-        cellColors: [
-          "#B45309",
-          "#B45309",
-          "#B45309",
-          "#B45309",
-          "#4d7c0f",
-          "#B45309",
-          "#4d7c0f",
-        ], // Matching image colors roughly
-      },
-    ],
-  },
-  {
-    title: "Well-Being",
-    rows: [
-      {
-        id: "mood",
-        label: "Mood",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#D97706",
-          "#B45309",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#B45309",
-          "#B45309",
-        ],
-      },
-      {
-        id: "motivation",
-        label: "Motivation",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#D97706",
-          "#B45309",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#B45309",
-          "#B45309",
-        ],
-      },
-      {
-        id: "energy",
-        label: "ENERGY",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#D97706",
-          "#B45309",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#B45309",
-          "#B45309",
-        ],
-      },
-      {
-        id: "muscle",
-        label: "Muscle ache",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#EAB308",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#EAB308",
-          "#4d7c0f",
-          "#4d7c0f",
-        ],
-      },
-      {
-        id: "stress",
-        label: "STRESS",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#EAB308",
-          "#15803d",
-          "#15803d",
-          "#EAB308",
-          "#4d7c0f",
-          "#EAB308",
-          "#4d7c0f",
-        ],
-      },
-    ],
-  },
-  {
-    title: "Training Plan",
-    rows: [
-      {
-        id: "tr_comp",
-        label: "Training Completed",
-        type: "text",
-        values: ["Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"],
-        average: 9,
-      },
-      {
-        id: "tr_plan",
-        label: "Training Plan",
-        type: "text",
-        values: [
-          "Push Fullbody",
-          "Push Fullbody",
-          "Leg Day Advanced",
-          "Push Fullbody",
-          "Push Fullbody",
-          "Push Fullbody",
-          "Push Fullbody",
-        ],
-        average: 9,
-      },
-      {
-        id: "cardio_comp",
-        label: "Cardio Completed",
-        type: "text",
-        values: ["Yes", "Yes", "No", "Yes", "No", "No", "No"],
-        average: 9,
-      },
-      {
-        id: "cardio_type",
-        label: "Cardio Type",
-        type: "text",
-        values: [
-          "Cycling",
-          "Walking",
-          "Cycling",
-          "Cycling",
-          "Walking",
-          "Walking",
-          "Cycling",
-        ],
-        average: 9,
-      },
-      {
-        id: "duration",
-        label: "Duration",
-        type: "text",
-        values: [
-          "4 (min)",
-          "4 (min)",
-          "4 (min)",
-          "4 (min)",
-          "4 (min)",
-          "4 (min)",
-          "4 (min)",
-        ],
-        average: 9,
-      },
-    ],
-  },
-  {
-    title: "Women",
-    rows: [
-      {
-        id: "cycle_phase",
-        label: "Cycle Phase",
-        type: "text",
-        values: [
-          "ovulation",
-          "Follicular",
-          "ovulation",
-          "luteal",
-          "menstruation",
-          "menstruation",
-          "luteal",
-        ],
-        average: 9,
-      },
-      {
-        id: "cycle_day",
-        label: "Cycle day",
-        type: "text",
-        values: [
-          "Sunday",
-          "Sunday",
-          "Sunday",
-          "Sunday",
-          "Sunday",
-          "Sunday",
-          "Sunday",
-        ],
-        average: 9,
-      },
-      {
-        id: "pms",
-        label: "PMS symptoms",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#B45309",
-          "#D97706",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#B45309",
-          "#EAB308",
-        ],
-      },
-      {
-        id: "cramps",
-        label: "Cramps",
-        subLabel: "SCALR 1-10",
-        type: "dropdown",
-        values: [4, 4, 4, 4, 4, 4, 4],
-        average: 4,
-        cellColors: [
-          "#B45309",
-          "#D97706",
-          "#EAB308",
-          "#EAB308",
-          "#B45309",
-          "#B45309",
-          "#EAB308",
-        ],
-      },
-      {
-        id: "symptoms",
-        label: "Symptoms",
-        type: "text",
-        values: [
-          "cravings",
-          "everything fine",
-          "cramps",
-          "vaginal dryness",
-          "Acne",
-          "Tiredness",
-          "Sleepless",
-        ],
-        average: 9,
-      },
-    ],
-  },
-  {
-    title: "PEDs",
-    rows: [
-      {
-        id: "dosage",
-        label: "Daily dosage taken",
-        type: "text",
-        values: ["Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"],
-        average: 9,
-      },
-      {
-        id: "side_effects",
-        label: "Side effects notes",
-        type: "text",
-        values: [
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-        ],
-        average: 9,
-      },
-    ],
-  },
-  {
-    title: "Everyone",
-    rows: [
-      {
-        id: "bp",
-        label: "Blood pressure",
-        type: "text",
-        values: [
-          "systolic (120 Mmhg)",
-          "systolic (120 Mmhg)",
-          "systolic (120 Mmhg)",
-          "Diastolic 80 (Mmhg)",
-          "Diastolic 80 (Mmhg)",
-          "Diastolic 80 (Mmhg)",
-          "Diastolic 80 (Mmhg)",
-        ],
-        average: 9,
-      },
-      {
-        id: "rhr",
-        label: "Resting heart rate",
-        type: "text",
-        values: [
-          "60-100",
-          "60-100",
-          "60-100",
-          "60-100",
-          "60-100",
-          "60-100",
-          "60-100",
-        ],
-        average: 9,
-      },
-      {
-        id: "glucose",
-        label: "Blood glucose",
-        type: "text",
-        values: [
-          "70-140 (mg)",
-          "70-140 (mg)",
-          "70-140 (mg)",
-          "70-140 (mg)",
-          "70-140 (mg)",
-          "70-140 (mg)",
-          "70-140 (mg)",
-        ],
-        average: 9,
-      },
-    ],
-  },
-  {
-    title: "Daily Note",
-    rows: [
-      {
-        id: "notes",
-        label: "Daily Notes",
-        type: "text",
-        values: [
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-          "Lorem ipsum dolor",
-        ],
-        average: "",
-      },
-    ],
-  },
-];
 
 // --- Components ---
 
@@ -599,9 +71,6 @@ const DataCell = ({
   bgColor?: string;
   textColor?: string;
 }) => {
-  // If specific color is provided via props (from mock data), use it, otherwise default
-  // Note: We use inline style for dynamic hex colors not in Tailwind config
-
   const isDropdown = type === "dropdown";
 
   return (
@@ -646,9 +115,7 @@ const LabelCell = ({
 );
 
 // --- Main Dashboard Component ---
-import { useParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
+
 export default function Dashboard() {
   const params = useParams();
   const userId = params.id as string;
@@ -656,22 +123,484 @@ export default function Dashboard() {
   const { weekData, averages, loading, error } = useAppSelector(
     (state) => state.dailyTracking
   );
-  console.log(weekData);
-  console.log(averages);
+
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Generate a list of previous weeks (last 4 weeks for now)
+  const getWeekOptions = () => {
+    const options: { label: string; value: string | undefined }[] = [
+      { label: "Current Week", value: undefined }
+    ];
+    const today = new Date();
+
+    for (let i = 1; i <= 52; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (i * 7));
+      // Find the Monday of that week
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+
+      const dateStr = monday.toISOString().split('T')[0];
+      options.push({
+        label: `Week of ${monday.toLocaleDateString()}`,
+        value: dateStr
+      });
+    }
+    return options;
+  };
+
+  const weekOptions = getWeekOptions();
+
 
   useEffect(() => {
-    dispatch(fetchDailyWeekData(userId));
-  }, [dispatch, userId]);
+    if (userId) {
+      dispatch(fetchDailyWeekData({ userId, date: selectedDate }));
+    }
+  }, [dispatch, userId, selectedDate]);
+
+  // Click outside listener
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0C15] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0B0C15] flex items-center justify-center">
+        <p className="text-red-500 text-xl font-bold">{error}</p>
+      </div>
+    );
+  }
+
+  const getValues = (path: string) => {
+    return Array.from({ length: 7 }).map((_, i) => {
+      const dayData = weekData[i];
+      if (!dayData) return "";
+      const keys = path.split(".");
+      let val: any = dayData;
+      for (const key of keys) {
+        val = val?.[key];
+      }
+      // If val is null, undefined, or the string "none", return empty string
+      if (val === null || val === undefined) {
+        return "";
+      }
+      return val;
+    });
+  };
+
+  const getAverage = (path: string) => {
+    if (!averages) return "";
+    const keys = path.split(".");
+    let val: any = averages;
+    for (const key of keys) {
+      val = val?.[key];
+    }
+    // Handle null, undefined or "none" for averages
+    if (val === null || val === undefined || String(val).toLowerCase() === "none") {
+      return "";
+    }
+    return typeof val === "number" ? val.toFixed(1) : val;
+  };
+
+
+  // Reconstructing dynamic data using the EXACT original design structure
+  const dataSections: SectionData[] = [
+    {
+      title: "", // Top section (Weight)
+      rows: [
+        {
+          id: "weight",
+          label: "WEIGHT",
+          unit: "(kg)",
+          type: "read-only",
+          values: getValues("weight"),
+          average: getAverage("weight"),
+          rowColor: "#593C62",
+        },
+      ],
+    },
+    {
+      title: "Nutrition & Digestion",
+      rows: [
+        {
+          id: "cal",
+          label: "CALORIE",
+          type: "read-only",
+          values: getValues("nutrition.calories"),
+          average: getAverage("nutrition.calories"),
+        },
+        {
+          id: "e",
+          label: "E",
+          unit: "(g)",
+          type: "read-only",
+          values: getValues("nutrition.protein"),
+          average: getAverage("nutrition.protein"),
+          rowColor: "#593C62",
+        },
+        {
+          id: "k",
+          label: "K",
+          unit: "(g)",
+          type: "read-only",
+          values: getValues("nutrition.carbs"),
+          average: getAverage("nutrition.carbs"),
+        },
+        {
+          id: "f",
+          label: "F",
+          unit: "(g)",
+          type: "read-only",
+          values: getValues("nutrition.fats"),
+          average: getAverage("nutrition.fats"),
+          rowColor: "#593C62",
+        },
+        {
+          id: "salt",
+          label: "Salt",
+          unit: "(g)",
+          type: "read-only",
+          values: getValues("nutrition.salt"),
+          average: getAverage("nutrition.salt"),
+        },
+        {
+          id: "hunger",
+          label: "HUNGER",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("nutrition.hungerLevel"),
+          average: getAverage("nutrition.hungerLevel"),
+          cellColors: ["#D97706", "#D97706", "#B45309", "#EAB308", "#EAB308", "#EAB308", "#EAB308"],
+        },
+        {
+          id: "digestion",
+          label: "Digestion",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("nutrition.digestionLevel"),
+          average: getAverage("nutrition.digestionLevel"),
+          cellColors: ["#D97706", "#D97706", "#B45309", "#EAB308", "#EAB308", "#EAB308", "#EAB308"],
+        },
+      ],
+    },
+    {
+      title: "ACTIVITY",
+      rows: [
+        {
+          id: "steps",
+          label: "Steps",
+          type: "read-only",
+          values: getValues("activityStep"),
+          average: getAverage("activityStep"),
+        },
+        {
+          id: "cardio",
+          label: "CARDIO",
+          unit: "(min)",
+          type: "read-only",
+          values: getValues("training.duration"),
+          average: getAverage("training.cardioDuration"),
+          rowColor: "#593C62",
+        },
+        {
+          id: "training",
+          label: "TRAINING",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""),
+          average: "",
+        },
+      ],
+    },
+    {
+      title: "Sleep",
+      rows: [
+        {
+          id: "sleep_dur",
+          label: "Sleep duration",
+          subLabel: "subjective perception",
+          type: "text",
+          values: getValues("sleepHour"),
+          average: getAverage("sleepHour"),
+        },
+        {
+          id: "sleep_qual",
+          label: "Sleep quality",
+          type: "text",
+          values: getValues("sleepQuality"),
+          average: getAverage("sleepQuality"),
+          rowColor: "#593C62",
+        },
+      ],
+    },
+    {
+      title: "Sick",
+      rows: [
+        {
+          id: "sickness",
+          label: "Sickness",
+          subLabel: "YES / NO",
+          type: "dropdown",
+          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].sick ? "YES" : "NO") : "")),
+          average: "",
+          cellColors: ["#B45309", "#B45309", "#B45309", "#B45309", "#4d7c0f", "#B45309", "#4d7c0f"],
+        },
+      ],
+    },
+    {
+      title: "Well-Being",
+      rows: [
+        {
+          id: "mood",
+          label: "Mood",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("energyAndWellBeing.mood"),
+          average: getAverage("energyAndWellBeing.mood"),
+          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+        },
+        {
+          id: "motivation",
+          label: "Motivation",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("energyAndWellBeing.motivation"),
+          average: getAverage("energyAndWellBeing.motivation"),
+          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+        },
+        {
+          id: "energy",
+          label: "ENERGY",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("energyAndWellBeing.energyLevel"),
+          average: getAverage("energyAndWellBeing.energyLevel"),
+          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+        },
+        {
+          id: "muscle",
+          label: "Muscle ache",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("energyAndWellBeing.muscelLevel"),
+          average: getAverage("energyAndWellBeing.muscelLevel"),
+          cellColors: ["#EAB308", "#EAB308", "#EAB308", "#B45309", "#EAB308", "#4d7c0f", "#4d7c0f"],
+        },
+        {
+          id: "stress",
+          label: "STRESS",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("energyAndWellBeing.stressLevel"),
+          average: getAverage("energyAndWellBeing.stressLevel"),
+          cellColors: ["#EAB308", "#15803d", "#15803d", "#EAB308", "#4d7c0f", "#EAB308", "#4d7c0f"],
+        },
+      ],
+    },
+    {
+      title: "Training Plan",
+      rows: [
+        {
+          id: "tr_comp",
+          label: "Training Completed",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].training?.trainingCompleted ? "Yes" : "No") : "")),
+          average: "",
+        },
+        {
+          id: "tr_plan",
+          label: "Training Plan",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""),
+          average: "",
+        },
+        {
+          id: "cardio_comp",
+          label: "Cardio Completed",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].training?.cardioCompleted ? "Yes" : "No") : "")),
+          average: "",
+        },
+
+        {
+          id: "cardio_type",
+          label: "Cardio Type",
+          type: "text",
+          values: getValues("training.cardioType"),
+          average: "",
+        },
+        {
+          id: "duration",
+          label: "Duration",
+          type: "text",
+          values: getValues("training.duration"),
+          average: getAverage("training.cardioDuration"),
+        },
+      ],
+    },
+    {
+      title: "Women",
+      rows: [
+        {
+          id: "cycle_phase",
+          label: "Cycle Phase",
+          type: "text",
+          values: getValues("woman.cyclePhase"),
+          average: "",
+        },
+        {
+          id: "cycle_day",
+          label: "Cycle day",
+          type: "text",
+          values: getValues("woman.cycleDay"),
+          average: "",
+        },
+        {
+          id: "pms",
+          label: "PMS symptoms",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("woman.pmsSymptoms"),
+          average: getAverage("woman.pmsSymptoms"),
+          cellColors: ["#B45309", "#D97706", "#EAB308", "#EAB308", "#B45309", "#B45309", "#EAB308"],
+        },
+        {
+          id: "cramps",
+          label: "Cramps",
+          subLabel: "SCALR 1-10",
+          type: "dropdown",
+          values: getValues("woman.cramps"),
+          average: getAverage("woman.cramps"),
+          cellColors: ["#B45309", "#D97706", "#EAB308", "#EAB308", "#B45309", "#B45309", "#EAB308"],
+        },
+        {
+          id: "symptoms",
+          label: "Symptoms",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.woman?.symptoms?.join(", ") || ""),
+          average: "",
+        },
+      ],
+    },
+    {
+      title: "PEDs",
+      rows: [
+        {
+          id: "dosage",
+          label: "Daily dosage taken",
+          type: "text",
+          values: getValues("ped.dailyDosage"),
+          average: "",
+        },
+        {
+          id: "side_effects",
+          label: "Side effects notes",
+          type: "text",
+          values: getValues("ped.sideEffect"),
+          average: "",
+        },
+      ],
+    },
+    {
+      title: "Everyone",
+      rows: [
+        {
+          id: "bp",
+          label: "Blood pressure",
+          type: "text",
+          values: Array.from({ length: 7 }).map((_, i) => {
+            const bp = weekData[i]?.bloodPressure;
+            if (!bp) return "";
+            return `${bp.systolic}/${bp.diastolic}`;
+          }),
+          average: averages?.bloodPressure
+            ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(averages.bloodPressure.diastolic).toFixed(0)}`
+            : "",
+        },
+        {
+          id: "rhr",
+          label: "Resting heart rate",
+          type: "text",
+          values: getValues("bloodPressure.restingHeartRate"),
+          average: getAverage("bloodPressure.restingHeartRate"),
+        },
+        {
+          id: "glucose",
+          label: "Blood glucose",
+          type: "text",
+          values: getValues("bloodPressure.bloodGlucose"),
+          average: getAverage("bloodPressure.bloodGlucose"),
+        },
+      ],
+    },
+
+    {
+      title: "Daily Note",
+      rows: [
+        {
+          id: "notes",
+          label: "Daily Notes",
+          type: "text",
+          values: getValues("dailyNotes"),
+          average: "",
+        },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#0B0C15] p-6 font-sans text-white">
-      {/* Top Header Button */}
-      <div className="mb-6">
-        <button className="flex items-center gap-2 px-6 py-3 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium">
+      {/* Top Header Button with Dropdown */}
+      <div className="mb-6 relative" ref={dropdownRef}>
+        <button
+          onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+          className="flex items-center gap-2 px-6 py-3 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium"
+        >
           <CalendarIcon />
-          <span className="text-base">Calendar</span>
+          <span className="text-base">
+            {selectedDate ? `Week of ${new Date(selectedDate).toLocaleDateString()}` : "Current Week"}
+          </span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${isCalendarOpen ? 'rotate-180' : ''}`} />
         </button>
+
+        {isCalendarOpen && (
+          <div className="absolute top-full left-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+            <div className="max-h-96 overflow-y-auto custom-scrollbar">
+              {weekOptions.map((option) => (
+                <button
+                  key={option.value || 'current'}
+                  onClick={() => {
+                    setSelectedDate(option.value);
+                    setIsCalendarOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value ? 'bg-[#2B2B3D] text-emerald-500' : 'text-gray-300'
+                    }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
+
 
       {/* Main Grid Container */}
       <div className="w-full border border-gray-800 rounded-lg overflow-hidden bg-[#0B0C15]">
@@ -690,8 +619,10 @@ export default function Dashboard() {
                   TAG {i + 1}
                 </span>
               </div>
-              <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700">
-                <span className="text-gray-300 text-xs">{HEADER_DATES[i]}</span>
+              <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700 px-1">
+                <span className="text-gray-300 text-[10px] text-center">
+                  {weekData[i]?.date || `Day ${i + 1}`}
+                </span>
               </div>
             </div>
           ))}
@@ -704,7 +635,7 @@ export default function Dashboard() {
 
         {/* Data Sections */}
         <div className="flex flex-col gap-[1px] bg-[#0B0C15]">
-          {DATA_SECTIONS.map((section, secIndex) => (
+          {dataSections.map((section, secIndex) => (
             <React.Fragment key={secIndex}>
               {/* Section Title */}
               {section.title && (
@@ -726,7 +657,7 @@ export default function Dashboard() {
                     label={row.label}
                     subLabel={row.subLabel}
                     unit={row.unit}
-                    bgColor={row.rowColor ? row.rowColor + "99" : "#373745"} // Slightly transparent if colored, else grey
+                    bgColor={row.rowColor ? row.rowColor + "99" : "#373745"}
                   />
 
                   {/* Value Columns (Mon-Sun) */}
@@ -736,11 +667,11 @@ export default function Dashboard() {
                       value={val}
                       type={row.type}
                       bgColor={
-                        row.cellColors?.[i] // Use specific cell color if defined
+                        row.cellColors?.[i]
                           ? row.cellColors[i]
-                          : row.rowColor // Use row color if defined
-                          ? row.rowColor
-                          : "#2B2B3D" // Default dark cell
+                          : row.rowColor
+                            ? row.rowColor
+                            : "#2B2B3D"
                       }
                     />
                   ))}
@@ -749,7 +680,7 @@ export default function Dashboard() {
                   <DataCell
                     value={row.average ?? ""}
                     type="read-only"
-                    bgColor="#593C62" // The purple column on the right
+                    bgColor="#593C62"
                   />
                 </div>
               ))}
