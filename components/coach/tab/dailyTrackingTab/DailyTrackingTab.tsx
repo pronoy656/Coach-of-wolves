@@ -198,7 +198,7 @@ export default function Dashboard() {
         val = val?.[key];
       }
       // If val is null, undefined, or the string "none", return empty string
-      if (val === null || val === undefined || String(val).toLowerCase() === "none") {
+      if (val === null || val === undefined) {
         return "";
       }
       return val;
@@ -450,7 +450,7 @@ export default function Dashboard() {
           label: "Duration",
           type: "text",
           values: getValues("training.duration"),
-          average: "",
+          average: getAverage("training.cardioDuration"),
         },
       ],
     },
