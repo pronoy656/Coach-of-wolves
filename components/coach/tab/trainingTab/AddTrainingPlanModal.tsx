@@ -4,29 +4,17 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
+import { BackendExercise, TrainingPlan, TrainingPlanFormData } from "@/redux/features/trainingPlan/trainingPlanType";
 
-interface ExerciseData {
+interface ExerciseState extends BackendExercise {
   id: string;
-  name: string;
-  sets: string;
-  repsRange: string;
-  rir: string;
-  notes: string;
-}
-
-interface PlanData {
-  id: string;
-  title: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  exercises: ExerciseData[];
-  notes: string;
 }
 
 interface AddPlanModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (plan: PlanData) => void;
-  editingPlan: PlanData | null;
+  onSave: (data: TrainingPlanFormData) => void;
+  editingPlan: TrainingPlan | null;
   loading?: boolean;
 }
 
@@ -37,36 +25,34 @@ export default function AddTrainingPlanModal({
   editingPlan,
   loading = false,
 }: AddPlanModalProps) {
-  const initialExercise: ExerciseData = {
+  const initialExercise: ExerciseState = {
     id: Date.now().toString(),
-    name: "",
+    exerciseName: "",
     sets: "",
-    repsRange: "",
+    repRange: "",
     rir: "",
-    notes: "",
+    excerciseNote: "",
   };
 
-  const [title, setTitle] = useState("");
-  const [difficulty, setDifficulty] = useState<
-    "Beginner" | "Intermediate" | "Advanced"
-  >("Beginner");
-  const [notes, setNotes] = useState("");
-  const [exercises, setExercises] = useState<ExerciseData[]>([initialExercise]);
+  const [traingPlanName, setTraingPlanName] = useState("");
+  const [dificulty, setDificulty] = useState("Begineer");
+  const [comment, setComment] = useState("");
+  const [exercises, setExercises] = useState<ExerciseState[]>([initialExercise]);
 
   useEffect(() => {
     if (editingPlan) {
-      setTitle(editingPlan.title);
-      setDifficulty(editingPlan.difficulty || "Beginner");
-      setNotes(editingPlan.notes);
+      setTraingPlanName(editingPlan.traingPlanName);
+      setDificulty(editingPlan.dificulty || "Begineer");
+      setComment(editingPlan.comment || "");
       setExercises(
-        editingPlan.exercises && editingPlan.exercises.length > 0
-          ? editingPlan.exercises
+        editingPlan.exercise && editingPlan.exercise.length > 0
+          ? editingPlan.exercise.map(ex => ({ ...ex, id: ex._id || Math.random().toString() }))
           : [initialExercise]
       );
     } else {
-      setTitle("");
-      setDifficulty("Beginner");
-      setNotes("");
+      setTraingPlanName("");
+      setDificulty("Begineer");
+      setComment("");
       setExercises([{ ...initialExercise, id: Date.now().toString() }]);
     }
   }, [editingPlan, open]);
@@ -76,11 +62,11 @@ export default function AddTrainingPlanModal({
       ...prev,
       {
         id: Date.now().toString() + Math.random(),
-        name: "",
+        exerciseName: "",
         sets: "",
-        repsRange: "",
+        repRange: "",
         rir: "",
-        notes: "",
+        excerciseNote: "",
       },
     ]);
   };
@@ -95,7 +81,7 @@ export default function AddTrainingPlanModal({
 
   const handleExerciseChange = (
     id: string,
-    field: keyof ExerciseData,
+    field: keyof ExerciseState,
     value: string
   ) => {
     setExercises((prev) =>
@@ -104,16 +90,13 @@ export default function AddTrainingPlanModal({
   };
 
   const handleSave = () => {
-    const planData: PlanData = {
-      id: editingPlan?.id || Date.now().toString(),
-      title,
-      difficulty,
-      exercises,
-      notes,
+    const planData: TrainingPlanFormData = {
+      traingPlanName,
+      dificulty,
+      exercise: exercises.map(({ id, ...rest }) => rest),
+      comment,
     };
-    console.log(planData);
     onSave(planData);
-    onOpenChange(false);
   };
 
   if (!open) return null;
@@ -148,8 +131,8 @@ export default function AddTrainingPlanModal({
                 <input
                   type="text"
                   placeholder="Type.."
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={traingPlanName}
+                  onChange={(e) => setTraingPlanName(e.target.value)}
                   className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -160,18 +143,11 @@ export default function AddTrainingPlanModal({
                 </label>
                 <div className="relative">
                   <select
-                    value={difficulty}
-                    onChange={(e) =>
-                      setDifficulty(
-                        e.target.value as
-                        | "Beginner"
-                        | "Intermediate"
-                        | "Advanced"
-                      )
-                    }
+                    value={dificulty}
+                    onChange={(e) => setDificulty(e.target.value)}
                     className="w-full appearance-none bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="Beginner">Beginner</option>
+                    <option value="Begineer">Begineer</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
                   </select>
@@ -209,11 +185,11 @@ export default function AddTrainingPlanModal({
                       <input
                         type="text"
                         placeholder="Type exercise name..."
-                        value={exercise.name}
+                        value={exercise.exerciseName}
                         onChange={(e) =>
                           handleExerciseChange(
                             exercise.id,
-                            "name",
+                            "exerciseName",
                             e.target.value
                           )
                         }
@@ -252,17 +228,16 @@ export default function AddTrainingPlanModal({
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-400">
-                        Reps-Range
+                        Rep Range
                       </label>
                       <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={exercise.repsRange}
+                        type="text"
+                        placeholder="e.g. 8-10"
+                        value={exercise.repRange}
                         onChange={(e) =>
                           handleExerciseChange(
                             exercise.id,
-                            "repsRange",
+                            "repRange",
                             e.target.value
                           )
                         }
@@ -272,12 +247,11 @@ export default function AddTrainingPlanModal({
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-400">
-                        RIR
+                        RIR/Weight
                       </label>
                       <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
+                        type="text"
+                        placeholder="e.g. 70kg"
                         value={exercise.rir}
                         onChange={(e) =>
                           handleExerciseChange(
@@ -295,11 +269,11 @@ export default function AddTrainingPlanModal({
                     <label className="text-sm font-medium text-white">Exercise Note</label>
                     <textarea
                       placeholder="Specific notes for this exercise..."
-                      value={exercise.notes}
+                      value={exercise.excerciseNote}
                       onChange={(e) =>
                         handleExerciseChange(
                           exercise.id,
-                          "notes",
+                          "excerciseNote",
                           e.target.value
                         )
                       }
@@ -316,8 +290,8 @@ export default function AddTrainingPlanModal({
               <label className="text-lg font-bold text-white">Main Plan Notes</label>
               <textarea
                 placeholder="Add general instructions or notes for the entire plan..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
                 className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 min-h-[120px] resize-none"
               />
             </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
@@ -125,35 +126,36 @@ export default function Dashboard() {
   );
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(
+    undefined
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Generate a list of previous weeks (last 4 weeks for now)
   const getWeekOptions = () => {
     const options: { label: string; value: string | undefined }[] = [
-      { label: "Current Week", value: undefined }
+      { label: "Current Week", value: undefined },
     ];
     const today = new Date();
 
     for (let i = 1; i <= 52; i++) {
       const d = new Date(today);
-      d.setDate(today.getDate() - (i * 7));
+      d.setDate(today.getDate() - i * 7);
       // Find the Monday of that week
       const day = d.getDay();
       const diff = d.getDate() - day + (day === 0 ? -6 : 1);
       const monday = new Date(d.setDate(diff));
 
-      const dateStr = monday.toISOString().split('T')[0];
+      const dateStr = monday.toISOString().split("T")[0];
       options.push({
         label: `Week of ${monday.toLocaleDateString()}`,
-        value: dateStr
+        value: dateStr,
       });
     }
     return options;
   };
 
   const weekOptions = getWeekOptions();
-
 
   useEffect(() => {
     if (userId) {
@@ -164,7 +166,10 @@ export default function Dashboard() {
   // Click outside listener
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsCalendarOpen(false);
       }
     };
@@ -213,12 +218,15 @@ export default function Dashboard() {
       val = val?.[key];
     }
     // Handle null, undefined or "none" for averages
-    if (val === null || val === undefined || String(val).toLowerCase() === "none") {
+    if (
+      val === null ||
+      val === undefined ||
+      String(val).toLowerCase() === "none"
+    ) {
       return "";
     }
     return typeof val === "number" ? val.toFixed(1) : val;
   };
-
 
   // Reconstructing dynamic data using the EXACT original design structure
   const dataSections: SectionData[] = [
@@ -287,7 +295,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("nutrition.hungerLevel"),
           average: getAverage("nutrition.hungerLevel"),
-          cellColors: ["#D97706", "#D97706", "#B45309", "#EAB308", "#EAB308", "#EAB308", "#EAB308"],
+          cellColors: [
+            "#D97706",
+            "#D97706",
+            "#B45309",
+            "#EAB308",
+            "#EAB308",
+            "#EAB308",
+            "#EAB308",
+          ],
         },
         {
           id: "digestion",
@@ -296,7 +312,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("nutrition.digestionLevel"),
           average: getAverage("nutrition.digestionLevel"),
-          cellColors: ["#D97706", "#D97706", "#B45309", "#EAB308", "#EAB308", "#EAB308", "#EAB308"],
+          cellColors: [
+            "#D97706",
+            "#D97706",
+            "#B45309",
+            "#EAB308",
+            "#EAB308",
+            "#EAB308",
+            "#EAB308",
+          ],
         },
       ],
     },
@@ -323,7 +347,9 @@ export default function Dashboard() {
           id: "training",
           label: "TRAINING",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""),
+          values: Array.from({ length: 7 }).map(
+            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""
+          ),
           average: "",
         },
       ],
@@ -357,9 +383,19 @@ export default function Dashboard() {
           label: "Sickness",
           subLabel: "YES / NO",
           type: "dropdown",
-          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].sick ? "YES" : "NO") : "")),
+          values: Array.from({ length: 7 }).map((_, i) =>
+            weekData[i] ? (weekData[i].sick ? "YES" : "NO") : ""
+          ),
           average: "",
-          cellColors: ["#B45309", "#B45309", "#B45309", "#B45309", "#4d7c0f", "#B45309", "#4d7c0f"],
+          cellColors: [
+            "#B45309",
+            "#B45309",
+            "#B45309",
+            "#B45309",
+            "#4d7c0f",
+            "#B45309",
+            "#4d7c0f",
+          ],
         },
       ],
     },
@@ -373,7 +409,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.mood"),
           average: getAverage("energyAndWellBeing.mood"),
-          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+          cellColors: [
+            "#D97706",
+            "#B45309",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#B45309",
+            "#B45309",
+          ],
         },
         {
           id: "motivation",
@@ -382,7 +426,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.motivation"),
           average: getAverage("energyAndWellBeing.motivation"),
-          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+          cellColors: [
+            "#D97706",
+            "#B45309",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#B45309",
+            "#B45309",
+          ],
         },
         {
           id: "energy",
@@ -391,7 +443,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.energyLevel"),
           average: getAverage("energyAndWellBeing.energyLevel"),
-          cellColors: ["#D97706", "#B45309", "#EAB308", "#EAB308", "#B45309", "#B45309", "#B45309"],
+          cellColors: [
+            "#D97706",
+            "#B45309",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#B45309",
+            "#B45309",
+          ],
         },
         {
           id: "muscle",
@@ -400,7 +460,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.muscelLevel"),
           average: getAverage("energyAndWellBeing.muscelLevel"),
-          cellColors: ["#EAB308", "#EAB308", "#EAB308", "#B45309", "#EAB308", "#4d7c0f", "#4d7c0f"],
+          cellColors: [
+            "#EAB308",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#EAB308",
+            "#4d7c0f",
+            "#4d7c0f",
+          ],
         },
         {
           id: "stress",
@@ -409,7 +477,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.stressLevel"),
           average: getAverage("energyAndWellBeing.stressLevel"),
-          cellColors: ["#EAB308", "#15803d", "#15803d", "#EAB308", "#4d7c0f", "#EAB308", "#4d7c0f"],
+          cellColors: [
+            "#EAB308",
+            "#15803d",
+            "#15803d",
+            "#EAB308",
+            "#4d7c0f",
+            "#EAB308",
+            "#4d7c0f",
+          ],
         },
       ],
     },
@@ -420,21 +496,35 @@ export default function Dashboard() {
           id: "tr_comp",
           label: "Training Completed",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].training?.trainingCompleted ? "Yes" : "No") : "")),
+          values: Array.from({ length: 7 }).map((_, i) =>
+            weekData[i]
+              ? weekData[i].training?.trainingCompleted
+                ? "Yes"
+                : "No"
+              : ""
+          ),
           average: "",
         },
         {
           id: "tr_plan",
           label: "Training Plan",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""),
+          values: Array.from({ length: 7 }).map(
+            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""
+          ),
           average: "",
         },
         {
           id: "cardio_comp",
           label: "Cardio Completed",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) => (weekData[i] ? (weekData[i].training?.cardioCompleted ? "Yes" : "No") : "")),
+          values: Array.from({ length: 7 }).map((_, i) =>
+            weekData[i]
+              ? weekData[i].training?.cardioCompleted
+                ? "Yes"
+                : "No"
+              : ""
+          ),
           average: "",
         },
 
@@ -478,7 +568,15 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("woman.pmsSymptoms"),
           average: getAverage("woman.pmsSymptoms"),
-          cellColors: ["#B45309", "#D97706", "#EAB308", "#EAB308", "#B45309", "#B45309", "#EAB308"],
+          cellColors: [
+            "#B45309",
+            "#D97706",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#B45309",
+            "#EAB308",
+          ],
         },
         {
           id: "cramps",
@@ -487,13 +585,23 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("woman.cramps"),
           average: getAverage("woman.cramps"),
-          cellColors: ["#B45309", "#D97706", "#EAB308", "#EAB308", "#B45309", "#B45309", "#EAB308"],
+          cellColors: [
+            "#B45309",
+            "#D97706",
+            "#EAB308",
+            "#EAB308",
+            "#B45309",
+            "#B45309",
+            "#EAB308",
+          ],
         },
         {
           id: "symptoms",
           label: "Symptoms",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) => weekData[i]?.woman?.symptoms?.join(", ") || ""),
+          values: Array.from({ length: 7 }).map(
+            (_, i) => weekData[i]?.woman?.symptoms?.join(", ") || ""
+          ),
           average: "",
         },
       ],
@@ -530,7 +638,9 @@ export default function Dashboard() {
             return `${bp.systolic}/${bp.diastolic}`;
           }),
           average: averages?.bloodPressure
-            ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(averages.bloodPressure.diastolic).toFixed(0)}`
+            ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(
+                averages.bloodPressure.diastolic
+              ).toFixed(0)}`
             : "",
         },
         {
@@ -574,9 +684,15 @@ export default function Dashboard() {
         >
           <CalendarIcon />
           <span className="text-base">
-            {selectedDate ? `Week of ${new Date(selectedDate).toLocaleDateString()}` : "Current Week"}
+            {selectedDate
+              ? `Week of ${new Date(selectedDate).toLocaleDateString()}`
+              : "Current Week"}
           </span>
-          <ChevronDown className={`w-4 h-4 transition-transform ${isCalendarOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${
+              isCalendarOpen ? "rotate-180" : ""
+            }`}
+          />
         </button>
 
         {isCalendarOpen && (
@@ -584,13 +700,16 @@ export default function Dashboard() {
             <div className="max-h-96 overflow-y-auto custom-scrollbar">
               {weekOptions.map((option) => (
                 <button
-                  key={option.value || 'current'}
+                  key={option.value || "current"}
                   onClick={() => {
                     setSelectedDate(option.value);
                     setIsCalendarOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value ? 'bg-[#2B2B3D] text-emerald-500' : 'text-gray-300'
-                    }`}
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                    selectedDate === option.value
+                      ? "bg-[#2B2B3D] text-emerald-500"
+                      : "text-gray-300"
+                  }`}
                 >
                   {option.label}
                 </button>
@@ -598,9 +717,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-
       </div>
-
 
       {/* Main Grid Container */}
       <div className="w-full border border-gray-800 rounded-lg overflow-hidden bg-[#0B0C15]">
@@ -670,8 +787,8 @@ export default function Dashboard() {
                         row.cellColors?.[i]
                           ? row.cellColors[i]
                           : row.rowColor
-                            ? row.rowColor
-                            : "#2B2B3D"
+                          ? row.rowColor
+                          : "#2B2B3D"
                       }
                     />
                   ))}

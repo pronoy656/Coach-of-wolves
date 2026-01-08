@@ -1,28 +1,8 @@
-
-"use client";
-
 import { Pencil, Trash2 } from "lucide-react";
-
-// Updated interfaces to match the new data structure
-interface ExerciseData {
-  id: string;
-  name: string;
-  sets: string;
-  repsRange: string;
-  rir: string;
-  notes: string;
-}
-
-interface PlanData {
-  id: string;
-  title: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  exercises: ExerciseData[];
-  notes: string;
-}
+import { TrainingPlan } from "@/redux/features/trainingPlan/trainingPlanType";
 
 interface PlanPreviewCardProps {
-  plan: PlanData;
+  plan: TrainingPlan;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -39,7 +19,7 @@ export default function TrainingPlanPreview({
         return "bg-red-500/15 border-red-500/30 text-red-400";
       case "Intermediate":
         return "bg-amber-500/15 border-amber-500/30 text-amber-400";
-      case "Beginner":
+      case "Begineer":
       default:
         return "bg-emerald-500/15 border-emerald-500/30 text-emerald-400";
     }
@@ -53,14 +33,14 @@ export default function TrainingPlanPreview({
           <div className="space-y-2">
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="font-bold text-lg text-white leading-tight">
-                {plan.title}
+                {plan.traingPlanName}
               </h3>
               <span
                 className={`px-2.5 py-0.5 border text-[10px] uppercase tracking-wider rounded-full font-semibold ${getDifficultyColor(
-                  plan.difficulty
+                  plan.dificulty
                 )}`}
               >
-                {plan.difficulty}
+                {plan.dificulty}
               </span>
             </div>
           </div>
@@ -86,10 +66,10 @@ export default function TrainingPlanPreview({
 
         {/* Exercises List */}
         <div className="space-y-3">
-          {plan.exercises && plan.exercises.length > 0 ? (
-            plan.exercises.map((ex, index) => (
+          {plan.exercise && plan.exercise.length > 0 ? (
+            plan.exercise.map((ex, index) => (
               <div
-                key={ex.id || index}
+                key={ex._id || index}
                 className="bg-[#1a1a30]/50 rounded-lg p-3 border border-[#2d2d45] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
               >
                 {/* Exercise Name with Number and Note */}
@@ -99,14 +79,14 @@ export default function TrainingPlanPreview({
                       {index + 1}
                     </span>
                     <span className="text-sm text-gray-200 font-medium">
-                      {ex.name}
+                      {ex.exerciseName}
                     </span>
                   </div>
                   {/* Individual Exercise Note */}
-                  {ex.notes && (
+                  {ex.excerciseNote && (
                     <div className="pl-9">
                       <p className="text-[11px] text-emerald-400/80 italic leading-relaxed bg-emerald-500/5 px-2 py-1 rounded-md border border-emerald-500/10 inline-block">
-                        Note: {ex.notes}
+                        Note: {ex.excerciseNote}
                       </p>
                     </div>
                   )}
@@ -123,10 +103,10 @@ export default function TrainingPlanPreview({
                         Sets
                       </span>
                     )}
-                    {ex.repsRange && (
+                    {ex.repRange && (
                       <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                        Reps: <span className="text-white font-semibold">
-                          {ex.repsRange}
+                        Rep Range: <span className="text-white font-semibold">
+                          {ex.repRange}
                         </span>
                       </span>
                     )}
@@ -145,13 +125,13 @@ export default function TrainingPlanPreview({
         </div>
 
         {/* Notes Section - Main Plan Notes */}
-        {plan.notes && (
+        {plan.comment && (
           <div className="pt-4 border-t border-[#2d2d45]">
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-2 text-gray-500">
               Main Plan Notes
             </h4>
             <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">
-              {plan.notes}
+              {plan.comment}
             </p>
           </div>
         )}
