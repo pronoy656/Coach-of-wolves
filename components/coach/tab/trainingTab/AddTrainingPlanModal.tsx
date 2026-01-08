@@ -11,6 +11,7 @@ interface ExerciseData {
   sets: string;
   repsRange: string;
   rir: string;
+  notes: string;
 }
 
 interface PlanData {
@@ -42,6 +43,7 @@ export default function AddTrainingPlanModal({
     sets: "",
     repsRange: "",
     rir: "",
+    notes: "",
   };
 
   const [title, setTitle] = useState("");
@@ -78,6 +80,7 @@ export default function AddTrainingPlanModal({
         sets: "",
         repsRange: "",
         rir: "",
+        notes: "",
       },
     ]);
   };
@@ -289,17 +292,34 @@ export default function AddTrainingPlanModal({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Comment</label>
+                    <label className="text-sm font-medium text-white">Exercise Note</label>
                     <textarea
-                      placeholder="Additional notes..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Specific notes for this exercise..."
+                      value={exercise.notes}
+                      onChange={(e) =>
+                        handleExerciseChange(
+                          exercise.id,
+                          "notes",
+                          e.target.value
+                        )
+                      }
                       className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 resize-none"
-                      rows={3}
+                      rows={2}
                     />
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Main Plan Notes Section */}
+            <div className="space-y-2 border-t border-[#2a2a2a] pt-6">
+              <label className="text-lg font-bold text-white">Main Plan Notes</label>
+              <textarea
+                placeholder="Add general instructions or notes for the entire plan..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 min-h-[120px] resize-none"
+              />
             </div>
 
             <button

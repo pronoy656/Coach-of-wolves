@@ -1,73 +1,4 @@
-// "use client";
 
-// import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
-
-// interface PlanData {
-//   id: string;
-//   title: string;
-//   exercise: string;
-//   reps: string;
-//   sets: string;
-//   range: string;
-//   notes: string;
-// }
-
-// interface PlanPreviewCardProps {
-//   plan: PlanData;
-//   onEdit: () => void;
-//   onDelete: () => void;
-// }
-
-// export default function TrainingPlanPreview({
-//   plan,
-//   onEdit,
-//   onDelete,
-// }: PlanPreviewCardProps) {
-//   return (
-//     <div className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border-[#2d2d45] hover:border-emerald-500/50 transition-all shadow-lg">
-//       <div className="p-6 space-y-4">
-//         <div className="flex items-start justify-between">
-//           <div className="flex-1">
-//             <h3 className="font-bold text-lg mb-1">{plan.title}</h3>
-//             <p className="text-sm text-gray-400">{plan.exercise}</p>
-//           </div>
-//           <div className="flex gap-2">
-//             <button
-//               onClick={onEdit}
-//               className="w-8 h-8 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all"
-//             >
-//               <Pencil className="w-4 h-4 text-blue-400" />
-//             </button>
-//             <button
-//               onClick={onDelete}
-//               className="w-8 h-8 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all"
-//             >
-//               <Trash2 className="w-4 h-4 text-red-400" />
-//             </button>
-//           </div>
-//         </div>
-
-//         <div className="flex flex-wrap gap-2">
-//           <span className="px-3 py-1.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs rounded-full font-medium">
-//             {plan.reps}
-//           </span>
-//           <span className="px-3 py-1.5 bg-[#1a1a30] border border-[#2d2d45] text-gray-300 text-xs rounded-full font-medium">
-//             {plan.sets}
-//           </span>
-//           <span className="px-3 py-1.5 bg-[#1a1a30] border border-[#2d2d45] text-gray-300 text-xs rounded-full font-medium">
-//             {plan.range}
-//           </span>
-//           <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto" />
-//         </div>
-
-//         <div className="pt-4 border-t border-[#2d2d45]">
-//           <h4 className="text-sm font-semibold mb-2 text-gray-300">Notes</h4>
-//           <p className="text-sm text-gray-400 leading-relaxed">{plan.notes}</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 "use client";
 
@@ -80,6 +11,7 @@ interface ExerciseData {
   sets: string;
   repsRange: string;
   rir: string;
+  notes: string;
 }
 
 interface PlanData {
@@ -161,38 +93,50 @@ export default function TrainingPlanPreview({
                 key={ex.id || index}
                 className="bg-[#1a1a30]/50 rounded-lg p-3 border border-[#2d2d45] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
               >
-                {/* Exercise Name with Number */}
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#2d2d45] text-xs font-bold text-gray-400 shrink-0">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm text-gray-200 font-medium">
-                    {ex.name}
-                  </span>
+                {/* Exercise Name with Number and Note */}
+                <div className="flex flex-col gap-1 flex-1">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#2d2d45] text-xs font-bold text-gray-400 shrink-0">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm text-gray-200 font-medium">
+                      {ex.name}
+                    </span>
+                  </div>
+                  {/* Individual Exercise Note */}
+                  {ex.notes && (
+                    <div className="pl-9">
+                      <p className="text-[11px] text-emerald-400/80 italic leading-relaxed bg-emerald-500/5 px-2 py-1 rounded-md border border-emerald-500/10 inline-block">
+                        Note: {ex.notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Stats: Sets, Reps-Range, RIR */}
-                <div className="flex items-center gap-2 text-xs pl-9 sm:pl-0">
-                  {ex.sets && (
-                    <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                      <span className="text-emerald-500 font-semibold">
-                        {ex.sets}
-                      </span>{" "}
-                      Sets
-                    </span>
-                  )}
-                  {ex.repsRange && (
-                    <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                      Reps: <span className="text-white font-semibold">
-                        {ex.repsRange}
+                <div className="flex flex-col gap-2 pl-9 sm:pl-0 shrink-0">
+                  <div className="flex items-center gap-2 text-xs">
+                    {ex.sets && (
+                      <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
+                        <span className="text-emerald-500 font-semibold">
+                          {ex.sets}
+                        </span>{" "}
+                        Sets
                       </span>
-                    </span>
-                  )}
-                  {ex.rir && (
-                    <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                      RIR: <span className="text-white">{ex.rir}</span>
-                    </span>
-                  )}
+                    )}
+                    {ex.repsRange && (
+                      <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
+                        Reps: <span className="text-white font-semibold">
+                          {ex.repsRange}
+                        </span>
+                      </span>
+                    )}
+                    {ex.rir && (
+                      <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
+                        RIR: <span className="text-white">{ex.rir}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
@@ -201,11 +145,11 @@ export default function TrainingPlanPreview({
           )}
         </div>
 
-        {/* Notes Section */}
+        {/* Notes Section - Main Plan Notes */}
         {plan.notes && (
           <div className="pt-4 border-t border-[#2d2d45]">
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-2 text-gray-500">
-              Notes
+              Main Plan Notes
             </h4>
             <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">
               {plan.notes}

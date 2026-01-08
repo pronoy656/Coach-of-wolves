@@ -15,6 +15,7 @@ interface ExerciseData {
   sets: string;
   repsRange: string;
   rir: string;
+  notes: string;
 }
 
 interface PlanData {
@@ -63,6 +64,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "5",
           rir: "0",
+          notes: "Focus on staying upright. Wear a belt for heavy sets.",
         },
         {
           id: "ex_1b",
@@ -70,6 +72,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "12",
           rir: "0",
+          notes: "3-second eccentric phase.",
         },
         {
           id: "ex_1c",
@@ -77,6 +80,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "10",
           rir: "0",
+          notes: "Control the weight throughout the range.",
         },
         {
           id: "ex_1d",
@@ -84,6 +88,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "15",
           rir: "0",
+          notes: "Hold at the top for 1 second.",
         },
       ],
       notes: "Focus on depth for squats. Control the negative on leg press.",
@@ -99,6 +104,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "6",
           rir: "0",
+          notes: "Touch and go. Keep heels planted.",
         },
         {
           id: "ex_2b",
@@ -106,6 +112,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "8",
           rir: "0",
+          notes: "Pull to lower chest.",
         },
         {
           id: "ex_2c",
@@ -113,6 +120,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "8",
           rir: "0",
+          notes: "Strict form, no leg drive.",
         },
       ],
       notes: "Keep strict form on rows. Don't use momentum.",
@@ -128,6 +136,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "12",
           rir: "0",
+          notes: "Elbows to knees.",
         },
         {
           id: "ex_3b",
@@ -135,6 +144,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "10",
           rir: "0",
+          notes: "Full extension at the top.",
         },
         {
           id: "ex_3c",
@@ -142,6 +152,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "10",
           rir: "0",
+          notes: "Stay balanced.",
         },
       ],
       notes: "Focus on learning the movement patterns.",
@@ -161,6 +172,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "10",
           rir: "0",
+          notes: "Deep stretch at the bottom.",
         },
         {
           id: "ex_p1b",
@@ -168,6 +180,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "15",
           rir: "0",
+          notes: "Slight lean forward.",
         },
         {
           id: "ex_p1c",
@@ -175,6 +188,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "12",
           rir: "0",
+          notes: "Keep elbows pinned.",
         },
         {
           id: "ex_p1d",
@@ -182,6 +196,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "15",
           rir: "0",
+          notes: "High to low position.",
         },
       ],
       notes:
@@ -198,6 +213,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "5",
           rir: "0",
+          notes: "Brace hard before each rep.",
         },
         {
           id: "ex_p2b",
@@ -205,6 +221,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "8",
           rir: "0",
+          notes: "Full chin over bar.",
         },
         {
           id: "ex_p2c",
@@ -212,6 +229,7 @@ export default function TrainingPage() {
           sets: "4",
           repsRange: "15",
           rir: "0",
+          notes: "Pull towards forehead.",
         },
         {
           id: "ex_p2d",
@@ -219,6 +237,7 @@ export default function TrainingPage() {
           sets: "3",
           repsRange: "12",
           rir: "0",
+          notes: "No swinging. Full range.",
         },
       ],
       notes:
