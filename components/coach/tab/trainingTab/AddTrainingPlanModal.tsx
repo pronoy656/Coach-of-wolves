@@ -252,8 +252,9 @@ export default function AddTrainingPlanModal({
                         Reps-Range
                       </label>
                       <input
-                        type="text"
-                        placeholder="e.g. 8-12"
+                        type="number"
+                        min="0"
+                        placeholder="0"
                         value={exercise.repsRange}
                         onChange={(e) =>
                           handleExerciseChange(
@@ -271,8 +272,9 @@ export default function AddTrainingPlanModal({
                         RIR
                       </label>
                       <input
-                        type="text"
-                        placeholder="e.g. 1-2"
+                        type="number"
+                        min="0"
+                        placeholder="0"
                         value={exercise.rir}
                         onChange={(e) =>
                           handleExerciseChange(

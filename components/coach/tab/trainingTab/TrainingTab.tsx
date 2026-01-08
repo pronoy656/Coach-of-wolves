@@ -13,8 +13,8 @@ interface ExerciseData {
   id: string;
   name: string;
   sets: string;
-  reps: string;
-  range: string;
+  repsRange: string;
+  rir: string;
 }
 
 interface PlanData {
@@ -61,29 +61,29 @@ export default function TrainingPage() {
           id: "ex_1a",
           name: "Barbell Squat",
           sets: "4",
-          reps: "5",
-          range: "5",
+          repsRange: "5",
+          rir: "0",
         },
         {
           id: "ex_1b",
           name: "Leg Press",
           sets: "3",
-          reps: "12",
-          range: "10",
+          repsRange: "12",
+          rir: "0",
         },
         {
           id: "ex_1c",
           name: "Romanian Deadlift",
           sets: "3",
-          reps: "10",
-          range: "8",
+          repsRange: "10",
+          rir: "0",
         },
         {
           id: "ex_1d",
           name: "Calf Raises",
           sets: "4",
-          reps: "15",
-          range: "12",
+          repsRange: "15",
+          rir: "0",
         },
       ],
       notes: "Focus on depth for squats. Control the negative on leg press.",
@@ -97,22 +97,22 @@ export default function TrainingPage() {
           id: "ex_2a",
           name: "Bench Press",
           sets: "4",
-          reps: "6",
-          range: "5",
+          repsRange: "6",
+          rir: "0",
         },
         {
           id: "ex_2b",
           name: "Bent Over Row",
           sets: "4",
-          reps: "8",
-          range: "8",
+          repsRange: "8",
+          rir: "0",
         },
         {
           id: "ex_2c",
           name: "Overhead Press",
           sets: "3",
-          reps: "8",
-          range: "6",
+          repsRange: "8",
+          rir: "0",
         },
       ],
       notes: "Keep strict form on rows. Don't use momentum.",
@@ -126,22 +126,22 @@ export default function TrainingPage() {
           id: "ex_3a",
           name: "Goblet Squat",
           sets: "3",
-          reps: "12",
-          range: "10",
+          repsRange: "12",
+          rir: "0",
         },
         {
           id: "ex_3b",
           name: "Push Ups",
           sets: "3",
-          reps: "10",
-          range: "8",
+          repsRange: "10",
+          rir: "0",
         },
         {
           id: "ex_3c",
           name: "Dumbbell Lunges",
           sets: "3",
-          reps: "10",
-          range: "10",
+          repsRange: "10",
+          rir: "0",
         },
       ],
       notes: "Focus on learning the movement patterns.",
@@ -159,29 +159,29 @@ export default function TrainingPage() {
           id: "ex_p1a",
           name: "Incline Dumbbell Press",
           sets: "4",
-          reps: "10",
-          range: "8",
+          repsRange: "10",
+          rir: "0",
         },
         {
           id: "ex_p1b",
           name: "Lateral Raise (Dumbbell)",
           sets: "4",
-          reps: "15",
-          range: "12",
+          repsRange: "15",
+          rir: "0",
         },
         {
           id: "ex_p1c",
           name: "Tricep Pushdown",
           sets: "3",
-          reps: "12",
-          range: "10",
+          repsRange: "12",
+          rir: "0",
         },
         {
           id: "ex_p1d",
           name: "Cable Flys",
           sets: "3",
-          reps: "15",
-          range: "12",
+          repsRange: "15",
+          rir: "0",
         },
       ],
       notes:
@@ -196,29 +196,29 @@ export default function TrainingPage() {
           id: "ex_p2a",
           name: "Deadlift",
           sets: "3",
-          reps: "5",
-          range: "3",
+          repsRange: "5",
+          rir: "0",
         },
         {
           id: "ex_p2b",
           name: "Pull Ups",
           sets: "3",
-          reps: "8",
-          range: "6",
+          repsRange: "8",
+          rir: "0",
         },
         {
           id: "ex_p2c",
           name: "Face Pulls",
           sets: "4",
-          reps: "15",
-          range: "12",
+          repsRange: "15",
+          rir: "0",
         },
         {
           id: "ex_p2d",
           name: "Bicep Curls",
           sets: "3",
-          reps: "12",
-          range: "10",
+          repsRange: "12",
+          rir: "0",
         },
       ],
       notes:
@@ -337,29 +337,40 @@ export default function TrainingPage() {
                       <h3 className="font-bold text-base leading-tight">
                         {plan.title}
                       </h3>
-                      <p className="text-sm text-gray-400 leading-snug">
-                        {plan.exercises.length > 0
-                          ? plan.exercises[0].name
-                          : "No Exercises"}
-                        {plan.exercises.length > 1 && (
-                          <span className="text-emerald-500 text-xs ml-1">
-                            +{plan.exercises.length - 1} more
-                          </span>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-400 leading-snug">
+                          {plan.exercises.length > 0
+                            ? plan.exercises[0].name
+                            : "No Exercises"}
+                          {plan.exercises.length > 1 && (
+                            <span className="text-emerald-500 text-xs ml-1">
+                              +{plan.exercises.length - 1} more
+                            </span>
+                          )}
+                        </p>
+                        {plan.exercises.length > 0 && (
+                          <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                            <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
+                              Reps: {plan.exercises[0].repsRange}
+                            </span>
+                            <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
+                              RIR: {plan.exercises[0].rir}
+                            </span>
+                          </div>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
 
                   {/* Footer with Difficulty Badge Only */}
                   <div className="flex items-end mt-auto">
                     <span
-                      className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                        plan.difficulty === "Advanced"
-                          ? "border-red-500/30 text-red-400 bg-red-500/10"
-                          : plan.difficulty === "Intermediate"
+                      className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${plan.difficulty === "Advanced"
+                        ? "border-red-500/30 text-red-400 bg-red-500/10"
+                        : plan.difficulty === "Intermediate"
                           ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
                           : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-                      }`}
+                        }`}
                     >
                       {plan.difficulty}
                     </span>
@@ -521,8 +532,8 @@ export default function TrainingPage() {
           deleteModal.type === "plan"
             ? "Delete Training Plan"
             : deleteModal.type === "preview"
-            ? "Delete Plan Preview"
-            : "Delete Training Split"
+              ? "Delete Plan Preview"
+              : "Delete Training Split"
         }
         message="Are you sure you want to delete this item? This action cannot be undone."
         onConfirm={handleDeleteConfirm}

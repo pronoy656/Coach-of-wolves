@@ -75,6 +75,7 @@ export default function CheckInDetailsPage({
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
+  const [isNewQuestionMandatory, setIsNewQuestionMandatory] = useState(false);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -85,13 +86,14 @@ export default function CheckInDetailsPage({
         id: Date.now().toString(),
         question: newQuestionInput,
         answer: "",
-        isMandatory: false,
+        isMandatory: isNewQuestionMandatory,
       };
       setEditData((prev) => ({
         ...prev,
         questions: [...prev.questions, newQuestion],
       }));
       setNewQuestionInput("");
+      setIsNewQuestionMandatory(false);
       setShowAddQuestion(false);
     }
   };
@@ -166,22 +168,7 @@ export default function CheckInDetailsPage({
       {/* Header with Edit Button - Now only for editing questions and notes */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
         <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
-        <button
-          onClick={() => {
-            if (isEditing) {
-              handleSave();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${isEditing
-            ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
-            : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
-            }`}
-        >
-          <Edit2 className="w-4 h-4" />
-          {isEditing ? "Save Changes" : "Edit Questions & Notes"}
-        </button>
+
       </div>
 
       {/* Well-Being and Nutrition in one row - VIEW ONLY */}
@@ -274,7 +261,24 @@ export default function CheckInDetailsPage({
           </div>
         </div>
       </div>
-
+      <div className="flex justify-end text-base">
+        <button
+          onClick={() => {
+            if (isEditing) {
+              handleSave();
+            } else {
+              setIsEditing(true);
+            }
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${isEditing
+            ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
+            : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
+            }`}
+        >
+          <Edit2 className="w-4 h-4" />
+          {isEditing ? "Save Changes" : "Edit Questions & Notes"}
+        </button>
+      </div>
       {/* Questions Section - EDITABLE */}
       <div className="bg-[#08081A]  border border-slate-700/40 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
@@ -282,6 +286,7 @@ export default function CheckInDetailsPage({
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
             Questions
           </h3>
+
           {isEditing && (
             <button
               onClick={() => setShowAddQuestion(!showAddQuestion)}
@@ -294,20 +299,42 @@ export default function CheckInDetailsPage({
         </div>
 
         {showAddQuestion && isEditing && (
-          <div className="mb-4 flex gap-2">
-            <input
-              type="text"
-              value={newQuestionInput}
-              onChange={(e) => setNewQuestionInput(e.target.value)}
-              placeholder="Enter question..."
-              className="flex-1 bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
-            />
-            <button
-              onClick={handleAddQuestion}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-            >
-              Add
-            </button>
+          <div className="mb-6 bg-[#0B0B22] border border-slate-700/30 rounded-lg p-4 space-y-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newQuestionInput}
+                onChange={(e) => setNewQuestionInput(e.target.value)}
+                placeholder="Enter question..."
+                className="flex-1 bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddQuestion();
+                }}
+              />
+              <button
+                onClick={handleAddQuestion}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shrink-0"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={isNewQuestionMandatory}
+                  onChange={(e) => {
+                    console.log(e.target.checked);
+                    setIsNewQuestionMandatory(e.target.checked);
+                  }}
+                  className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
+                />
+                <span className="text-sm text-gray-400 group-hover:text-emerald-400 transition-colors">
+                  Mandatory Question
+                </span>
+              </label>
+              <span className="text-xs text-slate-500">(Athletes must answer this to complete check-in)</span>
+            </div>
           </div>
         )}
 
@@ -332,50 +359,25 @@ export default function CheckInDetailsPage({
                     </p>
                     {isEditing && (
                       <div className="flex gap-4 mt-1">
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer group">
                           <input
                             type="checkbox"
                             checked={q.isMandatory === true}
                             onChange={(e) => {
-                              if (e.target.checked) {
-                                console.log(true);
-                                setEditData((prev) => ({
-                                  ...prev,
-                                  questions: prev.questions.map((quest) =>
-                                    quest.id === q.id
-                                      ? { ...quest, isMandatory: true }
-                                      : quest
-                                  ),
-                                }));
-                              }
+                              console.log(e.target.checked);
+                              setEditData((prev) => ({
+                                ...prev,
+                                questions: prev.questions.map((quest) =>
+                                  quest.id === q.id
+                                    ? { ...quest, isMandatory: e.target.checked }
+                                    : quest
+                                ),
+                              }));
                             }}
-                            className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0"
+                            className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
                           />
-                          <span className="text-xs text-gray-400">
+                          <span className={`text-xs transition-colors ${q.isMandatory ? "text-emerald-400" : "text-gray-400 group-hover:text-emerald-400"}`}>
                             Mandatory
-                          </span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={q.isMandatory === false}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                console.log(false);
-                                setEditData((prev) => ({
-                                  ...prev,
-                                  questions: prev.questions.map((quest) =>
-                                    quest.id === q.id
-                                      ? { ...quest, isMandatory: false }
-                                      : quest
-                                  ),
-                                }));
-                              }
-                            }}
-                            className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0"
-                          />
-                          <span className="text-xs text-gray-400">
-                            Non-Mandatory
                           </span>
                         </label>
                       </div>
@@ -499,8 +501,8 @@ export default function CheckInDetailsPage({
           onClick={handleSave}
           disabled={isSaving || isSaved}
           className={`w-full flex items-center justify-center gap-2 py-3 text-lg rounded-lg transition-colors font-semibold ${isSaved
-              ? "bg-green-600 text-white cursor-default"
-              : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed"
+            ? "bg-green-600 text-white cursor-default"
+            : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed"
             }`}
         >
           {isSaving ? (

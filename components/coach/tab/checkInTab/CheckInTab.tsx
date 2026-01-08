@@ -142,7 +142,7 @@ export default function CheckInTab() {
       <div className="">
         <h1 className="text-4xl font-bold text-white mb-8">Check-Ins</h1>
 
-        <div className="relative mb-8">
+        {/* <div className="relative mb-8">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             placeholder="Search Here..."
@@ -150,7 +150,7 @@ export default function CheckInTab() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 pr-4 py-3 bg-[#08081A] border border-[#303245] rounded-lg text-white placeholder-gray-500 focus:border-[#00A63E]focus:ring-1 focus:ring-[#00A63E]"
           />
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Content - Weight Card & Check-in Detail */}

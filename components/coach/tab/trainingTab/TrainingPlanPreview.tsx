@@ -78,8 +78,8 @@ interface ExerciseData {
   id: string;
   name: string;
   sets: string;
-  reps: string;
-  range: string;
+  repsRange: string;
+  rir: string;
 }
 
 interface PlanData {
@@ -171,7 +171,7 @@ export default function TrainingPlanPreview({
                   </span>
                 </div>
 
-                {/* Stats: Sets, Reps, Range */}
+                {/* Stats: Sets, Reps-Range, RIR */}
                 <div className="flex items-center gap-2 text-xs pl-9 sm:pl-0">
                   {ex.sets && (
                     <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
@@ -181,17 +181,16 @@ export default function TrainingPlanPreview({
                       Sets
                     </span>
                   )}
-                  {ex.reps && (
+                  {ex.repsRange && (
                     <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                      <span className="text-emerald-500 font-semibold">
-                        {ex.reps}
-                      </span>{" "}
-                      Reps
+                      Reps: <span className="text-white font-semibold">
+                        {ex.repsRange}
+                      </span>
                     </span>
                   )}
-                  {ex.range && (
+                  {ex.rir && (
                     <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                      Rng: <span className="text-white">{ex.range}</span>
+                      RIR: <span className="text-white">{ex.rir}</span>
                     </span>
                   )}
                 </div>
