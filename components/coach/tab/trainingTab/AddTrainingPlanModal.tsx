@@ -3,14 +3,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Loader2 } from "lucide-react";
 
 interface ExerciseData {
   id: string;
   name: string;
   sets: string;
-  reps: string;
-  range: string;
+  repsRange: string;
+  rir: string;
 }
 
 interface PlanData {
@@ -26,6 +26,7 @@ interface AddPlanModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (plan: PlanData) => void;
   editingPlan: PlanData | null;
+  loading?: boolean;
 }
 
 export default function AddTrainingPlanModal({
@@ -33,13 +34,14 @@ export default function AddTrainingPlanModal({
   onOpenChange,
   onSave,
   editingPlan,
+  loading = false,
 }: AddPlanModalProps) {
   const initialExercise: ExerciseData = {
     id: Date.now().toString(),
     name: "",
     sets: "",
-    reps: "",
-    range: "",
+    repsRange: "",
+    rir: "",
   };
 
   const [title, setTitle] = useState("");
@@ -74,8 +76,8 @@ export default function AddTrainingPlanModal({
         id: Date.now().toString() + Math.random(),
         name: "",
         sets: "",
-        reps: "",
-        range: "",
+        repsRange: "",
+        rir: "",
       },
     ]);
   };
@@ -247,17 +249,16 @@ export default function AddTrainingPlanModal({
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-400">
-                        Reps
+                        Reps-Range
                       </label>
                       <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={exercise.reps}
+                        type="text"
+                        placeholder="e.g. 8-12"
+                        value={exercise.repsRange}
                         onChange={(e) =>
                           handleExerciseChange(
                             exercise.id,
-                            "reps",
+                            "repsRange",
                             e.target.value
                           )
                         }
@@ -267,24 +268,22 @@ export default function AddTrainingPlanModal({
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-400">
-                        Range
+                        RIR
                       </label>
                       <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={exercise.range}
+                        type="text"
+                        placeholder="e.g. 1-2"
+                        value={exercise.rir}
                         onChange={(e) =>
                           handleExerciseChange(
                             exercise.id,
-                            "range",
+                            "rir",
                             e.target.value
                           )
                         }
                         className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                       />
                     </div>
-
                   </div>
 
                   <div className="space-y-2">
@@ -303,9 +302,17 @@ export default function AddTrainingPlanModal({
 
             <button
               onClick={handleSave}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4 h-12 rounded-lg transition-colors font-medium"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-base text-white mt-4 h-12 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Training Plan
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Training Plan"
+              )}
             </button>
           </div>
         </div>
