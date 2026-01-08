@@ -114,11 +114,21 @@ export default function CheckInDetailsPage({
     }));
   };
 
-  const handleSave = async () => {
+  const handleUpdateQuestionsAndNotes = async () => {
     setIsSaving(true);
+    // Simulate a brief delay for the update action
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    onUpdate(editData);
+    setIsSaving(false);
+    setIsEditing(false);
+  };
+
+  const handleCompleteCheckIn = async () => {
+    setIsSaving(true);
+    const completedData: CheckIn = { ...editData, status: "Completed" };
     // Simulate a brief delay for the "Complete Check-in" action
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    onUpdate(editData);
+    onUpdate(completedData);
     setIsSaving(false);
     setIsSaved(true);
     // Wait a moment so the user can see the "Completed" state before closing edit mode
@@ -261,24 +271,17 @@ export default function CheckInDetailsPage({
           </div>
         </div>
       </div>
-      <div className="flex justify-end text-base">
-        <button
-          onClick={() => {
-            if (isEditing) {
-              handleSave();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${isEditing
-            ? "bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white"
-            : "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
-            }`}
-        >
-          <Edit2 className="w-4 h-4" />
-          {isEditing ? "Save Changes" : "Edit Questions & Notes"}
-        </button>
-      </div>
+      {!isEditing && (
+        <div className="flex justify-end text-base">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit question and notes
+          </button>
+        </div>
+      )}
       {/* Questions Section - EDITABLE */}
       <div className="bg-[#08081A]  border border-slate-700/40 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
@@ -408,6 +411,18 @@ export default function CheckInDetailsPage({
             ))
           )}
         </div>
+
+        {isEditing && (
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleUpdateQuestionsAndNotes}
+              className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white border border-green-500/30"
+            >
+              <Edit2 className="w-4 h-4" />
+              Update check-in question and notes
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Media Section - VIEW ONLY */}
@@ -495,10 +510,10 @@ export default function CheckInDetailsPage({
         />
       </div>
 
-      {/* Complete Check-In Button */}
-      {isEditing && (
+      {/* Complete check-in Button */}
+      {checkIn.status !== "Completed" && (
         <button
-          onClick={handleSave}
+          onClick={handleCompleteCheckIn}
           disabled={isSaving || isSaved}
           className={`w-full flex items-center justify-center gap-2 py-3 text-lg rounded-lg transition-colors font-semibold ${isSaved
             ? "bg-green-600 text-white cursor-default"
@@ -513,7 +528,7 @@ export default function CheckInDetailsPage({
           ) : isSaved ? (
             "Completed"
           ) : (
-            "Complete Check-in"
+            "Complete check-in"
           )}
         </button>
       )}

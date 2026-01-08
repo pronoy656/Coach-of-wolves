@@ -16,6 +16,7 @@ import oneNutritionPlanReducer from "./features/tab/oneNutritionPlanSlice";
 import showReducer from "./features/show/showSlice";
 import weeklyCheckinReducer from "./features/weeklyCheckin/weeklyCheckinSlice";
 import trainingHistoryReducer from "./features/trainingHistory/trainingHistorySlice";
+import trainingSplitReducer from "./features/trainingSplit/trainingSplitSlice";
 
 
 export const store = configureStore({
@@ -36,6 +37,7 @@ export const store = configureStore({
     show: showReducer, // Add this line
     weeklyCheckin: weeklyCheckinReducer,
     trainingHistory: trainingHistoryReducer,
+    trainingSplit: trainingSplitReducer,
   },
 });
 

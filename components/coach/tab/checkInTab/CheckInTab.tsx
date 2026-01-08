@@ -54,7 +54,7 @@ const mockCheckIns: CheckIn[] = [
     date: "12/10/2022",
     weight: 52.8,
     notes: "Feeling Good, No Issues To Report",
-    status: "Completed",
+    status: "In Progress",
     wellBeing: {
       energyLevel: 7,
       stressLevel: 3,

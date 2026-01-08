@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Search, Clock, Dumbbell, TrendingUp } from "lucide-react";
 import TrainingPlanPreview from "./TrainingPlanPreview";
-import TrainingSplitPreview from "./TrainingSplitPreview";
-import AddTrainingSplitModal from "./AddTrainingSplitModal";
+import TrainingSplitManager from "./TrainingSplitManager";
 import AddTrainingPlanModal from "./AddTrainingPlanModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import TrainingHistory from "./TrainingHistory";
@@ -27,30 +26,12 @@ interface PlanData {
   notes: string;
 }
 
-interface SplitEntry {
-  id: string;
-  day: string;
-  exercise: string;
+interface TrainingPageProps {
+  athleteId: string;
 }
 
-export default function TrainingPage() {
+export default function TrainingPage({ athleteId }: TrainingPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showTrainingSplitModal, setShowTrainingSplitModal] = useState(false);
-  const [showAddPlanModal, setShowAddPlanModal] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<PlanData | null>(null);
-
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    type: "plan" | "preview" | "split" | null;
-    id: string | null;
-  }>({
-    isOpen: false,
-    type: null,
-    id: null,
-  });
-
-  const [trainingSplits, setTrainingSplits] = useState<SplitEntry[]>([]);
-  const [isEditingSplit, setIsEditingSplit] = useState(false);
 
   // --- Initial Data for Small Cards (Training Plans) ---
   const [trainingPlans, setTrainingPlans] = useState<PlanData[]>([
@@ -246,8 +227,21 @@ export default function TrainingPage() {
     },
   ]);
 
+  const [showAddPlanModal, setShowAddPlanModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<PlanData | null>(null);
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    type: "plan" | "preview" | null;
+    id: string | null;
+  }>({
+    isOpen: false,
+    type: null,
+    id: null,
+  });
+
   const handleDeleteClick = (
-    type: "plan" | "preview" | "split",
+    type: "plan" | "preview",
     id: string
   ) => {
     setDeleteModal({ isOpen: true, type, id });
@@ -264,8 +258,6 @@ export default function TrainingPage() {
       setPlanPreviews((prev) =>
         prev.filter((plan) => plan.id !== deleteModal.id)
       );
-    } else if (deleteModal.type === "split") {
-      setTrainingSplits([]);
     }
     setDeleteModal({ isOpen: false, type: null, id: null });
   };
@@ -293,15 +285,6 @@ export default function TrainingPage() {
     }
   };
 
-  const handleSaveTrainingSplit = (splits: SplitEntry[]) => {
-    setTrainingSplits(splits);
-    setIsEditingSplit(false);
-  };
-
-  const handleEditTrainingSplit = () => {
-    setIsEditingSplit(true);
-    setShowTrainingSplitModal(true);
-  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
@@ -320,15 +303,6 @@ export default function TrainingPage() {
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => {
-              setIsEditingSplit(false);
-              setShowTrainingSplitModal(true);
-            }}
-            className="bg-transparent border border-emerald-500 text-emerald-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 transition-colors"
-          >
-            + Add Training Split
-          </button>
           <button
             onClick={() => {
               setEditingPlan(null);
@@ -420,27 +394,14 @@ export default function TrainingPage() {
           )}
         </div>
 
-        {trainingSplits.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold">Training Split</h2>
-            <TrainingSplitPreview
-              splits={trainingSplits}
-              onEdit={handleEditTrainingSplit}
-              onDelete={() => handleDeleteClick("split", "")}
-            />
-          </div>
-        )}
+        <div className="pt-8 border-t border-[#2d2d45]">
+          <TrainingSplitManager athleteId={athleteId} />
+        </div>
 
         {/* Training History Section */}
         <TrainingHistory />
       </div>
       {/* Modals */}
-      <AddTrainingSplitModal
-        open={showTrainingSplitModal}
-        onOpenChange={setShowTrainingSplitModal}
-        onSave={handleSaveTrainingSplit}
-        existingSplits={isEditingSplit ? trainingSplits : []}
-      />
       <AddTrainingPlanModal
         open={showAddPlanModal}
         onOpenChange={(open) => {
@@ -455,10 +416,9 @@ export default function TrainingPage() {
         title={
           deleteModal.type === "plan"
             ? "Delete Training Plan"
-            : deleteModal.type === "preview"
-              ? "Delete Plan Preview"
-              : "Delete Training Split"
+            : "Delete Plan Preview"
         }
+
         message="Are you sure you want to delete this item? This action cannot be undone."
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModal({ isOpen: false, type: null, id: null })}
