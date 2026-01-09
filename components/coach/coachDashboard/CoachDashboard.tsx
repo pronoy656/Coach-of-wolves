@@ -47,7 +47,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
       case "Check-Ins":
         return (
           <div className="text-gray-400">
-            <CheckInTab />
+            <CheckInTab athleteId={athleteId} />
           </div>
         );
       case "Training":

@@ -6,207 +6,151 @@
 
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Calendar, Weight } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchWeeklyCheckins, clearMessages, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import CheckInDetailsPage from "./CheckInDetailsPage";
-// import { Input } from "@/components/ui/input"
-// import CheckInDetail from "@/components/check-in-detail"
-// import { DeleteModal } from "@/components/delete-modal"
+import toast from "react-hot-toast";
 
-interface CheckIn {
-  id: string;
-  date: string;
-  weight: number;
-  notes: string;
-  status: "Completed" | "In Progress";
-  wellBeing: {
-    energyLevel: number;
-    stressLevel: number;
-    moodLevel: number;
-    sleepQuality: number;
-  };
-  nutrition: {
-    dietLevel: number;
-    digestion: number;
-    challengeDiet: string;
-  };
-  training: {
-    feelStrength: number;
-    pumps: number;
-    trainingCompleted: boolean;
-    cardioCompleted: boolean;
-    feedbackTraining: string;
-  };
-  questions: Array<{
-    id: string;
-    question: string;
-    answer: string;
-    isMandatory?: boolean;
-  }>;
-  images?: string[];
-  videos?: string[];
+interface CheckInTabProps {
+  athleteId: string;
 }
 
-const mockCheckIns: CheckIn[] = [
-  {
-    id: "1",
-    date: "12/10/2022",
-    weight: 52.8,
-    notes: "Feeling Good, No Issues To Report",
-    status: "In Progress",
-    wellBeing: {
-      energyLevel: 7,
-      stressLevel: 3,
-      moodLevel: 8,
-      sleepQuality: 8,
-    },
-    nutrition: {
-      dietLevel: 7,
-      digestion: 8,
-      challengeDiet: "Intermittent Fasting",
-    },
-    training: {
-      feelStrength: 8,
-      pumps: 7,
-      trainingCompleted: true,
-      cardioCompleted: false,
-      feedbackTraining: "Great session today",
-    },
-    questions: [
-      {
-        id: "1",
-        question: "What went well last week?",
-        answer: "AI: Training went well and my routine was pretty solid.",
-        isMandatory: true,
-      },
-      {
-        id: "2",
-        question: "What are you proud of?",
-        answer:
-          "A2: I'm proud that I stayed consistent and showed up even on the days I didn't feel like it.",
-        isMandatory: true,
-      },
-      {
-        id: "3",
-        question: "What do you want to share with me?",
-        answer: "A3: I'm proud of my hard work and perseverance.",
-        isMandatory: false,
-      },
-      {
-        id: "4",
-        question: "What went well last week?",
-        answer: "A4: I completed all my tasks on time.",
-        isMandatory: false,
-      },
-    ],
-    images: [
-      "/workout-image-1.jpg",
-      "/workout-image-2.jpg",
-      "/workout-image-3.jpg",
-      "/workout-image-4.jpg",
-    ],
-    videos: ["/workout-video-thumbnail.jpg"],
-  },
-];
-
-export default function CheckInTab() {
-  const [selectedCheckIn, setSelectedCheckIn] = useState<string>("1");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [checkIns, setCheckIns] = useState(mockCheckIns);
+export default function CheckInTab({ athleteId }: CheckInTabProps) {
+  const dispatch = useAppDispatch();
+  const { checkins, loading, error, successMessage } = useAppSelector((state) => state.weeklyCheckin);
+  const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleUpdateCheckIn = (updatedCheckIn: CheckIn) => {
-    setCheckIns(
-      checkIns.map((c) => (c.id === updatedCheckIn.id ? updatedCheckIn : c))
-    );
-  };
+  useEffect(() => {
+    dispatch(fetchWeeklyCheckins());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, error, dispatch]);
+
+  // Set first check-in as selected by default if none selected
+  useEffect(() => {
+    if (checkins.length > 0 && !selectedCheckInId) {
+      setSelectedCheckInId(checkins[0]._id);
+    }
+  }, [checkins, selectedCheckInId]);
 
   const handleDeleteCheckIn = () => {
+    // Backend delete not provided yet in the request, but we can clear it locally or wait for endpoint
     if (deleteId) {
-      setCheckIns(checkIns.filter((c) => c.id !== deleteId));
+      toast.error("Delete functionality not fully implemented on backend");
       setDeleteId(null);
     }
   };
 
-  const filteredCheckIns = checkIns.filter(
-    (c) =>
-      c.date.includes(searchQuery) ||
-      c.notes.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const currentCheckIn = checkins.find((c) => c._id === selectedCheckInId);
 
-  const currentCheckIn = checkIns.find((c) => c.id === selectedCheckIn);
+  const handleUpdateStatus = () => {
+    if (currentCheckIn && currentCheckIn.userId) {
+      dispatch(updateCheckinStatus(currentCheckIn.userId));
+    }
+  };
 
   return (
-    <div className="min-h-screen  p-6">
-      <div className="">
-        <h1 className="text-4xl font-bold text-white mb-8">Check-Ins</h1>
+    <div className="min-h-screen p-2 md:p-6 bg-[#0a0a0a]">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-4xl font-bold text-white">Check-Ins</h1>
+        </div>
 
-        {/* <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            placeholder="Search Here..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-4 py-3 bg-[#08081A] border border-[#303245] rounded-lg text-white placeholder-gray-500 focus:border-[#00A63E]focus:ring-1 focus:ring-[#00A63E]"
-          />
-        </div> */}
+        {loading && checkins.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 animate-spin text-emerald-500 mb-4" />
+            <p className="text-gray-500">Loading check-ins...</p>
+          </div>
+        ) : (
+          <div className="space-y-10">
+            {/* Main Content Area - Full Width */}
+            <div className="w-full">
+              {currentCheckIn ? (
+                <div className="space-y-10 animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-gradient-to-br from-[#111111] to-[#0a0a0a] border border-[#2a2a2a] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px]" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-[100px]" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content - Weight Card & Check-in Detail */}
-          <div className="lg:col-span-4">
-            {currentCheckIn && (
-              <>
-                <div className="bg-gradient-to-br bg-[#08081A] border border-[#303245] rounded-xl p-6 mb-8">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <p className="text-gray-400 text-sm mb-3">
-                        Check-in Date
-                      </p>
-                      <p className="text-white font-semibold text-lg mb-6">
-                        {currentCheckIn.date}
-                      </p>
-                      <div className="grid grid-cols-2 gap-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-8 relative text-center md:text-left">
+                      <div className="space-y-8 flex-1">
                         <div>
-                          <p className="text-gray-400 uppercase tracking-wider mb-1">
-                            Current Weight
-                          </p>
-                          <p className="text-[#69B427] text-2xl font-bold">
-                            {currentCheckIn.weight} kg
+                          <p className="text-gray-500 text-xs uppercase tracking-widest mb-2 font-semibold">Check-in Date</p>
+                          <p className="text-white font-black text-2xl md:text-3xl uppercase tracking-tighter">
+                            {new Date(currentCheckIn.createdAt).toLocaleDateString(undefined, {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-gray-400 uppercase tracking-wider mb-1">
-                            Average Weight
-                          </p>
-                          <p className="text-[#69B427] text-2xl font-bold">
-                            {currentCheckIn.weight.toFixed(1)} kg
-                          </p>
+
+                        <div className="flex flex-wrap justify-center md:justify-start gap-12 md:gap-20">
+                          <div>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">Current Weight</p>
+                            <p className="text-emerald-500 text-4xl md:text-5xl font-black">
+                              {currentCheckIn.currentWeight} <span className="text-lg font-normal text-gray-500 ml-1">kg</span>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">Average Weight</p>
+                            <p className="text-emerald-500/80 text-4xl md:text-5xl font-black">
+                              {currentCheckIn.averageWeight} <span className="text-lg font-normal text-gray-500 ml-1">kg</span>
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="inline-block px-4 py-2 bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 text-sm font-medium rounded-lg">
-                        {currentCheckIn.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-t border-slate-700/50 pt-4 mt-4">
-                    <p className="text-gray-300 text-sm">
-                      {currentCheckIn.notes}
-                    </p>
-                  </div>
-                </div>
 
-                <CheckInDetailsPage
-                  checkIn={currentCheckIn}
-                  onUpdate={handleUpdateCheckIn}
-                  onDelete={() => setDeleteId(currentCheckIn.id)}
-                />
-              </>
-            )}
+                      <div className="flex flex-col items-center md:items-end gap-4">
+                        <span className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${currentCheckIn.checkinCompleted === "Completed"
+                          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                          : "bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                          }`}>
+                          {currentCheckIn.checkinCompleted === "Completed" ? "Completed" : "Action Required"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[#2a2a2a] pt-10 mt-10">
+                      <div className="relative group">
+                        <div className="absolute -left-4 top-0 bottom-0 w-1 bg-emerald-500 rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                        <p className="text-gray-400 text-lg leading-relaxed italic pl-4">
+                          "{currentCheckIn.athleteNote || "The athlete didn't provide any specific notes for this check-in."}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <CheckInDetailsPage
+                    checkIn={currentCheckIn}
+                    onDelete={() => setDeleteId(currentCheckIn._id)}
+                  />
+                </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center bg-[#0a0a0a] border border-dashed border-[#2a2a2a] rounded-3xl min-h-[500px]">
+                  <div className="w-16 h-16 rounded-full bg-[#111111] border border-[#2a2a2a] flex items-center justify-center mb-4">
+                    <Calendar className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <p className="text-gray-500 italic text-lg">Select a check-in card from the list above</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {deleteId && (

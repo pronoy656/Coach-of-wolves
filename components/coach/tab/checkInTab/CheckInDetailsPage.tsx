@@ -1,47 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Loader2 } from "lucide-react";
-
-interface CheckIn {
-  id: string;
-  date: string;
-  weight: number;
-  averageWeight?: number;
-  notes: string;
-  status: "Completed" | "In Progress";
-  wellBeing: {
-    energyLevel: number;
-    stressLevel: number;
-    moodLevel: number;
-    sleepQuality: number;
-  };
-  nutrition: {
-    dietLevel: number;
-    digestion: number;
-    challengeDiet: string;
-  };
-  training: {
-    feelStrength: number;
-    pumps: number;
-    trainingCompleted: boolean;
-    cardioCompleted: boolean;
-    feedbackTraining: string;
-  };
-  questions: Array<{
-    id: string;
-    question: string;
-    answer: string;
-    isMandatory?: boolean;
-  }>;
-  images?: string[];
-  videos?: string[];
-}
+import { useAppDispatch } from "@/redux/hooks";
+import { updateWeeklyCheckin, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import { WeeklyCheckin, QuestionAndAnswer } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+import toast from "react-hot-toast";
 
 interface CheckInDetailProps {
-  checkIn: CheckIn;
-  onUpdate: (checkIn: CheckIn) => void;
+  checkIn: WeeklyCheckin;
+  onUpdate?: (checkIn: WeeklyCheckin) => void;
   onDelete: () => void;
 }
 
@@ -72,37 +41,42 @@ export default function CheckInDetailsPage({
   onUpdate,
   onDelete,
 }: CheckInDetailProps) {
+  const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(checkIn);
+  const [editData, setEditData] = useState<WeeklyCheckin>(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
-  const [isNewQuestionMandatory, setIsNewQuestionMandatory] = useState(false);
+  const [isNewQuestionStatus, setIsNewQuestionStatus] = useState(false);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  useEffect(() => {
+    setEditData(checkIn);
+  }, [checkIn]);
+
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
-      const newQuestion = {
-        id: Date.now().toString(),
+      const newQuestion: QuestionAndAnswer = {
+        _id: Date.now().toString(),
         question: newQuestionInput,
         answer: "",
-        isMandatory: isNewQuestionMandatory,
+        status: isNewQuestionStatus,
       };
       setEditData((prev) => ({
         ...prev,
-        questions: [...prev.questions, newQuestion],
+        questionAndAnswer: [...prev.questionAndAnswer, newQuestion],
       }));
       setNewQuestionInput("");
-      setIsNewQuestionMandatory(false);
+      setIsNewQuestionStatus(false);
       setShowAddQuestion(false);
     }
   };
 
-  const handleQuestionAnswerChange = (questionId: string, answer: string) => {
+  const handleQuestionChange = (questionId: string, value: string, field: "question" | "answer") => {
     setEditData((prev) => ({
       ...prev,
-      questions: prev.questions.map((q) =>
-        q.id === questionId ? { ...q, answer } : q
+      questionAndAnswer: prev.questionAndAnswer.map((q) =>
+        q._id === questionId ? { ...q, [field]: value } : q
       ),
     }));
   };
@@ -110,32 +84,47 @@ export default function CheckInDetailsPage({
   const handleDeleteQuestion = (questionId: string) => {
     setEditData((prev) => ({
       ...prev,
-      questions: prev.questions.filter((q) => q.id !== questionId),
+      questionAndAnswer: prev.questionAndAnswer.filter((q) => q._id !== questionId),
     }));
   };
 
   const handleUpdateQuestionsAndNotes = async () => {
     setIsSaving(true);
-    // Simulate a brief delay for the update action
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    onUpdate(editData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      const updatePayload = {
+        questionAndAnswer: editData.questionAndAnswer.map(q => ({
+          question: q.question,
+          answer: q.answer,
+          status: q.status
+        })),
+        coachNote: editData.coachNote
+      };
+      await dispatch(updateWeeklyCheckin({ id: checkIn._id, data: updatePayload })).unwrap();
+      toast.success("question updated successfully");
+      setIsEditing(false);
+    } catch (err: any) {
+      toast.error(err || "Failed to update check-in");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCompleteCheckIn = async () => {
+    if (!checkIn.userId) return;
     setIsSaving(true);
-    const completedData: CheckIn = { ...editData, status: "Completed" };
-    // Simulate a brief delay for the "Complete Check-in" action
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    onUpdate(completedData);
-    setIsSaving(false);
-    setIsSaved(true);
-    // Wait a moment so the user can see the "Completed" state before closing edit mode
-    setTimeout(() => {
-      setIsEditing(false);
-      setIsSaved(false);
-    }, 1500);
+    try {
+      await dispatch(updateCheckinStatus(checkIn.userId)).unwrap();
+      toast.success("check in completed");
+      setIsSaved(true);
+      setTimeout(() => {
+        setIsSaved(false);
+        setIsEditing(false);
+      }, 1500);
+    } catch (err: any) {
+      toast.error(err || "Failed to update status");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const SliderWithIndicator = ({
@@ -210,7 +199,7 @@ export default function CheckInDetailsPage({
           <div className="space-y-4 mb-6">
             {[
               { label: "Diet Level", value: checkIn.nutrition.dietLevel },
-              { label: "Digestion", value: checkIn.nutrition.digestion },
+              { label: "Digestion", value: checkIn.nutrition.digestionLevel },
             ].map(({ label, value }) => (
               <SliderWithIndicator key={label} label={label} value={value} />
             ))}
@@ -266,7 +255,7 @@ export default function CheckInDetailsPage({
               Feedback Training
             </label>
             <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
-              {checkIn.training.feedbackTraining}
+              {checkIn.trainingFeedback}
             </div>
           </div>
         </div>
@@ -325,10 +314,9 @@ export default function CheckInDetailsPage({
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
-                  checked={isNewQuestionMandatory}
+                  checked={isNewQuestionStatus}
                   onChange={(e) => {
-                    console.log(e.target.checked);
-                    setIsNewQuestionMandatory(e.target.checked);
+                    setIsNewQuestionStatus(e.target.checked);
                   }}
                   className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
                 />
@@ -342,21 +330,21 @@ export default function CheckInDetailsPage({
         )}
 
         <div className="space-y-4">
-          {editData.questions.length === 0 ? (
+          {editData.questionAndAnswer.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">
               No questions added yet
             </p>
           ) : (
-            editData.questions.map((q, index) => (
+            editData.questionAndAnswer.map((q, index) => (
               <div
-                key={q.id}
+                key={q._id}
                 className="bg-[#0B0B22] rounded-lg p-5 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex flex-col gap-1">
                     <p className="text-white font-semibold">
                       Q{index + 1}. {q.question}{" "}
-                      {q.isMandatory && (
+                      {q.status && (
                         <span className="text-red-500 ml-1">*</span>
                       )}
                     </p>
@@ -365,21 +353,20 @@ export default function CheckInDetailsPage({
                         <label className="flex items-center gap-2 cursor-pointer group">
                           <input
                             type="checkbox"
-                            checked={q.isMandatory === true}
+                            checked={q.status === true}
                             onChange={(e) => {
-                              console.log(e.target.checked);
                               setEditData((prev) => ({
                                 ...prev,
-                                questions: prev.questions.map((quest) =>
-                                  quest.id === q.id
-                                    ? { ...quest, isMandatory: e.target.checked }
+                                questionAndAnswer: prev.questionAndAnswer.map((quest) =>
+                                  quest._id === q._id
+                                    ? { ...quest, status: e.target.checked }
                                     : quest
                                 ),
                               }));
                             }}
                             className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
                           />
-                          <span className={`text-xs transition-colors ${q.isMandatory ? "text-emerald-400" : "text-gray-400 group-hover:text-emerald-400"}`}>
+                          <span className={`text-xs transition-colors ${q.status ? "text-emerald-400" : "text-gray-400 group-hover:text-emerald-400"}`}>
                             Mandatory
                           </span>
                         </label>
@@ -388,7 +375,7 @@ export default function CheckInDetailsPage({
                   </div>
                   {isEditing && (
                     <button
-                      onClick={() => handleDeleteQuestion(q.id)}
+                      onClick={() => handleDeleteQuestion(q._id)}
                       className="text-red-500 hover:text-red-400 transition-colors ml-2 flex-shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -398,7 +385,7 @@ export default function CheckInDetailsPage({
                 <textarea
                   value={q.answer}
                   onChange={(e) =>
-                    handleQuestionAnswerChange(q.id, e.target.value)
+                    handleQuestionChange(q._id, e.target.value, "answer")
                   }
                   disabled={!isEditing}
                   className="w-full bg-[#08081A] border border-slate-600 rounded-lg px-3 py-2 text-gray-300 text-sm resize-none disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
@@ -426,71 +413,71 @@ export default function CheckInDetailsPage({
       </div>
 
       {/* Media Section - VIEW ONLY */}
-      {(checkIn.images?.length || checkIn.videos?.length) && (
-        <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-            <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-            Media
-          </h3>
+      <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+          <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
+          Media
+        </h3>
 
-          {checkIn.images && checkIn.images.length > 0 && (
-            <div className="mb-8">
-              <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {checkIn.images.map((image, idx) => (
-                  <div
-                    key={idx}
-                    className="aspect-square rounded-lg overflow-hidden border border-slate-700/50"
-                  >
-                    <img
-                      src={
-                        image ||
-                        "/placeholder.svg?height=200&width=200&query=workout"
-                      }
-                      alt={`Workout photo ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+        {checkIn.image?.length || checkIn.media?.length || checkIn.video?.length ? (
+          <>
+            {checkIn.image && checkIn.image.length > 0 ? (
+              <div className="mb-8">
+                <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {checkIn.image.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="aspect-square rounded-lg overflow-hidden border border-slate-700/50"
+                    >
+                      <img
+                        src={
+                          img ||
+                          "/placeholder.svg?height=200&width=200&query=workout"
+                        }
+                        alt={`Workout photo ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="mb-8 bg-[#0b0b22]/30 border border-slate-800/50 rounded-lg p-4 text-center">
+                <p className="text-slate-500 text-sm italic">No imagesuploaded</p>
+              </div>
+            )}
 
-          {checkIn.videos && checkIn.videos.length > 0 && (
-            <div>
-              <p className="text-gray-300 text-sm mb-4 font-semibold">Videos</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {checkIn.videos.map((video, idx) => (
-                  <div
-                    key={idx}
-                    className="relative aspect-video rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900"
-                  >
-                    <img
-                      src={
-                        video ||
-                        "/placeholder.svg?height=300&width=500&query=workout-video"
-                      }
-                      alt={`Workout video ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <div className="w-14 h-14 rounded-full bg-emerald-500/80 flex items-center justify-center shadow-lg">
-                        <svg
-                          className="w-7 h-7 text-white ml-1"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>
+            {(checkIn.video || checkIn.media) && (
+              <div>
+                <p className="text-gray-300 text-sm mb-4 font-semibold">Videos & Media</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...(checkIn.video || []), ...(checkIn.media || [])].map((vid, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-video rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900"
+                    >
+                      <div className="w-full h-full flex items-center justify-center bg-black/20">
+                        <video src={vid} controls className="w-full h-full" />
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-800 rounded-xl bg-[#0b0b22]/50">
+            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-          )}
-        </div>
-      )}
+            <p className="text-slate-400 font-medium tracking-tight">No imagesuploaded</p>
+            <p className="text-slate-500 text-sm">Athletes haven't provided any photos or videos yet.</p>
+          </div>
+        )}
+      </div>
 
       {/* Check-in Notes - EDITABLE */}
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
@@ -499,9 +486,9 @@ export default function CheckInDetailsPage({
           Coach's Notes
         </label>
         <textarea
-          value={editData.notes}
+          value={editData.coachNote}
           onChange={(e) =>
-            setEditData((prev) => ({ ...prev, notes: e.target.value }))
+            setEditData((prev) => ({ ...prev, coachNote: e.target.value }))
           }
           disabled={!isEditing}
           className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 resize-none disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
@@ -511,7 +498,7 @@ export default function CheckInDetailsPage({
       </div>
 
       {/* Complete check-in Button */}
-      {checkIn.status !== "Completed" && (
+      {checkIn.checkinCompleted !== "Completed" && (
         <button
           onClick={handleCompleteCheckIn}
           disabled={isSaving || isSaved}
