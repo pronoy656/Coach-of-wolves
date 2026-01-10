@@ -40,6 +40,19 @@ export const fetchWeeklyCheckins = createAsyncThunk(
     }
 );
 
+// Get latest check-in for specific athlete
+export const fetchLatestCheckinByAthlete = createAsyncThunk(
+    "weeklyCheckin/fetchLatest",
+    async (athleteId: string, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/check-in/latest/${athleteId}`);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch latest check-in");
+        }
+    }
+);
+
 // Update check-in (Coach updates question and coachNote)
 export const updateWeeklyCheckin = createAsyncThunk(
     "weeklyCheckin/update",
@@ -101,10 +114,24 @@ const weeklyCheckinSlice = createSlice({
             })
             .addCase(fetchWeeklyCheckins.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.checkins = action.payload.data || [];
+                state.checkins = action.payload.data?.data || action.payload.data || [];
                 state.stats = calculateStats(state.checkins);
             })
             .addCase(fetchWeeklyCheckins.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Fetch latest check-in
+            .addCase(fetchLatestCheckinByAthlete.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchLatestCheckinByAthlete.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.checkins = action.payload.data?.data || action.payload.data || [];
+                state.stats = calculateStats(state.checkins);
+            })
+            .addCase(fetchLatestCheckinByAthlete.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })

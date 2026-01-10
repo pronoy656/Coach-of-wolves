@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, Calendar, Weight } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchWeeklyCheckins, clearMessages, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import { fetchLatestCheckinByAthlete, clearMessages, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import CheckInDetailsPage from "./CheckInDetailsPage";
@@ -26,8 +26,10 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchWeeklyCheckins());
-  }, [dispatch]);
+    if (athleteId) {
+      dispatch(fetchLatestCheckinByAthlete(athleteId));
+    }
+  }, [dispatch, athleteId]);
 
   useEffect(() => {
     if (successMessage) {
