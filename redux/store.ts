@@ -18,6 +18,7 @@ import weeklyCheckinReducer from "./features/weeklyCheckin/weeklyCheckinSlice";
 import trainingHistoryReducer from "./features/trainingHistory/trainingHistorySlice";
 import trainingSplitReducer from "./features/trainingSplit/trainingSplitSlice";
 import trainingPlanReducer from "./features/trainingPlan/trainingPlanSlice";
+import timelineReducer from "./features/timeline/timelineSlice";
 
 
 export const store = configureStore({
@@ -40,6 +41,7 @@ export const store = configureStore({
     trainingHistory: trainingHistoryReducer,
     trainingSplit: trainingSplitReducer,
     trainingPlan: trainingPlanReducer,
+    timeline: timelineReducer,
   },
 });
 

@@ -62,16 +62,16 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
             <NutritionTab athleteId={athleteId} />
           </div>
         );
+      case "Timeline":
+        return (
+          <div>
+            <TimelineTab athleteId={athleteId} />
+          </div>
+        );
       case "Supplements":
         return (
           <div className="">
             <SupplementsTab />
-          </div>
-        );
-      case "Timeline":
-        return (
-          <div>
-            <TimelineTab />
           </div>
         );
       case "PED":
