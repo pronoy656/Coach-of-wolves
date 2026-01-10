@@ -19,7 +19,7 @@ import trainingHistoryReducer from "./features/trainingHistory/trainingHistorySl
 import trainingSplitReducer from "./features/trainingSplit/trainingSplitSlice";
 import trainingPlanReducer from "./features/trainingPlan/trainingPlanSlice";
 import timelineReducer from "./features/timeline/timelineSlice";
-
+import coachAthletesReducer from "./features/coachAthletes/coachAthletesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -42,6 +42,7 @@ export const store = configureStore({
     trainingSplit: trainingSplitReducer,
     trainingPlan: trainingPlanReducer,
     timeline: timelineReducer,
+    coachAthletes: coachAthletesReducer,
   },
 });
 

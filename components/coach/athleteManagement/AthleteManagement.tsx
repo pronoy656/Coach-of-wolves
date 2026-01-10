@@ -1,147 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronDown, Search, Edit2, Trash2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ChevronDown, Search, Edit2, Trash2, Loader2 } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
+import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import Image from "next/image";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchCoachAthletes, deleteAthlete, addAthlete, updateAthlete, clearMessages } from "@/redux/features/coachAthletes/coachAthletesSlice";
+import { getCoachProfile } from "@/redux/features/coachProfile/coachProfileSlice";
+import { Athlete } from "@/redux/features/coachAthletes/coachAthletesType";
+import toast from "react-hot-toast";
 
-interface Athlete {
-  id: string;
-  name: string;
-  category: string;
-  phase: string;
-  weight: number;
-  height: number;
-  status: "Natural" | "Enhanced";
-  lastCheckIn: string;
-  gender: string;
-  email: string;
-  age: number;
-  trainingDaySteps: number;
-  restDaySteps: number;
-  checkInDay: string;
-  waterQuantity: number;
-  goal: string;
-  image?: string;
-}
-
-const SAMPLE_ATHLETES: Athlete[] = [
-  {
-    id: "1",
-    name: "Jhon",
-    category: "Lifestyle",
-    phase: "Prep",
-    weight: 85,
-    height: 180,
-    status: "Natural",
-    lastCheckIn: "10/10/2025",
-    gender: "Male",
-    email: "jhon@example.com",
-    age: 28,
-    trainingDaySteps: 8000,
-    restDaySteps: 6000,
-    checkInDay: "Monday",
-    waterQuantity: 2000,
-    goal: "Build muscle and strength",
-    image: "/avater-1.jpg",
-  },
-  {
-    id: "2",
-    name: "Alex",
-    category: "Bikini",
-    phase: "Offseason",
-    weight: 75,
-    height: 180,
-    status: "Enhanced",
-    lastCheckIn: "10/10/2025",
-    gender: "Female",
-    email: "alex@example.com",
-    age: 26,
-    trainingDaySteps: 7500,
-    restDaySteps: 5500,
-    checkInDay: "Tuesday",
-    waterQuantity: 1800,
-    goal: "Increase muscle mass",
-    image: "/avater-1.jpg",
-  },
-  {
-    id: "3",
-    name: "Doe",
-    category: "Men's Physique",
-    phase: "Peak Week",
-    weight: 65,
-    height: 180,
-    status: "Natural",
-    lastCheckIn: "10/10/2025",
-    gender: "Male",
-    email: "doe@example.com",
-    age: 30,
-    trainingDaySteps: 9000,
-    restDaySteps: 7000,
-    checkInDay: "Wednesday",
-    waterQuantity: 2200,
-    goal: "Peak for competition",
-    image: "/avater-1.jpg",
-  },
-  {
-    id: "4",
-    name: "Jack",
-    category: "Classic Physique",
-    phase: "Diet Break",
-    weight: 80,
-    height: 180,
-    status: "Enhanced",
-    lastCheckIn: "10/10/2025",
-    gender: "Male",
-    email: "jack@example.com",
-    age: 32,
-    trainingDaySteps: 8500,
-    restDaySteps: 6500,
-    checkInDay: "Thursday",
-    waterQuantity: 2100,
-    goal: "Maintain muscle during break",
-    image: "/avater-1.jpg",
-  },
-  {
-    id: "5",
-
-    name: "Ariyan",
-    category: "Bodybuilding",
-    phase: "Offseason",
-    weight: 90,
-    height: 180,
-    status: "Natural",
-    lastCheckIn: "10/10/2025",
-    gender: "Male",
-    email: "ariyan@example.com",
-    age: 29,
-    trainingDaySteps: 10000,
-    restDaySteps: 8000,
-    checkInDay: "Friday",
-    waterQuantity: 2500,
-    goal: "Build massive size",
-    image: "/avater-1.jpg",
-  },
-];
-
-const STATUS_OPTIONS = ["Natural", "Enhanced"];
-const PHASE_OPTIONS = [
-  "Pre-Prep",
-  "Offseason",
-  "Peak Week",
-  "Prep",
-  "Diet-Break",
-  "Fat-Reduction Phase",
-  "Reverse-Diet-Phase",
-];
-const CATEGORY_MALE = [
-  "Lifestyle",
-  "Men's Physique",
-  "Classic Physique",
-  "212 Bodybuilding",
-  "Bodybuilding",
-  "Other",
-];
 const CATEGORY_FEMALE = [
   "Lifestyle",
   "Fitmodel",
@@ -153,14 +22,71 @@ const CATEGORY_FEMALE = [
   "Other",
 ];
 
+const PHASE_OPTIONS = [
+  "Pre-Prep",
+  "Offseason",
+  "Peak Week",
+  "Prep",
+  "Diet-Break",
+  "Fat-Reduction Phase",
+  "Reverse-Diet-Phase",
+];
+
+const CATEGORY_MALE = [
+  "Lifestyle",
+  "Men's Physique",
+  "Classic Physique",
+  "212 Bodybuilding",
+  "Bodybuilding",
+  "Other",
+];
+
+const STATUS_OPTIONS = ["Natural", "Enhanced"];
+
 export default function AthleteManagement() {
-  const [athletes, setAthletes] = useState<Athlete[]>(SAMPLE_ATHLETES);
+  const dispatch = useAppDispatch();
+  const { athletes, loading, error, successMessage } = useAppSelector((state) => state.coachAthletes);
+  const { profile } = useAppSelector((state) => state.coachProfile);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [phaseFilter, setPhaseFilter] = useState("All Phases");
   const [categoryFilter, setCategoryFilter] = useState("Category");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [athleteToDelete, setAthleteToDelete] = useState<Athlete | null>(null);
+
+  useEffect(() => {
+    if (!profile) {
+      dispatch(getCoachProfile());
+    }
+  }, [dispatch, profile]);
+
+  useEffect(() => {
+    console.log("AthleteManagement mounted, fetching athletes...");
+    dispatch(fetchCoachAthletes());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (athletes.length > 0) {
+      console.log("Athletes in Redux:", athletes);
+    }
+  }, [athletes]);
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+      if (profile?._id) {
+        dispatch(fetchCoachAthletes());
+      }
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, error, dispatch, profile?._id]);
 
   const filteredAthletes = useMemo(() => {
     return athletes.filter((athlete) => {
@@ -188,34 +114,29 @@ export default function AthleteManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSaveAthlete = (
-    athleteData: Omit<Athlete, "id" | "lastCheckIn"> & {
-      id?: string;
-      lastCheckIn?: string;
-    }
-  ) => {
-    if (selectedAthlete) {
-      setAthletes(
-        athletes.map((a) =>
-          a.id === selectedAthlete.id
-            ? { ...athleteData, id: a.id, lastCheckIn: a.lastCheckIn }
-            : a
-        )
-      );
+  const handleSaveAthlete = (athleteData: Partial<Athlete>) => {
+    if (selectedAthlete && selectedAthlete._id) {
+      dispatch(updateAthlete({ id: selectedAthlete._id, data: athleteData }));
     } else {
-      const newAthlete: Athlete = {
-        ...athleteData,
-        id: Date.now().toString(),
-        lastCheckIn: new Date().toLocaleDateString(),
-      };
-      setAthletes([...athletes, newAthlete]);
+      if (profile?._id) {
+        dispatch(addAthlete({ ...athleteData, coachId: profile._id }));
+      }
     }
     setIsModalOpen(false);
     setSelectedAthlete(null);
   };
 
-  const handleDeleteAthlete = (id: string) => {
-    setAthletes(athletes.filter((a) => a.id !== id));
+  const handleDeleteAthlete = (athlete: Athlete) => {
+    setAthleteToDelete(athlete);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (athleteToDelete?._id) {
+      dispatch(deleteAthlete(athleteToDelete._id));
+      setIsDeleteModalOpen(false);
+      setAthleteToDelete(null);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -231,6 +152,7 @@ export default function AthleteManagement() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
             Athletes Management
+            {loading && <Loader2 className="inline-block ml-4 h-6 w-6 animate-spin text-emerald-500" />}
           </h1>
         </div>
 
@@ -362,12 +284,11 @@ export default function AthleteManagement() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAthletes.map((athlete, index) => (
+                {filteredAthletes.map((athlete: Athlete, index: number) => (
                   <tr
-                    key={athlete.id}
-                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${
-                      index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
-                    }`}
+                    key={athlete._id}
+                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
+                      }`}
                   >
                     <td className="px-6 py-4">
                       {athlete.image ? (
@@ -410,7 +331,7 @@ export default function AthleteManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-white">
-                      {athlete.lastCheckIn}
+                      {athlete.lastActive ? new Date(athlete.lastActive).toLocaleDateString() : "N/A"}
                     </td>
                     <td className="px-6 py-4 text-white">
                       {athlete.waterQuantity}
@@ -425,7 +346,7 @@ export default function AthleteManagement() {
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDeleteAthlete(athlete.id)}
+                          onClick={() => handleDeleteAthlete(athlete)}
                           className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors"
                           title="Delete"
                         >
@@ -458,6 +379,16 @@ export default function AthleteManagement() {
         }}
         onSave={handleSaveAthlete}
         athlete={selectedAthlete}
+      />
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Athlete"
+        message={`Are you sure you want to delete ${athleteToDelete?.name}? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setAthleteToDelete(null);
+        }}
       />
     </main>
   );
