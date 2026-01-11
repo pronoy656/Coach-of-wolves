@@ -1,59 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Users, Activity, TrendingUp, Clock, CheckCircle } from "lucide-react";
-
-// export default function StatsCard() {
-//   const cards = [
-//     {
-//       label: "Total Athletes",
-//       value: "102",
-//       icon: Users,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Active Athletes",
-//       value: "102",
-//       icon: Activity,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Daily Tracking",
-//       value: "10%",
-//       icon: TrendingUp,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Pending Check-In",
-//       value: "0",
-//       icon: Clock,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Complete Check-In",
-//       value: "50",
-//       icon: CheckCircle,
-//       color: "text-primary",
-//     },
-//   ];
-
-//   return (
-//     <div className="grid grid-cols-5 gap-4 p-7">
-//       {cards.map((card, i) => (
-//         <div
-//           key={i}
-//           className="bg-[#08081A] border border-[#4A9E4A] rounded-lg p-4"
-//         >
-//           <div className="flex items-center gap-3 mb-2">
-//             <div className="p-2 bg-[#4D6D32] rounded-lg">
-//               <card.icon size={24} className={card.color} />
-//             </div>
-//           </div>
-//           <p className="text-xl text-muted-foreground mb-1">{card.label}</p>
-//           <p className="text-xl text-[#8CCA4D] font-bold">{card.value}</p>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
 
 "use client";
 
@@ -108,75 +52,75 @@ export default function StatsCard() {
   // Format the cards based on API data
   const cards: StatCard[] = data
     ? [
-        {
-          label: "Total Athletes",
-          value: data.totalAthletes,
-          icon: Users,
-          color: "text-[#8CCA4D]",
-          description: "Total athletes assigned to you",
-        },
-        {
-          label: "Active Athletes",
-          value: data.totalActiveUsers,
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-          description: "Currently active athletes",
-        },
-        {
-          label: "Daily Tracking",
-          value: calculateDailyTrackingPercentage(),
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-          description: `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`,
-        },
-        {
-          label: "Pending Check-In",
-          value: data.checkins.pending,
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-          description: "Waiting for athlete response",
-        },
-        {
-          label: "Complete Check-In",
-          value: data.checkins.completed,
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-          description: "Successfully completed",
-        },
-      ]
+      {
+        label: "Total Athletes",
+        value: data.totalAthletes,
+        icon: Users,
+        color: "text-[#8CCA4D]",
+        description: "Total athletes assigned to you",
+      },
+      {
+        label: "Active Athletes",
+        value: data.totalActiveUsers,
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+        description: "Currently active athletes",
+      },
+      {
+        label: "Daily Tracking",
+        value: calculateDailyTrackingPercentage(),
+        icon: TrendingUp,
+        color: "text-[#8CCA4D]",
+        description: `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`,
+      },
+      {
+        label: "Pending Check-In",
+        value: data.checkins.pending,
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+        description: "Waiting for athlete response",
+      },
+      {
+        label: "Complete Check-In",
+        value: data.checkins.completed,
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+        description: "Successfully completed",
+      },
+    ]
     : [
-        // Fallback data while loading or if no data
-        {
-          label: "Total Athletes",
-          value: "0",
-          icon: Users,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Active Athletes",
-          value: "0",
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Daily Tracking",
-          value: "0",
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Pending Check-In",
-          value: "0",
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-        },
-        {
-          label: "Complete Check-In",
-          value: "0",
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-        },
-      ];
+      // Fallback data while loading or if no data
+      {
+        label: "Total Athletes",
+        value: "0",
+        icon: Users,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: "Active Athletes",
+        value: "0",
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: "Daily Tracking",
+        value: "0",
+        icon: TrendingUp,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: "Pending Check-In",
+        value: "0",
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+      },
+      {
+        label: "Complete Check-In",
+        value: "0",
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+      },
+    ];
 
   // Add description to cards if data exists
   if (data) {
@@ -242,39 +186,6 @@ export default function StatsCard() {
           </div>
         ))}
       </div>
-
-      {/* Refresh Button */}
-      {/* <div className="flex justify-end">
-        <button
-          onClick={() => dispatch(getCoachDashboardData())}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-[#4A9E4A] hover:bg-[#3c7913] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Refreshing...
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh Data
-            </>
-          )}
-        </button>
-      </div> */}
     </div>
   );
 }

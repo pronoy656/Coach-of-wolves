@@ -21,6 +21,8 @@ import trainingPlanReducer from "./features/trainingPlan/trainingPlanSlice";
 import timelineReducer from "./features/timeline/timelineSlice";
 import coachAthletesReducer from "./features/coachAthletes/coachAthletesSlice";
 
+import languageReducer from "./features/language/languageSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -43,6 +45,7 @@ export const store = configureStore({
     trainingPlan: trainingPlanReducer,
     timeline: timelineReducer,
     coachAthletes: coachAthletesReducer,
+    language: languageReducer,
   },
 });
 

@@ -13,11 +13,47 @@ import {
 } from "@/redux/features/coachProfile/coachProfileSlice";
 import toast from "react-hot-toast";
 import { useAppDispatch } from "@/redux/hooks";
+import { setLanguage } from "@/redux/features/language/languageSlice";
+
+const translations = {
+  en: {
+    dashboard: "Coach Dashboard",
+    coach: "Coach",
+    editProfile: "Edit Profile",
+    profilePicture: "Profile Picture",
+    displayName: "Display Name",
+    enterName: "Enter your name",
+    saveChanges: "Save Changes",
+    cancel: "Cancel",
+    noChanges: "No changes to save",
+    updating: "Updating profile...",
+    updated: "Profile updated successfully!",
+    failed: "Failed to update profile",
+    imgUpload: "Click the upload icon to change profile picture (Max 5MB)",
+  },
+  de: {
+    dashboard: "Coach-Dashboard",
+    coach: "Trainer",
+    editProfile: "Profil bearbeiten",
+    profilePicture: "Profilbild",
+    displayName: "Anzeigename",
+    enterName: "Geben Sie Ihren Namen ein",
+    saveChanges: "Änderungen speichern",
+    cancel: "Abbrechen",
+    noChanges: "Keine Änderungen zu speichern",
+    updating: "Profil wird aktualisiert...",
+    updated: "Profil erfolgreich aktualisiert!",
+    failed: "Profil-Update fehlgeschlagen",
+    imgUpload: "Klicken Sie auf das Upload-Symbol, um das Profilbild zu ändern (Max. 5MB)",
+  },
+};
 
 export default function Header() {
   const { profile, loading, error, updateLoading, updateError } = useSelector(
     (state: RootState) => state.coachProfile
   );
+  const { language } = useSelector((state: RootState) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tempName, setTempName] = useState("");
@@ -103,7 +139,7 @@ export default function Header() {
       // ✅ Send FormData to backend
       await dispatch(updateCoachProfile(formData)).unwrap();
 
-      toast.success("Profile updated successfully!", {
+      toast.success(t.updated, {
         id: toastId,
         duration: 3000,
       });
@@ -111,9 +147,13 @@ export default function Header() {
       dispatch(getCoachProfile());
       handleModalClose();
     } catch (err) {
-      toast.error("Failed to update profile", { id: toastId, duration: 4000 });
+      toast.error(t.failed, { id: toastId, duration: 4000 });
       console.error(err);
     }
+  };
+
+  const handleLanguageChange = (newLanguage: "en" | "de") => {
+    dispatch(setLanguage(newLanguage));
   };
 
   const triggerFileInput = () => {
@@ -129,9 +169,34 @@ export default function Header() {
       <header className="bg-[#101021] border border-[#2F312F] backdrop-blur px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-foreground">
-            Coach Dashboard
+            {t.dashboard}
           </h1>
           <div className="flex items-center gap-4">
+            {/* Language Toggle */}
+            <div className="flex items-center p-1 bg-[#1A1A2E]/80 border border-white/5 rounded-xl shadow-inner-lg backdrop-blur-md mr-3 relative group">
+              {/* Sliding Background Indicator */}
+              <div
+                className={`absolute h-[calc(100%-8px)] rounded-lg bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 ease-out z-0 ${language === "en" ? "w-[38px] left-[4px]" : "w-[38px] left-[42px]"
+                  }`}
+              />
+
+              <button
+                onClick={() => handleLanguageChange("en")}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "en" ? "text-white" : "text-gray-400 hover:text-gray-200"
+                  }`}
+              >
+                EN
+              </button>
+
+              <button
+                onClick={() => handleLanguageChange("de")}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "de" ? "text-white" : "text-gray-400 hover:text-gray-200"
+                  }`}
+              >
+                DE
+              </button>
+            </div>
+
             <button className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 transition relative">
               <Bell size={20} className="text-primary" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -164,7 +229,7 @@ export default function Header() {
                     displayName
                   )}
                 </p>
-                <p className="text-xs text-muted-foreground">Coach</p>
+                <p className="text-xs text-muted-foreground">{t.coach}</p>
               </div>
             </div>
           </div>
@@ -182,7 +247,7 @@ export default function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+              <h2 className="text-2xl font-bold text-white">{t.editProfile}</h2>
               <button
                 onClick={handleModalClose}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
@@ -243,14 +308,14 @@ export default function Header() {
             {/* Name Field */}
             <div className="mb-8">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Display Name
+                {t.displayName}
               </label>
               <input
                 type="text"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
                 className="w-full bg-[#0a0a14] border border-[#2F312F] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#4A9E4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="Enter your name"
+                placeholder={t.enterName}
                 disabled={updateLoading || loading}
               />
               {tempName !== profile?.name && (
@@ -267,7 +332,7 @@ export default function Header() {
                 className="flex-1 px-4 py-3 bg-[#0a0a14] border border-[#2F312F] text-white rounded-lg font-medium hover:bg-[#12121d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={updateLoading}
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={handleSave}
@@ -279,10 +344,10 @@ export default function Header() {
                 {updateLoading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Saving...
+                    {t.saveChanges}...
                   </>
                 ) : (
-                  "Save Changes"
+                  t.saveChanges
                 )}
               </button>
             </div>
