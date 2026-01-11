@@ -16,13 +16,13 @@ interface TrainingSplitModalProps {
 }
 
 const DAYS_OF_WEEK = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday"
+  "Day 1",
+  "Day 2",
+  "Day 3",
+  "Day 4",
+  "Day 5",
+  "Day 6",
+  "Day 7"
 ];
 
 const DEFAULT_EXERCISE_NAMES = [
@@ -50,17 +50,31 @@ export default function AddTrainingSplitModal({
   loading = false,
 }: TrainingSplitModalProps) {
   const [splits, setSplits] = useState<SplitDay[]>([
-    { day: "Monday", exerciseName: "" },
+    { day: "Day 1", exerciseName: "" },
   ]);
   const [errors, setErrors] = useState<Record<number, { day?: string; exerciseName?: string }>>({});
 
   useEffect(() => {
+    const dayMapping: Record<string, string> = {
+      "Monday": "Day 1",
+      "Tuesday": "Day 2",
+      "Wednesday": "Day 3",
+      "Thursday": "Day 4",
+      "Friday": "Day 5",
+      "Saturday": "Day 6",
+      "Sunday": "Day 7"
+    };
+
     if (open) {
       if (existingSplit && existingSplit.splite.length > 0) {
-        setSplits(existingSplit.splite);
+        const mappedSplits = existingSplit.splite.map(s => ({
+          ...s,
+          day: dayMapping[s.day] || s.day
+        }));
+        setSplits(mappedSplits);
       } else {
-        // Start with only Monday by default to avoid validation frustration
-        setSplits([{ day: "Monday", exerciseName: "" }]);
+        // Start with only Day 1 by default to avoid validation frustration
+        setSplits([{ day: "Day 1", exerciseName: "" }]);
       }
       setErrors({});
     }
@@ -215,7 +229,9 @@ export default function AddTrainingSplitModal({
                           <span className="text-red-400 text-xs">{errors[index]?.day}</span>
                         )}
                       </label>
-                      <select
+                      <input
+                        type="text"
+                        placeholder="e.g. Day 1"
                         value={split.day}
                         onChange={(e) => handleChange(index, "day", e.target.value)}
                         disabled={loading}
@@ -223,25 +239,7 @@ export default function AddTrainingSplitModal({
                           ? "border-red-500"
                           : "border-[#2a2a2a] focus:border-emerald-500"
                           }`}
-                      >
-                        <option value="">Select Day</option>
-                        {DAYS_OF_WEEK.map((day) => (
-                          <option key={day} value={day}>
-                            {day}
-                          </option>
-                        ))}
-                        <option value="Custom">Custom Day</option>
-                      </select>
-                      {split.day === "Custom" && (
-                        <input
-                          type="text"
-                          placeholder="Enter custom day name"
-                          value={split.day === "Custom" ? "" : split.day}
-                          onChange={(e) => handleChange(index, "day", e.target.value)}
-                          disabled={loading}
-                          className="w-full mt-2 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
-                        />
-                      )}
+                      />
                     </div>
 
                     {/* Exercise Name */}
@@ -275,17 +273,6 @@ export default function AddTrainingSplitModal({
                   </div>
                 </div>
               ))}
-
-              {/* Tips */}
-              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
-                <h4 className="text-sm font-medium text-emerald-400 mb-2">Tips for creating effective splits:</h4>
-                <ul className="text-xs text-gray-400 space-y-1">
-                  <li>• Balance push and pull exercises throughout the week</li>
-                  <li>• Include at least one rest or active recovery day</li>
-                  <li>• Consider muscle group recovery (24-48 hours between working same muscles)</li>
-                  <li>• Most effective splits have 3-5 workout days per week</li>
-                </ul>
-              </div>
 
               {/* Save Button */}
               <button

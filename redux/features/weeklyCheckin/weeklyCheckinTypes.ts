@@ -51,6 +51,11 @@ export interface WeeklyCheckin {
     updatedAt: string;
     __v?: number;
     dailyNote?: string;
+    athleteName: string;
+    coachName: string;
+    weekNumber: number;
+    nextCheckInDate: string;
+    weight: number; // weight change
 }
 
 export interface WeeklyCheckinState {

@@ -30,10 +30,36 @@ export default function TrainingSplitPreview({
     }
   };
 
-  // Sort splits by day of week
+  const dayMapping: Record<string, string> = {
+    "Monday": "Day 1",
+    "Tuesday": "Day 2",
+    "Wednesday": "Day 3",
+    "Thursday": "Day 4",
+    "Friday": "Day 5",
+    "Saturday": "Day 6",
+    "Sunday": "Day 7"
+  };
+
+  // Helper to get consistent day label
+  const getDayLabel = (day: string) => dayMapping[day] || day;
+
+  // Sort splits by day
   const sortedSplits = [...split.splite].sort((a, b) => {
-    const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    return daysOrder.indexOf(a.day) - daysOrder.indexOf(b.day);
+    const labelA = getDayLabel(a.day);
+    const labelB = getDayLabel(b.day);
+
+    const daysOrder = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+    const indexA = daysOrder.indexOf(labelA);
+    const indexB = daysOrder.indexOf(labelB);
+
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+
+    // Fallback for custom labels like "Day 8" or numeric-prefixed days
+    const numA = parseInt(labelA.match(/\d+/)?.[0] || "0");
+    const numB = parseInt(labelB.match(/\d+/)?.[0] || "0");
+    return numA - numB || labelA.localeCompare(labelB);
   });
 
   return (
@@ -99,7 +125,7 @@ export default function TrainingSplitPreview({
                       ? "bg-gray-500"
                       : "bg-emerald-500"
                       }`} />
-                    <span className="font-medium text-white">{splitDay.day}</span>
+                    <span className="font-medium text-white">{getDayLabel(splitDay.day)}</span>
                   </div>
                 </div>
                 <div className="col-span-9">

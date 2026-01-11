@@ -1,10 +1,17 @@
 // redux/features/trainingPlan/trainingPlanType.ts
 
+export interface SetDetail {
+    sets: string;
+    reps: string;
+    rir: string;
+}
+
 export interface BackendExercise {
     exerciseName: string;
     sets: string;
     repRange: string;
     rir: string;
+    setDetails?: SetDetail[];
     excerciseNote: string;
     _id?: string;
 }

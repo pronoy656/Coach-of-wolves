@@ -101,11 +101,18 @@ export default function WeeklyCheckIns() {
 
   // Handle delete
   const handleDeleteCheckIn = async (id: number, athleteName: string, weekNumber: number) => {
+    // We need to find the correct _id for the thunk
+    const checkinToDelete = filteredCheckIns.find(c => c.athleteName === athleteName && c.weekNumber === weekNumber);
+    if (!checkinToDelete) {
+      toast.error("Could not find check-in ID to delete");
+      return;
+    }
+
     try {
-      await dispatch(deleteWeeklyCheckin({ athleteName, weekNumber })).unwrap();
+      await dispatch(deleteWeeklyCheckin(checkinToDelete._id)).unwrap();
       toast.success("Check-in deleted successfully");
     } catch (error: any) {
-      toast.error(error.message || "Failed to delete check-in");
+      toast.error(error || "Failed to delete check-in");
     }
   };
 
