@@ -206,7 +206,7 @@ export const updateNutritionPlan = createAsyncThunk(
     "oneNutritionPlan/update",
     async ({ planId, athleteId, data }: { planId: string; athleteId: string; data: any }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axiosInstance.put(`/coach/nutrition/${planId}/${athleteId}`, data);
+            const response = await axiosInstance.put(`/coach/nutrition/${athleteId}/${planId}`, data);
             // Refetch plans after successful update
             dispatch(fetchNutritionPlans(athleteId));
             return response.data;
@@ -220,7 +220,7 @@ export const deleteNutritionPlan = createAsyncThunk(
     "oneNutritionPlan/delete",
     async ({ planId, athleteId }: { planId: string; athleteId: string }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axiosInstance.delete(`/coach/nutrition/${planId}/${athleteId}`);
+            const response = await axiosInstance.delete(`/coach/nutrition/${athleteId}/${planId}`);
             // Refetch plans after successful deletion
             dispatch(fetchNutritionPlans(athleteId));
             return { planId, ...response.data };

@@ -1,34 +1,14 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { X, Upload } from "lucide-react";
-
-interface Athlete {
-  id?: string;
-  name: string;
-  category: string;
-  phase: string;
-  weight: number;
-  height: number;
-  status: "Natural" | "Enhanced";
-  gender: string;
-  email: string;
-  age: number;
-  trainingDaySteps: number;
-  restDaySteps: number;
-  checkInDay: string;
-  waterQuantity: number; // ✅ NEW
-  goal: string;
-  lastCheckIn?: string;
-  image?: string;
-}
+import { Athlete } from "@/redux/features/coachAthletes/coachAthletesType";
 
 interface AthleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (athlete: Athlete) => void;
+  onSave: (athlete: Partial<Athlete>) => void;
   athlete?: Athlete | null;
 }
 
@@ -76,22 +56,24 @@ export default function AddAthleteModal({
   onSave,
   athlete,
 }: AthleteModalProps) {
-  const [formData, setFormData] = useState<Athlete>({
+  const [formData, setFormData] = useState<Partial<Athlete>>({
     name: "",
     category: "",
     phase: "Offseason",
-    weight: 0,
-    height: 0,
+    weight: 1,
+    height: 1,
     status: "Natural",
     gender: "Male",
     email: "",
-    age: 0,
-    trainingDaySteps: 0,
-    restDaySteps: 0,
+    age: 1,
+    trainingDaySteps: 1,
+    restDaySteps: 1,
     checkInDay: "Monday",
-    waterQuantity: 0, // ✅ NEW
+    waterQuantity: 1,
     goal: "",
     image: "",
+    isActive: "Active",
+    role: "ATHLETE",
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -135,12 +117,7 @@ export default function AddAthleteModal({
     setFormData((prev) => ({
       ...prev,
       [name]:
-        name === "weight" ||
-          name === "height" ||
-          name === "age" ||
-          name === "trainingDaySteps" ||
-          name === "restDaySteps" ||
-          name === "waterQuantity" // ✅ NEW
+        ["weight", "height", "age", "trainingDaySteps", "restDaySteps", "waterQuantity"].includes(name)
           ? Number(value) || 0
           : value,
     }));
