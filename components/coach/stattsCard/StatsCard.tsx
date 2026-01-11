@@ -11,6 +11,43 @@ import {
 } from "@/redux/features/coachDashboard/coachDashBoardSlice";
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    loading: "Loading dashboard data...",
+    totalAthletes: "Total Athletes",
+    activeAthletes: "Active Athletes",
+    dailyTracking: "Daily Tracking",
+    pendingCheckIn: "Pending Check-In",
+    completeCheckIn: "Complete Check-In",
+    descTotal: "Total athletes assigned to you",
+    descActive: "Currently active athletes",
+    descDaily: (submitted: number, total: number) => `${submitted} of ${total} submitted today`,
+    descPending: "Waiting for athlete response",
+    descComplete: "Successfully completed",
+    dynamicTotal: (count: number) => `${count} total athletes`,
+    dynamicActive: (count: number) => `${count} currently active`,
+    dynamicPending: (count: number) => `${count} waiting for response`,
+    dynamicComplete: (count: number) => `${count} successfully completed`,
+  },
+  de: {
+    loading: "Dashboard-Daten werden geladen...",
+    totalAthletes: "Gesamt Athleten",
+    activeAthletes: "Aktive Athleten",
+    dailyTracking: "Tägliches Tracking",
+    pendingCheckIn: "Ausstehende Check-Ins",
+    completeCheckIn: "Abgeschlossene Check-Ins",
+    descTotal: "Gesamtanzahl der Ihnen zugewiesenen Athleten",
+    descActive: "Derzeit aktive Athleten",
+    descDaily: (submitted: number, total: number) => `${submitted} von ${total} heute eingereicht`,
+    descPending: "Warten auf Rückmeldung des Athleten",
+    descComplete: "Erfolgreich abgeschlossen",
+    dynamicTotal: (count: number) => `${count} Athleten insgesamt`,
+    dynamicActive: (count: number) => `${count} aktuell aktiv`,
+    dynamicPending: (count: number) => `${count} warten auf Antwort`,
+    dynamicComplete: (count: number) => `${count} erfolgreich abgeschlossen`,
+  },
+};
+
 interface StatCard {
   label: string;
   value: string | number;
@@ -24,6 +61,8 @@ export default function StatsCard() {
   const { data, loading, error } = useSelector(
     (state: RootState) => state.coachDashboard
   );
+  const { language } = useSelector((state: RootState) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -53,93 +92,93 @@ export default function StatsCard() {
   const cards: StatCard[] = data
     ? [
       {
-        label: "Total Athletes",
+        label: t.totalAthletes,
         value: data.totalAthletes,
         icon: Users,
         color: "text-[#8CCA4D]",
-        description: "Total athletes assigned to you",
+        description: t.descTotal,
       },
       {
-        label: "Active Athletes",
+        label: t.activeAthletes,
         value: data.totalActiveUsers,
         icon: Activity,
         color: "text-[#8CCA4D]",
-        description: "Currently active athletes",
+        description: t.descActive,
       },
       {
-        label: "Daily Tracking",
+        label: t.dailyTracking,
         value: calculateDailyTrackingPercentage(),
         icon: TrendingUp,
         color: "text-[#8CCA4D]",
-        description: `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`,
+        description: t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes),
       },
       {
-        label: "Pending Check-In",
+        label: t.pendingCheckIn,
         value: data.checkins.pending,
         icon: Clock,
         color: "text-[#FF6B6B]",
-        description: "Waiting for athlete response",
+        description: t.descPending,
       },
       {
-        label: "Complete Check-In",
+        label: t.completeCheckIn,
         value: data.checkins.completed,
         icon: CheckCircle,
         color: "text-[#8CCA4D]",
-        description: "Successfully completed",
+        description: t.descComplete,
       },
     ]
     : [
       // Fallback data while loading or if no data
       {
-        label: "Total Athletes",
+        label: t.totalAthletes,
         value: "0",
         icon: Users,
         color: "text-[#8CCA4D]",
       },
       {
-        label: "Active Athletes",
+        label: t.activeAthletes,
         value: "0",
         icon: Activity,
         color: "text-[#8CCA4D]",
       },
       {
-        label: "Daily Tracking",
+        label: t.dailyTracking,
         value: "0",
         icon: TrendingUp,
         color: "text-[#8CCA4D]",
       },
       {
-        label: "Pending Check-In",
+        label: t.pendingCheckIn,
         value: "0",
         icon: Clock,
         color: "text-[#FF6B6B]",
       },
       {
-        label: "Complete Check-In",
+        label: t.completeCheckIn,
         value: "0",
         icon: CheckCircle,
         color: "text-[#8CCA4D]",
       },
     ];
 
-  // Add description to cards if data exists
+  // Add dynamic description to cards if data exists with translation
   if (data) {
     cards.forEach((card, index) => {
       switch (index) {
         case 0: // Total Athletes
-          card.description = `${data.totalAthletes} total athletes`;
+          card.description = t.dynamicTotal(data.totalAthletes);
           break;
         case 1: // Active Athletes
-          card.description = `${data.totalActiveUsers} currently active`;
+          card.description = t.dynamicActive(data.totalActiveUsers);
           break;
         case 2: // Daily Tracking
-          card.description = `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`;
+          card.description = t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes);
           break;
         case 3: // Pending Check-In
-          card.description = `${data.checkins.pending} waiting for response`;
+          card.description = t.dynamicPending(data.checkins.pending);
           break;
         case 4: // Complete Check-In
-          card.description = `${data.checkins.completed} successfully completed`;
+          card.description = t.dynamicComplete(data.checkins.completed);
           break;
       }
     });
@@ -152,7 +191,7 @@ export default function StatsCard() {
         <div className="text-center py-4">
           <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#4A9E4A]"></div>
           <p className="mt-2 text-gray-400 text-sm">
-            Loading dashboard data...
+            {t.loading}
           </p>
         </div>
       )}
