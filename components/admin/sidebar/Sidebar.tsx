@@ -17,10 +17,37 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { removeToken } from "@/redux/features/auth/authSlice";
 
+const translations = {
+  en: {
+    dashboard: "Dashboard",
+    athleteManagement: "Athlete Management",
+    coachManagement: "Coach Management",
+    exerciseDatabase: "Exercise Database",
+    nutritionDatabase: "Nutrition Database",
+    supplementDatabase: "Supplement Database",
+    pedDatabase: "PED Database",
+    weeklyCheckIns: "Weekly Check-ins",
+    logout: "Logout",
+  },
+  de: {
+    dashboard: "Dashboard",
+    athleteManagement: "Athletenverwaltung",
+    coachManagement: "Trainerverwaltung",
+    exerciseDatabase: "Übungsdatenbank",
+    nutritionDatabase: "Ernährungsdatenbank",
+    supplementDatabase: "Supplement-Datenbank",
+    pedDatabase: "PED-Datenbank",
+    weeklyCheckIns: "Wöchentliche Check-ins",
+    logout: "Abmelden",
+  },
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.auth);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
   const router = useRouter();
   const handleLogout = async () => {
     dispatch(removeToken());
@@ -49,48 +76,48 @@ export default function Sidebar() {
       <nav className="flex-1 p-4 space-y-8">
         <NavItem
           icon={<LayoutDashboard size={20} />}
-          label="Dashboard"
+          label={t.dashboard}
           href="/admin"
           active={pathname === "/admin"}
         />
 
         <NavItem
           icon={<Users size={20} />}
-          label="Athlete Management"
+          label={t.athleteManagement}
           href="/admin/athlete-Management"
           active={pathname === "/admin/athlete-Management"}
         />
         <NavItem
           icon={<Users size={20} />}
-          label="Coach Management"
+          label={t.coachManagement}
           href="/admin/coach-Management"
           active={pathname === "/admin/coach-Management"}
         />
 
         <NavItem
           icon={<Dumbbell size={20} />}
-          label="Exercise Database"
+          label={t.exerciseDatabase}
           href="/admin/exercise-Database"
           active={pathname === "/admin/exercise-Database"}
         />
 
         <NavItem
           icon={<Apple size={20} />}
-          label="Nutrition Database"
+          label={t.nutritionDatabase}
           href="/admin/nutrition-Database"
           active={pathname === "/admin/nutrition-Database"}
         />
 
         <NavItem
           icon={<Dumbbell size={20} />}
-          label="Supplement Database"
+          label={t.supplementDatabase}
           href="/admin/supplement-Database"
           active={pathname === "/admin/supplement-Database"}
         />
 
         <NavItem
           icon={<BarChart3 size={20} />}
-          label="PED Database"
+          label={t.pedDatabase}
           href="/admin/ped-Database"
           active={pathname === "/admin/ped-Database"}
         />
@@ -103,7 +130,7 @@ export default function Sidebar() {
         /> */}
         <NavItem
           icon={<User size={20} />}
-          label="Weekly Check-ins"
+          label={t.weeklyCheckIns}
           href="/admin/weekly-check-ins"
           active={pathname === "/admin/weekly-check-ins"}
         />
@@ -115,8 +142,11 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition border border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500 group"
         >
-          <LogOut size={20} className="group-hover:scale-110 transition-transform" />
-          <span className="text-sm font-medium">Logout</span>
+          <LogOut
+            size={20}
+            className="group-hover:scale-110 transition-transform"
+          />
+          <span className="text-sm font-medium">{t.logout}</span>
         </button>
       </div>
     </aside>
@@ -141,10 +171,11 @@ function NavItem({
   return (
     <Link
       href={href}
-      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${active
-        ? "bg-[#4C8B1B] text-primary-foreground"
-        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-        }`}
+      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${
+        active
+          ? "bg-[#4C8B1B] text-primary-foreground"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+      }`}
     >
       {icon}
       <span className="text-sm font-medium">{label}</span>

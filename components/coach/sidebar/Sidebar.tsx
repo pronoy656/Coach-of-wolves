@@ -16,10 +16,37 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { removeToken } from "@/redux/features/auth/authSlice";
 
+const translations = {
+  en: {
+    dashboard: "Dashboard",
+    athletes: "Athletes",
+    exerciseDatabase: "Exercise Database",
+    nutritionDatabase: "Nutrition Database",
+    supplementDatabase: "Supplement Database",
+    pedDatabase: "PED Database",
+    weeklyCheckIns: "Weekly check-ins",
+    showManagement: "Show Management",
+    logout: "Logout",
+  },
+  de: {
+    dashboard: "Dashboard",
+    athletes: "Athleten",
+    exerciseDatabase: "Übungsdatenbank",
+    nutritionDatabase: "Ernährungsdatenbank",
+    supplementDatabase: "Supplement-Datenbank",
+    pedDatabase: "PED-Datenbank",
+    weeklyCheckIns: "Wöchentliche Check-ins",
+    showManagement: "Show-Verwaltung",
+    logout: "Abmelden",
+  },
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.auth);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
   const router = useRouter();
   const handleLogout = async () => {
     dispatch(removeToken());
@@ -48,65 +75,65 @@ export default function Sidebar() {
       <nav className="flex-1 p-4 space-y-8">
         <NavItem
           icon={<LayoutDashboard size={20} />}
-          label="Dashboard"
+          label={t.dashboard}
           href="/coach"
           active={pathname === "/coach"}
         />
 
         <NavItem
           icon={<Users size={20} />}
-          label="Athletes"
+          label={t.athletes}
           href="/coach/athletes"
           active={pathname === "/coach/athletes"}
         />
 
         <NavItem
           icon={<Dumbbell size={20} />}
-          label="Exercise Database"
+          label={t.exerciseDatabase}
           href="/coach/exercise-Database"
           active={pathname === "/coach/exercise-Database"}
         />
 
         <NavItem
           icon={<Apple size={20} />}
-          label="Nutrition Database"
+          label={t.nutritionDatabase}
           href="/coach/nutrition-Database"
           active={pathname === "/coach/nutrition-Database"}
         />
 
         <NavItem
           icon={<Dumbbell size={20} />}
-          label="Supplement Database"
+          label={t.supplementDatabase}
           href="/coach/supplement-Database"
           active={pathname === "/coach/supplement-Database"}
         />
 
         <NavItem
           icon={<BarChart3 size={20} />}
-          label="PED Database"
+          label={t.pedDatabase}
           href="/coach/ped-Database"
           active={pathname === "/coach/ped-Database"}
         />
         <NavItem
           icon={<BarChart3 size={20} />}
-          label="Weekly check-ins"
+          label={t.weeklyCheckIns}
           href="/coach/weekly-check-ins"
           active={pathname === "/coach/weekly-check-ins"}
         />
 
         <NavItem
           icon={<Settings size={20} />}
-          label="Show Management"
+          label={t.showManagement}
           href="/coach/show-Management"
           active={pathname === "/coach/show-Management"}
         />
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-border" onClick={handleLogout}>
+      <div className="p-4 border-t border-[#2F312F] " onClick={handleLogout}>
         <NavItem
           icon={<LogOut size={20} />}
-          label="Logout"
+          label={t.logout}
           href="/"
           active={pathname === "/logout"}
         />
