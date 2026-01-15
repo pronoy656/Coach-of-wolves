@@ -6,7 +6,13 @@ import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchCoachAthletes, deleteAthlete, addAthlete, updateAthlete, clearMessages } from "@/redux/features/coachAthletes/coachAthletesSlice";
+import {
+  fetchCoachAthletes,
+  deleteAthlete,
+  addAthlete,
+  updateAthlete,
+  clearMessages,
+} from "@/redux/features/coachAthletes/coachAthletesSlice";
 import { getCoachProfile } from "@/redux/features/coachProfile/coachProfileSlice";
 import { Athlete } from "@/redux/features/coachAthletes/coachAthletesType";
 import toast from "react-hot-toast";
@@ -43,15 +49,104 @@ const CATEGORY_MALE = [
 
 const STATUS_OPTIONS = ["Natural", "Enhanced"];
 
+const translations = {
+  en: {
+    title: "Athletes Management",
+    searchPlaceholder: "Search Here...",
+    statusAll: "All Status",
+    phasesAll: "All Phases",
+    categoryPlaceholder: "Category",
+    maleCategories: "Male Categories",
+    femaleCategories: "Female Categories",
+    addAthletes: "+ Add Athletes",
+    thProfile: "Profile",
+    thName: "Name",
+    thGender: "Gender",
+    thAge: "Age",
+    thCategory: "Category",
+    thPhase: "Phase",
+    thWeight: "Weight (kg)",
+    thHeight: "Height (cm)",
+    thStatus: "Status",
+    thLastCheckin: "Last Check-in",
+    thWater: "Water (L)",
+    thAction: "Action",
+    emptyState: "No athletes found matching your filters",
+    deleteTitle: "Delete Athlete",
+    deleteMessage: (name?: string) =>
+      name
+        ? `Are you sure you want to delete ${name}? This action cannot be undone.`
+        : "Are you sure you want to delete this athlete? This action cannot be undone.",
+    statusNatural: "Natural",
+    statusEnhanced: "Enhanced",
+    edit: "Edit",
+    delete: "Delete",
+    phaseLabels: {
+      "Pre-Prep": "Pre-Prep",
+      Offseason: "Offseason",
+      "Peak Week": "Peak Week",
+      Prep: "Prep",
+      "Diet-Break": "Diet-Break",
+      "Fat-Reduction Phase": "Fat-Reduction Phase",
+      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+    } as Record<string, string>,
+  },
+  de: {
+    title: "Athletenverwaltung",
+    searchPlaceholder: "Hier suchen...",
+    statusAll: "Alle Status",
+    phasesAll: "Alle Phasen",
+    categoryPlaceholder: "Kategorie",
+    maleCategories: "Männerkategorien",
+    femaleCategories: "Frauenkategorien",
+    addAthletes: "+ Athleten hinzufügen",
+    thProfile: "Profil",
+    thName: "Name",
+    thGender: "Geschlecht",
+    thAge: "Alter",
+    thCategory: "Kategorie",
+    thPhase: "Phase",
+    thWeight: "Gewicht (kg)",
+    thHeight: "Größe (cm)",
+    thStatus: "Status",
+    thLastCheckin: "Letzter Check-in",
+    thWater: "Wasser (L)",
+    thAction: "Aktion",
+    emptyState: "Keine Athleten entsprechen deinen Filtern",
+    deleteTitle: "Athlet löschen",
+    deleteMessage: (name?: string) =>
+      name
+        ? `Möchten Sie ${name} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+        : "Möchten Sie diesen Athleten wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    statusNatural: "Natural",
+    statusEnhanced: "Enhanced",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    phaseLabels: {
+      "Pre-Prep": "Pre-Prep",
+      Offseason: "Offseason",
+      "Peak Week": "Peak Week",
+      Prep: "Prep",
+      "Diet-Break": "Diet-Break",
+      "Fat-Reduction Phase": "Fat-Reduction Phase",
+      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+    } as Record<string, string>,
+  },
+};
+
 export default function AthleteManagement() {
   const dispatch = useAppDispatch();
-  const { athletes, loading, error, successMessage } = useAppSelector((state) => state.coachAthletes);
+  const { athletes, loading, error, successMessage } = useAppSelector(
+    (state) => state.coachAthletes
+  );
   const { profile } = useAppSelector((state) => state.coachProfile);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
-  const [phaseFilter, setPhaseFilter] = useState("All Phases");
-  const [categoryFilter, setCategoryFilter] = useState("Category");
+  const [statusFilter, setStatusFilter] = useState("ALL_STATUS");
+  const [phaseFilter, setPhaseFilter] = useState("ALL_PHASES");
+  const [categoryFilter, setCategoryFilter] = useState("CATEGORY_ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -94,11 +189,12 @@ export default function AthleteManagement() {
         athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         athlete.category.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
-        statusFilter === "All Status" || athlete.status === statusFilter;
+        statusFilter === "ALL_STATUS" || athlete.status === statusFilter;
       const matchesPhase =
-        phaseFilter === "All Phases" || athlete.phase === phaseFilter;
+        phaseFilter === "ALL_PHASES" || athlete.phase === phaseFilter;
       const matchesCategory =
-        categoryFilter === "Category" || athlete.category === categoryFilter;
+        categoryFilter === "CATEGORY_ALL" ||
+        athlete.category === categoryFilter;
 
       return matchesSearch && matchesStatus && matchesPhase && matchesCategory;
     });
@@ -151,8 +247,10 @@ export default function AthleteManagement() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Athletes Management
-            {loading && <Loader2 className="inline-block ml-4 h-6 w-6 animate-spin text-emerald-500" />}
+            {t.title}
+            {loading && (
+              <Loader2 className="inline-block ml-4 h-6 w-6 animate-spin text-emerald-500" />
+            )}
           </h1>
         </div>
 
@@ -163,7 +261,7 @@ export default function AthleteManagement() {
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground" />
             <input
               type="text"
-              placeholder="Search Here..."
+              placeholder={t.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-10 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
@@ -177,10 +275,10 @@ export default function AthleteManagement() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full sm:w-48 px-4 py-3 bg-[#08081A] border border-[#303245] rounded-lg text-white focus:outline-none focus:border-[#4A9E4A] transition-colors appearance-none cursor-pointer"
             >
-              <option>All Status</option>
+              <option value="ALL_STATUS">{t.statusAll}</option>
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                  {status === "Natural" ? t.statusNatural : t.statusEnhanced}
                 </option>
               ))}
             </select>
@@ -194,10 +292,10 @@ export default function AthleteManagement() {
               onChange={(e) => setPhaseFilter(e.target.value)}
               className="w-full sm:w-48 px-4 py-3 bg-[#08081A] border border-[#303245] rounded-lg text-white focus:outline-none focus:border-[#4A9E4A] transition-colors appearance-none cursor-pointer"
             >
-              <option>All Phases</option>
+              <option value="ALL_PHASES">{t.phasesAll}</option>
               {PHASE_OPTIONS.map((phase) => (
                 <option key={phase} value={phase}>
-                  {phase}
+                  {t.phaseLabels[phase] ?? phase}
                 </option>
               ))}
             </select>
@@ -211,15 +309,15 @@ export default function AthleteManagement() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="w-full sm:w-48 px-4 py-3 bg-[#08081A] border border-[#303245] rounded-lg text-white focus:outline-none focus:border-[#4A9E4A] transition-colors appearance-none cursor-pointer"
             >
-              <option value="Category">Category</option>
-              <optgroup label="Male Categories">
+              <option value="CATEGORY_ALL">{t.categoryPlaceholder}</option>
+              <optgroup label={t.maleCategories}>
                 {CATEGORY_MALE.map((cat) => (
                   <option key={`male-${cat}`} value={cat}>
                     {cat}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="Female Categories">
+              <optgroup label={t.femaleCategories}>
                 {CATEGORY_FEMALE.map((cat) => (
                   <option key={`female-${cat}`} value={cat}>
                     {cat}
@@ -235,7 +333,7 @@ export default function AthleteManagement() {
             onClick={handleAddAthlete}
             className="px-6 py-2 border-2 border-[#4A9E4A] text-primary hover:bg-primary/10 rounded-full font-medium transition-colors"
           >
-            + Add Athletes
+            {t.addAthletes}
           </button>
         </div>
 
@@ -246,40 +344,40 @@ export default function AthleteManagement() {
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[#24273f] bg-[#020231]">
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Profile
+                    {t.thProfile}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Name
+                    {t.thName}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Gender
+                    {t.thGender}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Age
+                    {t.thAge}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Category
+                    {t.thCategory}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Phase
+                    {t.thPhase}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Weight (kg)
+                    {t.thWeight}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Height (cm)
+                    {t.thHeight}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Status
+                    {t.thStatus}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Last Check-in
+                    {t.thLastCheckin}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Water (L)
+                    {t.thWater}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    Action
+                    {t.thAction}
                   </th>
                 </tr>
               </thead>
@@ -287,8 +385,9 @@ export default function AthleteManagement() {
                 {filteredAthletes.map((athlete: Athlete, index: number) => (
                   <tr
                     key={athlete._id}
-                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
-                      }`}
+                    className={`border-b bg-[#212133] border-[#303245] hover:bg-[#1b1b2b] transition-colors ${
+                      index % 2 === 0 ? "bg-[#212133]/50" : "bg-background"
+                    }`}
                   >
                     <td className="px-6 py-4">
                       {athlete.image ? (
@@ -331,7 +430,9 @@ export default function AthleteManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-white">
-                      {athlete.lastActive ? new Date(athlete.lastActive).toLocaleDateString() : "N/A"}
+                      {athlete.lastActive
+                        ? new Date(athlete.lastActive).toLocaleDateString()
+                        : "N/A"}
                     </td>
                     <td className="px-6 py-4 text-white">
                       {athlete.waterQuantity}
@@ -341,14 +442,14 @@ export default function AthleteManagement() {
                         <button
                           onClick={() => handleEditAthlete(athlete)}
                           className="p-2 bg-blue-500/20 text-blue-400 rounded-full hover:bg-blue-500/30 transition-colors"
-                          title="Edit"
+                          title={t.edit}
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleDeleteAthlete(athlete)}
                           className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors"
-                          title="Delete"
+                          title={t.delete}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -364,9 +465,7 @@ export default function AthleteManagement() {
         {/* Empty State */}
         {filteredAthletes.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-slate-400">
-              No athletes found matching your filters
-            </p>
+            <p className="text-slate-400">{t.emptyState}</p>
           </div>
         )}
       </div>
@@ -382,8 +481,8 @@ export default function AthleteManagement() {
       />
       <DeleteModal
         isOpen={isDeleteModalOpen}
-        title="Delete Athlete"
-        message={`Are you sure you want to delete ${athleteToDelete?.name}? This action cannot be undone.`}
+        title={t.deleteTitle}
+        message={t.deleteMessage(athleteToDelete?.name)}
         onConfirm={confirmDelete}
         onCancel={() => {
           setIsDeleteModalOpen(false);

@@ -13,6 +13,7 @@ import {
   AthleteFormData,
 } from "@/redux/features/athlete/athleteSlice";
 import toast from "react-hot-toast";
+import { useAppSelector } from "@/redux/hooks";
 
 interface AthleteModalProps {
   isOpen: boolean;
@@ -58,12 +59,157 @@ const CHECK_IN_DAYS = [
   "Sunday",
 ];
 
+const translations = {
+  en: {
+    titleAdd: "Add Athlete",
+    titleEdit: "Edit Athlete",
+    nameLabel: "Name *",
+    namePlaceholder: "Enter name",
+    emailLabel: "Email *",
+    emailPlaceholder: "Enter email",
+    genderLabel: "Gender",
+    genderMale: "Male",
+    genderFemale: "Female",
+    weightLabel: "Weight (kg)",
+    weightPlaceholder: "Enter weight",
+    heightLabel: "Height (cm)",
+    heightPlaceholder: "Enter height",
+    statusLabel: "Status",
+    statusNatural: "Natural",
+    statusEnhanced: "Enhanced",
+    trainingStepsLabel: "Training Day Steps",
+    trainingStepsPlaceholder: "Enter steps",
+    restStepsLabel: "Rest Day Steps",
+    restStepsPlaceholder: "Enter steps",
+    categoryLabel: "Category *",
+    categoryPlaceholder: "Select category",
+    phaseLabel: "Phase",
+    phaseLabels: {
+      "Pre-Prep": "Pre-Prep",
+      Offseason: "Offseason",
+      "Peak Week": "Peak Week",
+      Prep: "Prep",
+      "Diet-Break": "Diet-Break",
+      "Fat-Reduction Phase": "Fat-Reduction Phase",
+      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+    } as Record<string, string>,
+    ageLabel: "Age",
+    agePlaceholder: "Enter age",
+    checkinLabel: "Check-in Day",
+    checkinDays: {
+      Monday: "Monday",
+      Tuesday: "Tuesday",
+      Wednesday: "Wednesday",
+      Thursday: "Thursday",
+      Friday: "Friday",
+      Saturday: "Saturday",
+      Sunday: "Sunday",
+    } as Record<string, string>,
+    waterLabel: "Water Quantity (Liters)",
+    waterPlaceholder: "Enter daily water intake",
+    passwordLabel: "Password *",
+    passwordPlaceholder: "Enter password",
+    goalLabel: "Goal",
+    goalPlaceholder: "Enter goal",
+    profileImageLabel: "Profile Image",
+    uploadButtonChange: "Change Image",
+    uploadButtonSelect: "Select Profile Image",
+    uploadHint: "JPG, PNG (Max 5MB)",
+    cancel: "Cancel",
+    saveCreating: "Creating...",
+    saveUpdating: "Updating...",
+    saveCreate: "Create Athlete",
+    saveUpdate: "Update Athlete",
+    errorName: "Name is required",
+    errorEmail: "Email is required",
+    errorCategory: "Category is required",
+    errorPassword: "Password is required for new athletes",
+    successCreated: "Athlete created successfully",
+    successUpdated: "Athlete updated successfully",
+    errorImageType: "Please upload an image file",
+    errorImageSize: "Image size should be less than 5MB",
+    errorGeneric: "Failed to save athlete. Please try again.",
+  },
+  de: {
+    titleAdd: "Athlet hinzufügen",
+    titleEdit: "Athlet bearbeiten",
+    nameLabel: "Name *",
+    namePlaceholder: "Name eingeben",
+    emailLabel: "E-Mail *",
+    emailPlaceholder: "E-Mail eingeben",
+    genderLabel: "Geschlecht",
+    genderMale: "Männlich",
+    genderFemale: "Weiblich",
+    weightLabel: "Gewicht (kg)",
+    weightPlaceholder: "Gewicht eingeben",
+    heightLabel: "Größe (cm)",
+    heightPlaceholder: "Größe eingeben",
+    statusLabel: "Status",
+    statusNatural: "Natural",
+    statusEnhanced: "Enhanced",
+    trainingStepsLabel: "Schritte Trainingstag",
+    trainingStepsPlaceholder: "Schritte eingeben",
+    restStepsLabel: "Schritte Ruhetag",
+    restStepsPlaceholder: "Schritte eingeben",
+    categoryLabel: "Kategorie *",
+    categoryPlaceholder: "Kategorie auswählen",
+    phaseLabel: "Phase",
+    phaseLabels: {
+      "Pre-Prep": "Pre-Prep",
+      Offseason: "Offseason",
+      "Peak Week": "Peak Week",
+      Prep: "Prep",
+      "Diet-Break": "Diet-Break",
+      "Fat-Reduction Phase": "Fat-Reduction Phase",
+      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+    } as Record<string, string>,
+    ageLabel: "Alter",
+    agePlaceholder: "Alter eingeben",
+    checkinLabel: "Check-in-Tag",
+    checkinDays: {
+      Monday: "Montag",
+      Tuesday: "Dienstag",
+      Wednesday: "Mittwoch",
+      Thursday: "Donnerstag",
+      Friday: "Freitag",
+      Saturday: "Samstag",
+      Sunday: "Sonntag",
+    } as Record<string, string>,
+    waterLabel: "Wassermenge (Liter)",
+    waterPlaceholder: "Tägliche Wasserzufuhr eingeben",
+    passwordLabel: "Passwort *",
+    passwordPlaceholder: "Passwort eingeben",
+    goalLabel: "Ziel",
+    goalPlaceholder: "Ziel eingeben",
+    profileImageLabel: "Profilbild",
+    uploadButtonChange: "Bild ändern",
+    uploadButtonSelect: "Profilbild auswählen",
+    uploadHint: "JPG, PNG (Max 5MB)",
+    cancel: "Abbrechen",
+    saveCreating: "Wird erstellt...",
+    saveUpdating: "Wird aktualisiert...",
+    saveCreate: "Athlet erstellen",
+    saveUpdate: "Athlet aktualisieren",
+    errorName: "Name ist erforderlich",
+    errorEmail: "E-Mail ist erforderlich",
+    errorCategory: "Kategorie ist erforderlich",
+    errorPassword: "Passwort ist für neue Athleten erforderlich",
+    successCreated: "Athlet erfolgreich erstellt",
+    successUpdated: "Athlet erfolgreich aktualisiert",
+    errorImageType: "Bitte eine Bilddatei hochladen",
+    errorImageSize: "Bildgröße muss unter 5 MB liegen",
+    errorGeneric: "Athlet konnte nicht gespeichert werden. Bitte erneut versuchen.",
+  },
+};
+
 export default function AddAthleteModal({
   isOpen,
   onClose,
   athlete,
 }: AthleteModalProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<{
@@ -105,7 +251,6 @@ export default function AddAthleteModal({
 
   useEffect(() => {
     if (athlete && isOpen) {
-      // Populate form with athlete data for editing
       setFormData({
         name: athlete.name,
         email: athlete.email,
@@ -121,16 +266,13 @@ export default function AddAthleteModal({
         restDaySteps: athlete.restDaySteps,
         checkInDay: athlete.checkInDay,
         goal: athlete.goal,
-        password: "", // Don't prefill password for security
+        password: "",
       });
 
-      // Set image preview if athlete has an image
       if (athlete.image) {
-        // If it's a full URL, use it directly
         if (athlete.image.startsWith("http")) {
           setImagePreview(athlete.image);
         } else if (athlete.image.startsWith("/")) {
-          // If it's a relative path, construct full URL
           setImagePreview(
             `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}${
               athlete.image
@@ -144,7 +286,6 @@ export default function AddAthleteModal({
       }
       setImageFile(null);
     } else {
-      // Reset form for adding new athlete
       setFormData({
         name: "",
         email: "",
@@ -190,15 +331,13 @@ export default function AddAthleteModal({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
+        toast.error(t.errorImageType);
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+        toast.error(t.errorImageSize);
         return;
       }
 
@@ -220,32 +359,29 @@ export default function AddAthleteModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.name.trim()) {
-      toast.error("Name is required");
+      toast.error(t.errorName);
       return;
     }
 
     if (!formData.email.trim()) {
-      toast.error("Email is required");
+      toast.error(t.errorEmail);
       return;
     }
 
     if (!formData.category) {
-      toast.error("Category is required");
+      toast.error(t.errorCategory);
       return;
     }
 
-    // For new athletes, password is required
     if (!athlete && !formData.password) {
-      toast.error("Password is required for new athletes");
+      toast.error(t.errorPassword);
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Prepare athlete form data
       const athleteFormData: AthleteFormData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -264,35 +400,31 @@ export default function AddAthleteModal({
         image: imageFile || undefined,
       };
 
-      // Add password only for new athletes
       if (!athlete) {
         (athleteFormData as any).password = formData.password;
       }
 
       if (athlete) {
-        // Update existing athlete
         await dispatch(
           updateAthlete({
             id: athlete._id,
             data: athleteFormData,
           })
         ).unwrap();
-        toast.success("Athlete updated successfully");
+        toast.success(t.successUpdated);
       } else {
-        // Create new athlete
         await dispatch(
           createAthlete({
             data: athleteFormData,
           })
         ).unwrap();
-        toast.success("Athlete created successfully");
+        toast.success(t.successCreated);
       }
 
-      // Close modal and reset form
       onClose();
     } catch (error: any) {
       console.error("Failed to save athlete:", error);
-      toast.error(error.message || "Failed to save athlete. Please try again.");
+      toast.error(error.message || t.errorGeneric);
     } finally {
       setIsSubmitting(false);
     }
@@ -310,7 +442,7 @@ export default function AddAthleteModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#303245] backdrop-blur-sm sticky top-0 bg-[#08081A]">
           <h2 className="text-2xl font-bold text-white">
-            {athlete ? "Edit Athlete" : "Add Athlete"}
+            {athlete ? t.titleEdit : t.titleAdd}
           </h2>
           <button
             onClick={onClose}
@@ -327,14 +459,14 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Name *
+                {t.nameLabel}
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter name"
+                placeholder={t.namePlaceholder}
                 required
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
@@ -343,14 +475,14 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Email *
+                {t.emailLabel}
               </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter email"
+                placeholder={t.emailPlaceholder}
                 required
                 disabled={isSubmitting || !!athlete} // Disable email editing for existing athletes
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
@@ -359,7 +491,7 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Gender
+                {t.genderLabel}
               </label>
               <select
                 name="gender"
@@ -368,8 +500,8 @@ export default function AddAthleteModal({
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
+                <option value="Male">{t.genderMale}</option>
+                <option value="Female">{t.genderFemale}</option>
               </select>
             </div>
           </div>
@@ -378,14 +510,14 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Weight (kg)
+                {t.weightLabel}
               </label>
               <input
                 type="number"
                 name="weight"
                 value={formData.weight}
                 onChange={handleChange}
-                placeholder="Enter weight"
+                placeholder={t.weightPlaceholder}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
@@ -393,14 +525,14 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Height (cm)
+                {t.heightLabel}
               </label>
               <input
                 type="number"
                 name="height"
                 value={formData.height}
                 onChange={handleChange}
-                placeholder="Enter height"
+                placeholder={t.heightPlaceholder}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
@@ -408,7 +540,7 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Status
+                {t.statusLabel}
               </label>
               <select
                 name="status"
@@ -416,12 +548,12 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
+            >
+              {STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status === "Natural" ? t.statusNatural : t.statusEnhanced}
+                </option>
+              ))}
               </select>
             </div>
           </div>
@@ -430,14 +562,14 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Training Day Steps
+                {t.trainingStepsLabel}
               </label>
               <input
                 type="number"
                 name="trainingDaySteps"
                 value={formData.trainingDaySteps}
                 onChange={handleChange}
-                placeholder="Enter steps"
+                placeholder={t.trainingStepsPlaceholder}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
@@ -445,14 +577,14 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Rest Day Steps
+                {t.restStepsLabel}
               </label>
               <input
                 type="number"
                 name="restDaySteps"
                 value={formData.restDaySteps}
                 onChange={handleChange}
-                placeholder="Enter steps"
+                placeholder={t.restStepsPlaceholder}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
@@ -460,7 +592,7 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Category *
+                {t.categoryLabel}
               </label>
               <select
                 name="category"
@@ -469,8 +601,8 @@ export default function AddAthleteModal({
                 required
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-              >
-                <option value="">Select category</option>
+            >
+              <option value="">{t.categoryPlaceholder}</option>
                 {getCategoryOptions().map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
@@ -484,7 +616,7 @@ export default function AddAthleteModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Phase
+                {t.phaseLabel}
               </label>
               <select
                 name="phase"
@@ -492,25 +624,25 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-              >
-                {PHASE_OPTIONS.map((phase) => (
-                  <option key={phase} value={phase}>
-                    {phase}
-                  </option>
-                ))}
+            >
+              {PHASE_OPTIONS.map((phase) => (
+                <option key={phase} value={phase}>
+                  {t.phaseLabels[phase] ?? phase}
+                </option>
+              ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Age
+                {t.ageLabel}
               </label>
               <input
                 type="number"
                 name="age"
                 value={formData.age}
                 onChange={handleChange}
-                placeholder="Enter age"
+                placeholder={t.agePlaceholder}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
               />
@@ -518,7 +650,7 @@ export default function AddAthleteModal({
 
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Check-in Day
+                {t.checkinLabel}
               </label>
               <select
                 name="checkInDay"
@@ -526,12 +658,12 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-              >
-                {CHECK_IN_DAYS.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
+            >
+              {CHECK_IN_DAYS.map((day) => (
+                <option key={day} value={day}>
+                  {t.checkinDays[day] ?? day}
+                </option>
+              ))}
               </select>
             </div>
           </div>
@@ -539,14 +671,14 @@ export default function AddAthleteModal({
           {/* Row 5: Water Quantity */}
           <div>
             <label className="block text-sm font-semibold text-emerald-300 mb-2">
-              Water Quantity (Liters)
+              {t.waterLabel}
             </label>
             <input
               type="number"
               name="waterQuantity"
               value={formData.waterQuantity}
               onChange={handleChange}
-              placeholder="Enter daily water intake"
+              placeholder={t.waterPlaceholder}
               disabled={isSubmitting}
               className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
             />
@@ -556,14 +688,14 @@ export default function AddAthleteModal({
           {!athlete && (
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                Password *
+                {t.passwordLabel}
               </label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter password"
+                placeholder={t.passwordPlaceholder}
                 required
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
@@ -574,13 +706,13 @@ export default function AddAthleteModal({
           {/* Goal */}
           <div>
             <label className="block text-sm font-semibold text-emerald-300 mb-2">
-              Goal
+              {t.goalLabel}
             </label>
             <textarea
               name="goal"
               value={formData.goal}
               onChange={handleChange}
-              placeholder="Enter goal"
+              placeholder={t.goalPlaceholder}
               rows={3}
               disabled={isSubmitting}
               className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors resize-none disabled:opacity-50"
@@ -590,7 +722,7 @@ export default function AddAthleteModal({
           {/* Upload Image */}
           <div>
             <label className="block text-sm font-semibold text-emerald-300 mb-3">
-              Profile Image
+              {t.profileImageLabel}
             </label>
             <input
               type="file"
@@ -610,10 +742,12 @@ export default function AddAthleteModal({
                   <Upload className="w-6 h-6 text-emerald-400" />
                 </div>
                 <span className="text-white font-semibold">
-                  {imagePreview ? "Change Image" : "Select Profile Image"}
+                  {imagePreview
+                    ? t.uploadButtonChange
+                    : t.uploadButtonSelect}
                 </span>
                 <span className="text-slate-400 text-sm">
-                  JPG, PNG (Max 5MB)
+                  {t.uploadHint}
                 </span>
               </div>
             </label>
@@ -645,7 +779,7 @@ export default function AddAthleteModal({
               disabled={isSubmitting}
               className="flex-1 px-6 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white font-semibold hover:border-emerald-400 hover:bg-slate-800/70 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t.cancel}
             </button>
             <button
               type="submit"
@@ -655,12 +789,12 @@ export default function AddAthleteModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {athlete ? "Updating..." : "Creating..."}
+                  {athlete ? t.saveUpdating : t.saveCreating}
                 </>
               ) : athlete ? (
-                "Update Athlete"
+                t.saveUpdate
               ) : (
-                "Create Athlete"
+                t.saveCreate
               )}
             </button>
           </div>

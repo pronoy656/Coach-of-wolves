@@ -5,7 +5,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
+import toast from "react-hot-toast";
 
 const CalendarIcon = () => (
   <svg
@@ -80,7 +81,7 @@ const DataCell = ({
       style={{ backgroundColor: bgColor }}
     >
       {isDropdown ? (
-        <div className="flex items-center justify-between w-full px-2">
+        <div className="flex items-center justify-center w-full px-2">
           <span>{value}</span>
         </div>
       ) : (
@@ -129,6 +130,8 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     undefined
   );
+  const [coachNote, setCoachNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Generate a list of previous weeks (last 4 weeks for now)
@@ -162,6 +165,26 @@ export default function Dashboard() {
       dispatch(fetchDailyWeekData({ userId, date: selectedDate }));
     }
   }, [dispatch, userId, selectedDate]);
+
+  const handleSubmitNote = async () => {
+    if (!coachNote.trim()) {
+      toast.error("Please enter a note before submitting");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Mocking submission logic - This should be replaced with a real API call or Redux thunk
+      // For now we'll just show a success message as the backend endpoint is not yet defined
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Coach note submitted successfully!");
+      setCoachNote("");
+    } catch (err) {
+      toast.error("Failed to submit coach note");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Click outside listener
   useEffect(() => {
@@ -291,7 +314,7 @@ export default function Dashboard() {
         {
           id: "hunger",
           label: "HUNGER",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("nutrition.hungerLevel"),
           average: getAverage("nutrition.hungerLevel"),
@@ -308,7 +331,7 @@ export default function Dashboard() {
         {
           id: "digestion",
           label: "Digestion",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("nutrition.digestionLevel"),
           average: getAverage("nutrition.digestionLevel"),
@@ -405,7 +428,7 @@ export default function Dashboard() {
         {
           id: "mood",
           label: "Mood",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("energyAndWellBeing.mood"),
           average: getAverage("energyAndWellBeing.mood"),
@@ -422,7 +445,7 @@ export default function Dashboard() {
         {
           id: "motivation",
           label: "Motivation",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("energyAndWellBeing.motivation"),
           average: getAverage("energyAndWellBeing.motivation"),
@@ -439,7 +462,7 @@ export default function Dashboard() {
         {
           id: "energy",
           label: "ENERGY",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("energyAndWellBeing.energyLevel"),
           average: getAverage("energyAndWellBeing.energyLevel"),
@@ -456,7 +479,7 @@ export default function Dashboard() {
         {
           id: "muscle",
           label: "Muscle ache",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("energyAndWellBeing.muscelLevel"),
           average: getAverage("energyAndWellBeing.muscelLevel"),
@@ -473,7 +496,7 @@ export default function Dashboard() {
         {
           id: "stress",
           label: "STRESS",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("energyAndWellBeing.stressLevel"),
           average: getAverage("energyAndWellBeing.stressLevel"),
@@ -564,7 +587,7 @@ export default function Dashboard() {
         {
           id: "pms",
           label: "PMS symptoms",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("woman.pmsSymptoms"),
           average: getAverage("woman.pmsSymptoms"),
@@ -581,7 +604,7 @@ export default function Dashboard() {
         {
           id: "cramps",
           label: "Cramps",
-          subLabel: "SCALR 1-10",
+          subLabel: "SCALE 1-10",
           type: "dropdown",
           values: getValues("woman.cramps"),
           average: getAverage("woman.cramps"),
@@ -639,8 +662,8 @@ export default function Dashboard() {
           }),
           average: averages?.bloodPressure
             ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(
-                averages.bloodPressure.diastolic
-              ).toFixed(0)}`
+              averages.bloodPressure.diastolic
+            ).toFixed(0)}`
             : "",
         },
         {
@@ -689,9 +712,8 @@ export default function Dashboard() {
               : "Current Week"}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
-              isCalendarOpen ? "rotate-180" : ""
-            }`}
+            className={`w-4 h-4 transition-transform ${isCalendarOpen ? "rotate-180" : ""
+              }`}
           />
         </button>
 
@@ -705,11 +727,10 @@ export default function Dashboard() {
                     setSelectedDate(option.value);
                     setIsCalendarOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
-                    selectedDate === option.value
-                      ? "bg-[#2B2B3D] text-emerald-500"
-                      : "text-gray-300"
-                  }`}
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value
+                    ? "bg-[#2B2B3D] text-emerald-500"
+                    : "text-gray-300"
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -787,8 +808,8 @@ export default function Dashboard() {
                         row.cellColors?.[i]
                           ? row.cellColors[i]
                           : row.rowColor
-                          ? row.rowColor
-                          : "#2B2B3D"
+                            ? row.rowColor
+                            : "#2B2B3D"
                       }
                     />
                   ))}
@@ -803,6 +824,45 @@ export default function Dashboard() {
               ))}
             </React.Fragment>
           ))}
+        </div>
+      </div>
+
+      {/* Coach Note Section */}
+      <div className="mt-8 bg-[#0f101a] border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-emerald-500/10 rounded-lg">
+            <MessageSquare className="w-5 h-5 text-emerald-500" />
+          </div>
+          <h3 className="text-xl font-bold text-white uppercase tracking-tight">Coach Note</h3>
+        </div>
+
+        <div className="space-y-4">
+          <textarea
+            value={coachNote}
+            onChange={(e) => setCoachNote(e.target.value)}
+            placeholder="Add your feedback or notes for this athlete's week here..."
+            className="w-full min-h-[120px] bg-[#0B0C15] border border-gray-800 rounded-lg p-4 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+          />
+
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmitNote}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-4 py-2 border border-green-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-green-500 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/10"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Submit Note</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

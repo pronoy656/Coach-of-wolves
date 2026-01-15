@@ -3,6 +3,37 @@
 import { Bell, Upload, X } from "lucide-react";
 import { useState, useRef, ChangeEvent } from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useAppDispatch } from "@/redux/hooks";
+import { setLanguage } from "@/redux/features/language/languageSlice";
+
+const translations = {
+  en: {
+    dashboard: "Admin Dashboard",
+    admin: "Admin",
+    editProfile: "Edit Profile",
+    profilePicture: "Profile Picture",
+    displayName: "Display Name",
+    enterName: "Enter your name",
+    saveChanges: "Save Changes",
+    cancel: "Cancel",
+    updated: "Profile updated successfully!",
+    imgUpload: "Click the upload icon to change profile picture",
+  },
+  de: {
+    dashboard: "Admin-Dashboard",
+    admin: "Administrator",
+    editProfile: "Profil bearbeiten",
+    profilePicture: "Profilbild",
+    displayName: "Anzeigename",
+    enterName: "Geben Sie Ihren Namen ein",
+    saveChanges: "Änderungen speichern",
+    cancel: "Abbrechen",
+    updated: "Profil erfolgreich aktualisiert!",
+    imgUpload: "Klicken Sie auf das Upload-Symbol, um das Profilbild zu ändern",
+  },
+};
 
 export default function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,6 +43,10 @@ export default function Header() {
   );
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
+
+  const { language } = useSelector((state: RootState) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const handleProfileClick = () => {
     setIsModalOpen(true);
@@ -40,10 +75,14 @@ export default function Header() {
     }
 
     // Show success message
-    alert("Profile updated successfully!");
+    alert(t.updated);
 
     // Close modal and reset preview
     handleModalClose();
+  };
+
+  const handleLanguageChange = (newLanguage: "en" | "de") => {
+    dispatch(setLanguage(newLanguage));
   };
 
   const triggerFileInput = () => {
@@ -55,9 +94,34 @@ export default function Header() {
       <header className="bg-[#101021] border border-[#2F312F] backdrop-blur px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-foreground">
-            Admin Dashboard
+            {t.dashboard}
           </h1>
           <div className="flex items-center gap-4">
+            {/* Language Toggle */}
+            <div className="flex items-center p-1 bg-[#1A1A2E]/80 border border-white/5 rounded-xl shadow-inner-lg backdrop-blur-md mr-3 relative group">
+              {/* Sliding Background Indicator */}
+              <div
+                className={`absolute h-[calc(100%-8px)] rounded-lg bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 ease-out z-0 ${language === "en" ? "w-[38px] left-[4px]" : "w-[38px] left-[42px]"
+                  }`}
+              />
+
+              <button
+                onClick={() => handleLanguageChange("en")}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "en" ? "text-white" : "text-gray-400 hover:text-gray-200"
+                  }`}
+              >
+                EN
+              </button>
+
+              <button
+                onClick={() => handleLanguageChange("de")}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "de" ? "text-white" : "text-gray-400 hover:text-gray-200"
+                  }`}
+              >
+                DE
+              </button>
+            </div>
+
             <button className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 transition relative">
               <Bell size={20} className="text-primary" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -78,7 +142,7 @@ export default function Header() {
               </div>
               <div>
                 <p className="font-semibold text-sm">{userName}</p>
-                <p className="text-xs text-muted-foreground">Admin</p>
+                <p className="text-xs text-muted-foreground">{t.admin}</p>
               </div>
             </div>
           </div>
@@ -96,7 +160,7 @@ export default function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+              <h2 className="text-2xl font-bold text-white">{t.editProfile}</h2>
               <button
                 onClick={handleModalClose}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
@@ -136,7 +200,7 @@ export default function Header() {
                   className="hidden"
                 />
                 <p className="text-xs text-gray-400 text-center">
-                  Click the upload icon to change profile picture
+                  {t.imgUpload}
                 </p>
               </div>
             </div>
@@ -144,14 +208,14 @@ export default function Header() {
             {/* Name Field */}
             <div className="mb-8">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Display Name
+                {t.displayName}
               </label>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 className="w-full bg-[#0a0a14] border border-[#2F312F] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#4A9E4A] transition-colors"
-                placeholder="Enter your name"
+                placeholder={t.enterName}
               />
             </div>
 
@@ -161,13 +225,13 @@ export default function Header() {
                 onClick={handleModalClose}
                 className="flex-1 px-4 py-3 bg-[#0a0a14] border border-[#2F312F] text-white rounded-lg font-medium hover:bg-[#12121d] transition-colors"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={handleSave}
                 className="flex-1 px-4 py-3 bg-[#4A9E4A] hover:bg-[#3d8b3d] text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                Save Changes
+                {t.saveChanges}
               </button>
             </div>
           </div>

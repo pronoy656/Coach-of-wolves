@@ -1,177 +1,128 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+import {
+  fetchWeeklyCheckins,
+  deleteWeeklyCheckin,
+  clearMessages,
+} from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import WeeklyStatCard from "./weeklyStatCard/WeeklyStatCard";
 import WeekCalender from "./weekCalender/WeekCalender";
 import CheckInTable from "./checkInTable/CheckInTable";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 export default function WeeklyCheckIns() {
+  const dispatch = useAppDispatch();
+  const { checkins, loading, error, successMessage, stats } = useAppSelector(
+    (state) => state.weeklyCheckin
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [selectedWeek, setSelectedWeek] = useState<string>("Week 1");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const [checkIns, setCheckIns] = useState([
-    {
-      id: 1,
-      athlete: "Jhon",
-      week: "Week 2",
-      checkInDate: "1/07/2025",
+  // Format date function - MOVED BEFORE useMemo
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return "Invalid Date";
+    }
+  };
 
-      weightChange: "-0.8(kg)",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      athlete: "Mike Chen",
-      week: "Week 4",
-      checkInDate: "1/07/2025",
+  // Fetch checkins on component mount
+  useEffect(() => {
+    dispatch(fetchWeeklyCheckins());
+  }, [dispatch]);
 
-      weightChange: "-0.8(kg)",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      athlete: "Sarah Johnson",
-      week: "Week 1",
-      checkInDate: "1/07/2025",
+  // Handle success/error messages
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearMessages());
+    }
+  }, [error, successMessage, dispatch]);
 
-      weightChange: "+0.5(kg)",
-      status: "Completed",
-    },
-    {
-      id: 4,
-      athlete: "Alex Rodriguez",
-      week: "Week 3",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.3(kg)",
-      status: "Pending",
-    },
-    {
-      id: 5,
-      athlete: "Emma Davis",
-      week: "Week 2",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.2(kg)",
-      status: "Completed",
-    },
-    {
-      id: 6,
-      athlete: "David Wilson",
-      week: "Week 1",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.5(kg)",
-      status: "Completed",
-    },
-    {
-      id: 7,
-      athlete: "Lisa Anderson",
-      week: "Week 4",
-      checkInDate: "1/07/2025",
-
-      weightChange: "+0.2(kg)",
-      status: "Pending",
-    },
-    {
-      id: 8,
-      athlete: "Tom Brown",
-      week: "Week 3",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.1(kg)",
-      status: "Completed",
-    },
-    {
-      id: 9,
-      athlete: "Jessica Lee",
-      week: "Week 2",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.4(kg)",
-      status: "Pending",
-    },
-    {
-      id: 10,
-      athlete: "Chris Martin",
-      week: "Week 1",
-      checkInDate: "1/07/2025",
-
-      weightChange: "+0.1(kg)",
-      status: "Completed",
-    },
-    {
-      id: 11,
-      athlete: "Rachel Green",
-      week: "Week 4",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.6(kg)",
-      status: "Completed",
-    },
-    {
-      id: 12,
-      athlete: "Mark Taylor",
-      week: "Week 3",
-      checkInDate: "1/07/2025",
-
-      weightChange: "-0.7(kg)",
-      status: "Pending",
-    },
-  ]);
-
-  const completedCount = checkIns.filter(
-    (c) => c.status === "Completed"
-  ).length;
-  const pendingCount = checkIns.filter((c) => c.status === "Pending").length;
-  const completionRate =
-    checkIns.length > 0
-      ? Math.round((completedCount / checkIns.length) * 100)
-      : 0;
-
+  // Filter and transform data
   const filteredCheckIns = useMemo(() => {
-    return checkIns.filter((checkIn) => {
+    const weekNumber = parseInt(selectedWeek.replace("Week ", ""));
+
+    return checkins.filter((checkIn) => {
       const matchesSearch =
         searchTerm === "" ||
-        checkIn.athlete.toLowerCase().includes(searchTerm.toLowerCase());
+        checkIn.athleteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        checkIn.coachName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        selectedStatus.length === 0 || selectedStatus.includes(checkIn.status);
+        selectedStatus === "All" ||
+        checkIn.checkinCompleted === selectedStatus;
 
-      const matchesWeek = checkIn.week === selectedWeek;
+      const matchesWeek = checkIn.weekNumber === weekNumber;
 
       return matchesSearch && matchesStatus && matchesWeek;
     });
-  }, [searchTerm, selectedStatus, selectedWeek, checkIns]);
+  }, [searchTerm, selectedStatus, selectedWeek, checkins]);
 
-  const totalPages = Math.ceil(filteredCheckIns.length / itemsPerPage);
-  const paginatedCheckIns = filteredCheckIns.slice(
+  // Transform data for table - NOW formatDate IS AVAILABLE
+  const tableData = useMemo(() => {
+    return filteredCheckIns.map((checkIn, index) => ({
+      id: index + 1,
+      athlete: checkIn.athleteName,
+      week: `Week ${checkIn.weekNumber}`,
+      checkInDate: formatDate(checkIn.nextCheckInDate),
+      coach: checkIn.coachName,
+      weightChange: `${checkIn.weight > 0 ? '+' : ''}${checkIn.weight.toFixed(1)}(kg)`,
+      status: checkIn.checkinCompleted,
+      originalData: checkIn, // Keep original for operations
+    }));
+  }, [filteredCheckIns]); // formatDate is stable, no need to include in dependencies
+
+  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const paginatedCheckIns = tableData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handleDeleteCheckIn = (id: number) => {
-    setCheckIns((prev) => prev.filter((c) => c.id !== id));
+  // Handle delete
+  const handleDeleteCheckIn = async (id: number, athleteName: string, weekNumber: number) => {
+    // We need to find the correct _id for the thunk
+    const checkinToDelete = filteredCheckIns.find(c => c.athleteName === athleteName && c.weekNumber === weekNumber);
+    if (!checkinToDelete) {
+      toast.error("Could not find check-in ID to delete");
+      return;
+    }
+
+    try {
+      await dispatch(deleteWeeklyCheckin(checkinToDelete._id)).unwrap();
+      toast.success("Check-in deleted successfully");
+    } catch (error: any) {
+      toast.error(error || "Failed to delete check-in");
+    }
   };
 
-  const toggleStatusFilter = (status: string) => {
-    setSelectedStatus((prev) =>
-      prev.includes(status)
-        ? prev.filter((s) => s !== status)
-        : [...prev, status]
-    );
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    setCurrentPage(1);
   };
 
   const handleWeekChange = (week: string) => {
     setSelectedWeek(week);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (status: string) => {
-    toggleStatusFilter(status);
     setCurrentPage(1);
   };
 
@@ -180,60 +131,73 @@ export default function WeeklyCheckIns() {
     setCurrentPage(1);
   };
 
+
+
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex h-screen bg-black text-white">
       <div className="flex-1 overflow-hidden flex flex-col">
         <main className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">
+            {/* Loading overlay */}
+            {loading && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-[#1a1a2e] p-6 rounded-lg flex flex-col items-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
+                  <span className="text-gray-300">Loading check-ins...</span>
+                </div>
+              </div>
+            )}
+
             <div>
               <h1 className="text-3xl font-bold mb-2">Weekly Check-Ins</h1>
-              <p className="text-muted-foreground">
+              <p className="text-gray-400">
                 Monitor all athlete check-ins and progress
               </p>
             </div>
 
             {/* Stats Cards Component */}
             <WeeklyStatCard
-              completedCount={completedCount}
-              pendingCount={pendingCount}
-              completionRate={completionRate}
+              completedCount={stats.completedCount}
+              pendingCount={stats.pendingCount}
+              completionRate={stats.completionRate}
             />
 
             {/* Filters */}
             <div className="flex flex-col gap-4">
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <input
                   type="text"
                   placeholder="Search athlete or coach..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="flex-1 px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex-1 min-w-[200px] px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                  disabled={loading}
                 />
 
+                {/* Status Filter Dropdown */}
                 <select
-                  value={selectedStatus.join(",")}
-                  onChange={(e) => {
-                    if (e.target.value === "") {
-                      setSelectedStatus([]);
-                      setCurrentPage(1);
-                    } else {
-                      setSelectedStatus(
-                        e.target.value.split(",").filter(Boolean)
-                      );
-                      setCurrentPage(1);
-                    }
-                  }}
-                  className="px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={selectedStatus}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  className="px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  disabled={loading}
                 >
-                  <option value="">All Status</option>
-                  <option value="Completed">Completed</option>
+                  <option value="All">All Status</option>
                   <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
                 </select>
 
+                {/* Week Calendar */}
                 <WeekCalender
                   selectedWeek={selectedWeek}
                   onWeekChange={handleWeekChange}
                 />
+              </div>
+
+              {/* Active filters info */}
+              <div className="text-sm text-gray-400">
+                Showing {filteredCheckIns.length} check-ins for {selectedWeek}
+                {selectedStatus !== "All" && ` (${selectedStatus} only)`}
+                {searchTerm && ` matching "${searchTerm}"`}
               </div>
             </div>
 
@@ -244,6 +208,7 @@ export default function WeeklyCheckIns() {
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              loading={loading}
             />
           </div>
         </main>

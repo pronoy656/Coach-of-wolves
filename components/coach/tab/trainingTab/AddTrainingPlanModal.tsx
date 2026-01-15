@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
-import { BackendExercise, TrainingPlan, TrainingPlanFormData } from "@/redux/features/trainingPlan/trainingPlanType";
+import { BackendExercise, TrainingPlan, TrainingPlanFormData, SetDetail } from "@/redux/features/trainingPlan/trainingPlanType";
 
 interface ExerciseState extends BackendExercise {
   id: string;
@@ -28,9 +28,10 @@ export default function AddTrainingPlanModal({
   const initialExercise: ExerciseState = {
     id: Date.now().toString(),
     exerciseName: "",
-    sets: "",
+    sets: "1",
     repRange: "",
     rir: "",
+    setDetails: [{ sets: "1", reps: "", rir: "" }],
     excerciseNote: "",
   };
 
@@ -46,7 +47,13 @@ export default function AddTrainingPlanModal({
       setComment(editingPlan.comment || "");
       setExercises(
         editingPlan.exercise && editingPlan.exercise.length > 0
-          ? editingPlan.exercise.map(ex => ({ ...ex, id: ex._id || Math.random().toString() }))
+          ? editingPlan.exercise.map(ex => ({
+            ...ex,
+            id: ex._id || Math.random().toString(),
+            setDetails: (ex.setDetails && ex.setDetails.length > 0)
+              ? ex.setDetails.map(sd => ({ ...sd, sets: sd.sets || "1" }))
+              : [{ sets: ex.sets || "1", reps: ex.repRange || "", rir: ex.rir || "" }]
+          }))
           : [initialExercise]
       );
     } else {
@@ -63,9 +70,10 @@ export default function AddTrainingPlanModal({
       {
         id: Date.now().toString() + Math.random(),
         exerciseName: "",
-        sets: "",
+        sets: "1",
         repRange: "",
         rir: "",
+        setDetails: [{ sets: "1", reps: "", rir: "" }],
         excerciseNote: "",
       },
     ]);
@@ -82,11 +90,49 @@ export default function AddTrainingPlanModal({
   const handleExerciseChange = (
     id: string,
     field: keyof ExerciseState,
-    value: string
+    value: any
   ) => {
     setExercises((prev) =>
       prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex))
     );
+  };
+
+  const handleAddSet = (exerciseId: string) => {
+    setExercises(prev => prev.map(ex => {
+      if (ex.id === exerciseId) {
+        const newSets = [...(ex.setDetails || []), { sets: "1", reps: "", rir: "" }];
+        return { ...ex, setDetails: newSets };
+      }
+      return ex;
+    }));
+  };
+
+  const handleRemoveSet = (exerciseId: string, setIndex: number) => {
+    setExercises(prev => prev.map(ex => {
+      if (ex.id === exerciseId && (ex.setDetails?.length || 0) > 1) {
+        const newSets = (ex.setDetails || []).filter((_, i) => i !== setIndex);
+        return { ...ex, setDetails: newSets };
+      }
+      return ex;
+    }));
+  };
+
+  const handleSetDetailChange = (exerciseId: string, setIndex: number, field: keyof SetDetail, value: string) => {
+    setExercises(prev => prev.map(ex => {
+      if (ex.id === exerciseId) {
+        const newSets = (ex.setDetails || []).map((set, i) =>
+          i === setIndex ? { ...set, [field]: value } : set
+        );
+        // Sync top-level fields with the first group for backward compatibility
+        if (setIndex === 0) {
+          if (field === "sets") ex.sets = value;
+          if (field === "reps") ex.repRange = value;
+          if (field === "rir") ex.rir = value;
+        }
+        return { ...ex, setDetails: newSets };
+      }
+      return ex;
+    }));
   };
 
   const handleSave = () => {
@@ -205,64 +251,61 @@ export default function AddTrainingPlanModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-400">
-                        Sets
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={exercise.sets}
-                        onChange={(e) =>
-                          handleExerciseChange(
-                            exercise.id,
-                            "sets",
-                            e.target.value
-                          )
-                        }
-                        className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
+                  <div className="space-y-4">
+                    {exercise.setDetails?.map((set, setIndex) => (
+                      <div key={setIndex} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end animate-in fade-in slide-in-from-left-2 transition-all duration-200 bg-[#1a1a1a] p-3 rounded-lg border border-[#2a2a2a]/50 relative group/set">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-400">Sets</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="1"
+                              value={set.sets}
+                              onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "sets", e.target.value)}
+                              className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
+                            />
+                            <button
+                              onClick={() => handleAddSet(exercise.id)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#2a2a2a] hover:bg-[#3a3a3a] p-1.5 rounded-md text-emerald-500 transition-colors"
+                              title="Add another set group"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-400">
-                        Rep Range
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 8-10"
-                        value={exercise.repRange}
-                        onChange={(e) =>
-                          handleExerciseChange(
-                            exercise.id,
-                            "repRange",
-                            e.target.value
-                          )
-                        }
-                        className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-400">Rep Range</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 10-12"
+                            value={set.reps}
+                            onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "reps", e.target.value)}
+                            className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-400">
-                        RIR/Weight
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 70kg"
-                        value={exercise.rir}
-                        onChange={(e) =>
-                          handleExerciseChange(
-                            exercise.id,
-                            "rir",
-                            e.target.value
-                          )
-                        }
-                        className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
+                        <div className="space-y-2 relative">
+                          <label className="text-xs font-medium text-gray-400">RIR</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 2"
+                            value={set.rir}
+                            onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "rir", e.target.value)}
+                            className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
+                          />
+                          {exercise.setDetails && exercise.setDetails.length > 1 && (
+                            <button
+                              onClick={() => handleRemoveSet(exercise.id, setIndex)}
+                              className="absolute -right-2 -top-2 bg-red-500/20 text-red-500 hover:bg-red-500 p-1 rounded-full opacity-0 group-hover/set:opacity-100 transition-all border border-red-500/50 z-10"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="space-y-2">

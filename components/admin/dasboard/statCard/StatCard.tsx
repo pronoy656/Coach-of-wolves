@@ -20,6 +20,65 @@ import {
 } from "@/redux/features/admin/dashboard/dashboardSlice";
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    loading: "Loading dashboard data...",
+    totalAthletes: "Total Athletes",
+    totalAthletesChange: "All Athletes",
+    totalAthletesTooltip: "Total number of athletes registered",
+    totalCoaches: "Total Coaches",
+    totalCoachesChange: "All Coaches",
+    totalCoachesTooltip: "Total number of coaches",
+    naturalAthletes: "Natural Athletes",
+    naturalAthletesChange: (enhanced: number) => `Enhanced: ${enhanced}`,
+    naturalAthletesTooltip: "Natural vs Enhanced athletes",
+    totalUsers: "Total Users",
+    totalUsersChange: (active: number, inactive: number) =>
+      `Active: ${active}, Inactive: ${inactive}`,
+    totalUsersTooltip: "Overall user count",
+    dailyTrackingToday: "Daily Tracking Today",
+    dailyTrackingChange: "Tracked Today",
+    dailyTrackingTooltip: "Daily tracking completed today",
+    checkinsThisWeek: "Check-Ins This Week",
+    checkinsThisWeekChange: "Checked In This Week",
+    checkinsThisWeekTooltip: "Check-ins completed this week",
+    enhancedAthletes: "Enhanced Athletes",
+    enhancedAthletesChange: "Enhanced Athletes",
+    enhancedAthletesTooltip: "Enhanced athletes count",
+    activeUsers: "Active Users",
+    activeUsersChange: (inactive: number) => `Inactive: ${inactive}`,
+    activeUsersTooltip: "Active vs Inactive users",
+  },
+  de: {
+    loading: "Dashboard-Daten werden geladen...",
+    totalAthletes: "Gesamt Athleten",
+    totalAthletesChange: "Alle Athleten",
+    totalAthletesTooltip: "Gesamtzahl der registrierten Athleten",
+    totalCoaches: "Gesamt Trainer",
+    totalCoachesChange: "Alle Trainer",
+    totalCoachesTooltip: "Gesamtzahl der Trainer",
+    naturalAthletes: "Natürliche Athleten",
+    naturalAthletesChange: (enhanced: number) => `Enhanced: ${enhanced}`,
+    naturalAthletesTooltip: "Natürliche vs Enhanced Athleten",
+    totalUsers: "Gesamt Nutzer",
+    totalUsersChange: (active: number, inactive: number) =>
+      `Aktiv: ${active}, Inaktiv: ${inactive}`,
+    totalUsersTooltip: "Gesamtzahl aller Nutzer",
+    dailyTrackingToday: "Heutiges Tracking",
+    dailyTrackingChange: "Heute getrackt",
+    dailyTrackingTooltip: "Heute abgeschlossenes tägliches Tracking",
+    checkinsThisWeek: "Check-Ins diese Woche",
+    checkinsThisWeekChange: "Diese Woche eingecheckt",
+    checkinsThisWeekTooltip: "Abgeschlossene Check-Ins dieser Woche",
+    enhancedAthletes: "Enhanced Athleten",
+    enhancedAthletesChange: "Enhanced Athleten",
+    enhancedAthletesTooltip: "Anzahl der Enhanced Athleten",
+    activeUsers: "Aktive Nutzer",
+    activeUsersChange: (inactive: number) => `Inaktiv: ${inactive}`,
+    activeUsersTooltip: "Aktive vs inaktive Nutzer",
+  },
+};
+
 interface StatCard {
   title: string;
   value: string | number;
@@ -35,6 +94,8 @@ export default function StatCard() {
   const { data, loading, error } = useSelector(
     (state: RootState) => state.dashboard
   );
+  const { language } = useSelector((state: RootState) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -52,145 +113,146 @@ export default function StatCard() {
     }
   }, [error, dispatch]);
 
-  // Format the stats based on API data
   const stats: StatCard[] = data
     ? [
         {
-          title: "Total Athletes",
+          title: t.totalAthletes,
           value: data.totalAthlete,
-          change: `All Athletes`,
+          change: t.totalAthletesChange,
           icon: Users,
           color: "text-green-400",
           bgColor: "bg-green-500/20",
-          tooltip: "Total number of athletes registered",
+          tooltip: t.totalAthletesTooltip,
         },
         {
-          title: "Total Coaches",
+          title: t.totalCoaches,
           value: data.totalCoach,
-          change: "All Coaches",
+          change: t.totalCoachesChange,
           icon: Users,
           color: "text-blue-400",
           bgColor: "bg-blue-500/20",
-          tooltip: "Total number of coaches",
+          tooltip: t.totalCoachesTooltip,
         },
         {
-          title: "Natural Athletes",
+          title: t.naturalAthletes,
           value: data.totalNaturalAthlete,
-          change: `Enhanced: ${data.totalEnhancedAthlete}`,
+          change: t.naturalAthletesChange(data.totalEnhancedAthlete),
           icon: Target,
           color: "text-purple-400",
           bgColor: "bg-purple-500/20",
-          tooltip: "Natural vs Enhanced athletes",
+          tooltip: t.naturalAthletesTooltip,
         },
         {
-          title: "Total Users",
+          title: t.totalUsers,
           value: data.totalActiveUser + data.totalInactiveUser,
-          change: `Active: ${data.totalActiveUser}, Inactive: ${data.totalInactiveUser}`,
+          change: t.totalUsersChange(
+            data.totalActiveUser,
+            data.totalInactiveUser
+          ),
           icon: UserCheck,
           color: "text-cyan-400",
           bgColor: "bg-cyan-500/20",
-          tooltip: "Overall user count",
+          tooltip: t.totalUsersTooltip,
         },
 
         {
-          title: "Daily Tracking Today",
+          title: t.dailyTrackingToday,
           value: data.totalDailyTrackingToday,
-          change: "Tracked Today",
+          change: t.dailyTrackingChange,
           icon: CheckCircle,
           color: "text-orange-400",
           bgColor: "bg-orange-500/20",
-          tooltip: "Daily tracking completed today",
+          tooltip: t.dailyTrackingTooltip,
         },
         {
-          title: "Check-Ins This Week",
+          title: t.checkinsThisWeek,
           value: data.totalCheckInThisWeek,
-          change: "Checked In This Week",
+          change: t.checkinsThisWeekChange,
           icon: AlertCircle,
           color: "text-yellow-400",
           bgColor: "bg-yellow-500/20",
-          tooltip: "Check-ins completed this week",
+          tooltip: t.checkinsThisWeekTooltip,
         },
         {
-          title: "Enhanced Athletes",
+          title: t.enhancedAthletes,
           value: data.totalEnhancedAthlete,
-          change: "Enhanced Athletes",
+          change: t.enhancedAthletesChange,
           icon: Zap,
           color: "text-pink-400",
           bgColor: "bg-pink-500/20",
-          tooltip: "Enhanced athletes count",
+          tooltip: t.enhancedAthletesTooltip,
         },
         {
-          title: "Active Users",
+          title: t.activeUsers,
           value: data.totalActiveUser,
-          change: `Inactive: ${data.totalInactiveUser}`,
+          change: t.activeUsersChange(data.totalInactiveUser),
           icon: Activity,
           color: "text-emerald-400",
           bgColor: "bg-emerald-500/20",
-          tooltip: "Active vs Inactive users",
+          tooltip: t.activeUsersTooltip,
         },
       ]
     : [
-        // Fallback data while loading or if no data
         {
-          title: "Total Athletes",
+          title: t.totalAthletes,
           value: "0",
-          change: "All Athletes",
+          change: t.totalAthletesChange,
           icon: Users,
           color: "text-green-400",
           bgColor: "bg-green-500/20",
         },
         {
-          title: "Total Coaches",
+          title: t.totalCoaches,
           value: "0",
-          change: "All Coaches",
+          change: t.totalCoachesChange,
           icon: Users,
           color: "text-blue-400",
           bgColor: "bg-blue-500/20",
         },
         {
-          title: "Natural Athletes",
+          title: t.naturalAthletes,
           value: "0",
-          change: "Enhanced: 0",
+          change: t.naturalAthletesChange(0),
           icon: Target,
           color: "text-purple-400",
           bgColor: "bg-purple-500/20",
         },
         {
-          title: "Active Users",
+          title: t.activeUsers,
           value: "0",
-          change: "Inactive: 0",
+          change: t.activeUsersChange(0),
           icon: Activity,
           color: "text-emerald-400",
           bgColor: "bg-emerald-500/20",
         },
         {
-          title: "Daily Tracking Today",
+          title: t.dailyTrackingToday,
           value: "0",
-          change: "Tracked Today",
+          change: t.dailyTrackingChange,
           icon: CheckCircle,
           color: "text-orange-400",
           bgColor: "bg-orange-500/20",
         },
         {
-          title: "Check-Ins This Week",
+          title: t.checkinsThisWeek,
           value: "0",
-          change: "Checked In This Week",
+          change: t.checkinsThisWeekChange,
           icon: AlertCircle,
           color: "text-yellow-400",
           bgColor: "bg-yellow-500/20",
         },
         {
-          title: "Enhanced Athletes",
+          title: t.enhancedAthletes,
           value: "0",
-          change: "Enhanced Athletes",
+          change: t.enhancedAthletesChange,
           icon: Zap,
           color: "text-pink-400",
           bgColor: "bg-pink-500/20",
         },
         {
-          title: "Total Users",
+          title: t.totalUsers,
           value: "0",
-          change: "Active: 0, Inactive: 0",
+          change: t.totalUsersChange(0, 0),
           icon: UserCheck,
           color: "text-cyan-400",
           bgColor: "bg-cyan-500/20",
@@ -202,7 +264,7 @@ export default function StatCard() {
       {loading && !data && (
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
-          <p className="mt-2 text-gray-400">Loading dashboard data...</p>
+          <p className="mt-2 text-gray-400">{t.loading}</p>
         </div>
       )}
 

@@ -1,59 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Users, Activity, TrendingUp, Clock, CheckCircle } from "lucide-react";
-
-// export default function StatsCard() {
-//   const cards = [
-//     {
-//       label: "Total Athletes",
-//       value: "102",
-//       icon: Users,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Active Athletes",
-//       value: "102",
-//       icon: Activity,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Daily Tracking",
-//       value: "10%",
-//       icon: TrendingUp,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Pending Check-In",
-//       value: "0",
-//       icon: Clock,
-//       color: "text-primary",
-//     },
-//     {
-//       label: "Complete Check-In",
-//       value: "50",
-//       icon: CheckCircle,
-//       color: "text-primary",
-//     },
-//   ];
-
-//   return (
-//     <div className="grid grid-cols-5 gap-4 p-7">
-//       {cards.map((card, i) => (
-//         <div
-//           key={i}
-//           className="bg-[#08081A] border border-[#4A9E4A] rounded-lg p-4"
-//         >
-//           <div className="flex items-center gap-3 mb-2">
-//             <div className="p-2 bg-[#4D6D32] rounded-lg">
-//               <card.icon size={24} className={card.color} />
-//             </div>
-//           </div>
-//           <p className="text-xl text-muted-foreground mb-1">{card.label}</p>
-//           <p className="text-xl text-[#8CCA4D] font-bold">{card.value}</p>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
 
 "use client";
 
@@ -66,6 +10,43 @@ import {
   clearCoachDashboardError,
 } from "@/redux/features/coachDashboard/coachDashBoardSlice";
 import toast from "react-hot-toast";
+
+const translations = {
+  en: {
+    loading: "Loading dashboard data...",
+    totalAthletes: "Total Athletes",
+    activeAthletes: "Active Athletes",
+    dailyTracking: "Daily Tracking",
+    pendingCheckIn: "Pending Check-In",
+    completeCheckIn: "Complete Check-In",
+    descTotal: "Total athletes assigned to you",
+    descActive: "Currently active athletes",
+    descDaily: (submitted: number, total: number) => `${submitted} of ${total} submitted today`,
+    descPending: "Waiting for athlete response",
+    descComplete: "Successfully completed",
+    dynamicTotal: (count: number) => `${count} total athletes`,
+    dynamicActive: (count: number) => `${count} currently active`,
+    dynamicPending: (count: number) => `${count} waiting for response`,
+    dynamicComplete: (count: number) => `${count} successfully completed`,
+  },
+  de: {
+    loading: "Dashboard-Daten werden geladen...",
+    totalAthletes: "Gesamt Athleten",
+    activeAthletes: "Aktive Athleten",
+    dailyTracking: "Tägliches Tracking",
+    pendingCheckIn: "Ausstehende Check-Ins",
+    completeCheckIn: "Abgeschlossene Check-Ins",
+    descTotal: "Gesamtanzahl der Ihnen zugewiesenen Athleten",
+    descActive: "Derzeit aktive Athleten",
+    descDaily: (submitted: number, total: number) => `${submitted} von ${total} heute eingereicht`,
+    descPending: "Warten auf Rückmeldung des Athleten",
+    descComplete: "Erfolgreich abgeschlossen",
+    dynamicTotal: (count: number) => `${count} Athleten insgesamt`,
+    dynamicActive: (count: number) => `${count} aktuell aktiv`,
+    dynamicPending: (count: number) => `${count} warten auf Antwort`,
+    dynamicComplete: (count: number) => `${count} erfolgreich abgeschlossen`,
+  },
+};
 
 interface StatCard {
   label: string;
@@ -80,6 +61,8 @@ export default function StatsCard() {
   const { data, loading, error } = useSelector(
     (state: RootState) => state.coachDashboard
   );
+  const { language } = useSelector((state: RootState) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -108,94 +91,94 @@ export default function StatsCard() {
   // Format the cards based on API data
   const cards: StatCard[] = data
     ? [
-        {
-          label: "Total Athletes",
-          value: data.totalAthletes,
-          icon: Users,
-          color: "text-[#8CCA4D]",
-          description: "Total athletes assigned to you",
-        },
-        {
-          label: "Active Athletes",
-          value: data.totalActiveUsers,
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-          description: "Currently active athletes",
-        },
-        {
-          label: "Daily Tracking",
-          value: calculateDailyTrackingPercentage(),
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-          description: `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`,
-        },
-        {
-          label: "Pending Check-In",
-          value: data.checkins.pending,
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-          description: "Waiting for athlete response",
-        },
-        {
-          label: "Complete Check-In",
-          value: data.checkins.completed,
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-          description: "Successfully completed",
-        },
-      ]
+      {
+        label: t.totalAthletes,
+        value: data.totalAthletes,
+        icon: Users,
+        color: "text-[#8CCA4D]",
+        description: t.descTotal,
+      },
+      {
+        label: t.activeAthletes,
+        value: data.totalActiveUsers,
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+        description: t.descActive,
+      },
+      {
+        label: t.dailyTracking,
+        value: calculateDailyTrackingPercentage(),
+        icon: TrendingUp,
+        color: "text-[#8CCA4D]",
+        description: t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes),
+      },
+      {
+        label: t.pendingCheckIn,
+        value: data.checkins.pending,
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+        description: t.descPending,
+      },
+      {
+        label: t.completeCheckIn,
+        value: data.checkins.completed,
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+        description: t.descComplete,
+      },
+    ]
     : [
-        // Fallback data while loading or if no data
-        {
-          label: "Total Athletes",
-          value: "0",
-          icon: Users,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Active Athletes",
-          value: "0",
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Daily Tracking",
-          value: "0",
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: "Pending Check-In",
-          value: "0",
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-        },
-        {
-          label: "Complete Check-In",
-          value: "0",
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-        },
-      ];
+      // Fallback data while loading or if no data
+      {
+        label: t.totalAthletes,
+        value: "0",
+        icon: Users,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: t.activeAthletes,
+        value: "0",
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: t.dailyTracking,
+        value: "0",
+        icon: TrendingUp,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: t.pendingCheckIn,
+        value: "0",
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+      },
+      {
+        label: t.completeCheckIn,
+        value: "0",
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+      },
+    ];
 
-  // Add description to cards if data exists
+  // Add dynamic description to cards if data exists with translation
   if (data) {
     cards.forEach((card, index) => {
       switch (index) {
         case 0: // Total Athletes
-          card.description = `${data.totalAthletes} total athletes`;
+          card.description = t.dynamicTotal(data.totalAthletes);
           break;
         case 1: // Active Athletes
-          card.description = `${data.totalActiveUsers} currently active`;
+          card.description = t.dynamicActive(data.totalActiveUsers);
           break;
         case 2: // Daily Tracking
-          card.description = `${data.dailyTracking.submittedToday} of ${data.totalAthletes} submitted today`;
+          card.description = t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes);
           break;
         case 3: // Pending Check-In
-          card.description = `${data.checkins.pending} waiting for response`;
+          card.description = t.dynamicPending(data.checkins.pending);
           break;
         case 4: // Complete Check-In
-          card.description = `${data.checkins.completed} successfully completed`;
+          card.description = t.dynamicComplete(data.checkins.completed);
           break;
       }
     });
@@ -208,7 +191,7 @@ export default function StatsCard() {
         <div className="text-center py-4">
           <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#4A9E4A]"></div>
           <p className="mt-2 text-gray-400 text-sm">
-            Loading dashboard data...
+            {t.loading}
           </p>
         </div>
       )}
@@ -242,39 +225,6 @@ export default function StatsCard() {
           </div>
         ))}
       </div>
-
-      {/* Refresh Button */}
-      {/* <div className="flex justify-end">
-        <button
-          onClick={() => dispatch(getCoachDashboardData())}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-[#4A9E4A] hover:bg-[#3c7913] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Refreshing...
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh Data
-            </>
-          )}
-        </button>
-      </div> */}
     </div>
   );
 }
