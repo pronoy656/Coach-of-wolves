@@ -130,13 +130,17 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-[#2F312F] " onClick={handleLogout}>
-        <NavItem
-          icon={<LogOut size={20} />}
-          label={t.logout}
-          href="/"
-          active={pathname === "/logout"}
-        />
+      <div className="p-4 border-t border-[#2F312F]">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition border border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500 group"
+        >
+          <LogOut
+            size={20}
+            className="group-hover:scale-110 transition-transform"
+          />
+          <span className="text-sm font-medium">{t.logout}</span>
+        </button>
       </div>
     </aside>
   );
