@@ -81,6 +81,23 @@ const translations = {
     statusEnhanced: "Enhanced",
     edit: "Edit",
     delete: "Delete",
+    genderMale: "Male",
+    genderFemale: "Female",
+    na: "N/A",
+    categoryLabels: {
+      Lifestyle: "Lifestyle",
+      Fitmodel: "Fitmodel",
+      Bikini: "Bikini",
+      Figure: "Figure",
+      Wellness: "Wellness",
+      "Women's Physique": "Women's Physique",
+      "Women's Bodybuilding": "Women's Bodybuilding",
+      "Men's Physique": "Men's Physique",
+      "Classic Physique": "Classic Physique",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Bodybuilding: "Bodybuilding",
+      Other: "Other",
+    } as Record<string, string>,
     phaseLabels: {
       "Pre-Prep": "Pre-Prep",
       Offseason: "Offseason",
@@ -122,6 +139,23 @@ const translations = {
     statusEnhanced: "Enhanced",
     edit: "Bearbeiten",
     delete: "Löschen",
+    genderMale: "Männlich",
+    genderFemale: "Weiblich",
+    na: "N/V",
+    categoryLabels: {
+      Lifestyle: "Lifestyle",
+      Fitmodel: "Fitmodel",
+      Bikini: "Bikini",
+      Figure: "Figur",
+      Wellness: "Wellness",
+      "Women's Physique": "Women's Physique",
+      "Women's Bodybuilding": "Women's Bodybuilding",
+      "Men's Physique": "Men's Physique",
+      "Classic Physique": "Classic Physique",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Bodybuilding: "Bodybuilding",
+      Other: "Andere",
+    } as Record<string, string>,
     phaseLabels: {
       "Pre-Prep": "Pre-Prep",
       Offseason: "Offseason",
@@ -142,6 +176,7 @@ export default function AthleteManagement() {
   const { profile } = useAppSelector((state) => state.coachProfile);
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
+  const dateLocale = language === "de" ? "de-DE" : "en-US";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL_STATUS");
@@ -313,14 +348,14 @@ export default function AthleteManagement() {
               <optgroup label={t.maleCategories}>
                 {CATEGORY_MALE.map((cat) => (
                   <option key={`male-${cat}`} value={cat}>
-                    {cat}
+                    {t.categoryLabels[cat] ?? cat}
                   </option>
                 ))}
               </optgroup>
               <optgroup label={t.femaleCategories}>
                 {CATEGORY_FEMALE.map((cat) => (
                   <option key={`female-${cat}`} value={cat}>
-                    {cat}
+                    {t.categoryLabels[cat] ?? cat}
                   </option>
                 ))}
               </optgroup>
@@ -412,12 +447,20 @@ export default function AthleteManagement() {
                         {athlete.email}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-white">{athlete.gender}</td>
+                    <td className="px-6 py-4 text-white">
+                      {athlete.gender === "Male"
+                        ? t.genderMale
+                        : athlete.gender === "Female"
+                        ? t.genderFemale
+                        : athlete.gender}
+                    </td>
                     <td className="px-6 py-4 text-white">{athlete.age}</td>
                     <td className="px-6 py-4 text-green-500">
-                      {athlete.category}
+                      {t.categoryLabels[athlete.category] ?? athlete.category}
                     </td>
-                    <td className="px-6 py-4 text-white">{athlete.phase}</td>
+                    <td className="px-6 py-4 text-white">
+                      {t.phaseLabels[athlete.phase] ?? athlete.phase}
+                    </td>
                     <td className="px-6 py-4 text-white">{athlete.weight}</td>
                     <td className="px-6 py-4 text-white">{athlete.height}</td>
                     <td className="px-6 py-4">
@@ -426,16 +469,25 @@ export default function AthleteManagement() {
                           athlete.status
                         )}`}
                       >
-                        {athlete.status}
+                        {athlete.status === "Natural"
+                          ? t.statusNatural
+                          : t.statusEnhanced}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-white">
                       {athlete.lastActive
-                        ? new Date(athlete.lastActive).toLocaleDateString()
-                        : "N/A"}
+                        ? new Date(athlete.lastActive).toLocaleDateString(
+                            dateLocale,
+                            {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                            }
+                          )
+                        : t.na}
                     </td>
                     <td className="px-6 py-4 text-white">
-                      {athlete.waterQuantity}
+                      {athlete.waterQuantity} L
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-3">

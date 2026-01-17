@@ -21,11 +21,40 @@ import NutritionModal from "./nutritionModal/NutritionModal";
 import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    title: "Nutrition Database",
+    searchPlaceholder: "Search nutrition items...",
+    addButtonLoading: "Loading...",
+    addButton: "+ Add Nutrition",
+    emptySearch: "No nutrition items found for your search.",
+    emptyNoItems: "No nutrition items found.",
+    emptyAddFirst: "+ Add Your First Nutrition",
+    deleteTitle: "Delete Nutrition",
+    deleteMessage:
+      "Are you sure you want to delete this nutrition? This action cannot be undone.",
+  },
+  de: {
+    title: "Ernährungsdatenbank",
+    searchPlaceholder: "Ernährungsprodukte suchen...",
+    addButtonLoading: "Laden...",
+    addButton: "+ Lebensmittel hinzufügen",
+    emptySearch: "Keine Ernährungseinträge für deine Suche gefunden.",
+    emptyNoItems: "Keine Ernährungseinträge gefunden.",
+    emptyAddFirst: "+ Erstelle deinen ersten Ernährungseintrag",
+    deleteTitle: "Ernährungseintrag löschen",
+    deleteMessage:
+      "Möchtest du diesen Ernährungseintrag wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  },
+};
+
 export default function NutritionDatabase() {
   const dispatch = useDispatch<AppDispatch>();
   const { nutritions, loading, error, successMessage } = useAppSelector(
     (state) => state.nutrition
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -141,19 +170,19 @@ export default function NutritionDatabase() {
           <div className="p-6">
             <div className="flex flex-col gap-6 mb-8">
               <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold">Nutrition Database</h1>
+                <h1 className="text-3xl font-bold">{t.title}</h1>
                 <button
                   onClick={handleAddNutrition}
                   disabled={loading}
                   className="px-6 py-3 border-2 border-green-500 text-green-500 rounded-3xl hover:bg-green-500/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  + Add Nutrition
+                  {loading ? t.addButtonLoading : t.addButton}
                 </button>
               </div>
               <div className="w-full">
                 <input
                   type="text"
-                  placeholder="Search nutrition items..."
+                  placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={handleSearch}
                   className="w-full px-4 py-3 bg-input border border-[#303245] rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
@@ -168,15 +197,13 @@ export default function NutritionDatabase() {
             ) : nutritions.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
-                  {isSearching
-                    ? "No nutrition items found for your search."
-                    : "No nutrition items found."}
+                  {isSearching ? t.emptySearch : t.emptyNoItems}
                 </p>
                 <button
                   onClick={handleAddNutrition}
                   className="mt-4 px-6 py-3 border-2 border-[#4A9E4A] text-[#4A9E4A] rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium"
                 >
-                  + Add Your First Nutrition
+                  {t.emptyAddFirst}
                 </button>
               </div>
             ) : (
@@ -209,8 +236,8 @@ export default function NutritionDatabase() {
       {showDeleteModal && (
         <DeleteModal
           isOpen={showDeleteModal}
-          title="Delete Nutrition"
-          message="Are you sure you want to delete this nutrition? This action cannot be undone."
+          title={t.deleteTitle}
+          message={t.deleteMessage}
           onConfirm={confirmDelete}
           onCancel={() => {
             setShowDeleteModal(false);

@@ -21,7 +21,7 @@ import {
 } from "@/redux/features/athlete/athleteSlice";
 import toast from "react-hot-toast";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
-import { getImageUrl } from "@/utils/imageUtils";
+
 import Image from "next/image";
 import { getFullImageUrl } from "@/lib/utils";
 
@@ -74,6 +74,20 @@ const translations = {
       "Fat-Reduction Phase": "Fat-Reduction Phase",
       "Reverse-Diet-Phase": "Reverse-Diet-Phase",
     } as Record<string, string>,
+    categoryLabels: {
+      Lifestyle: "Lifestyle",
+      Fitmodel: "Fitmodel",
+      Bikini: "Bikini",
+      Figure: "Figure",
+      Wellness: "Wellness",
+      "Women's Physique": "Women's Physique",
+      "Women's Bodybuilding": "Women's Bodybuilding",
+      "Men's Physique": "Men's Physique",
+      "Classic Physique": "Classic Physique",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Bodybuilding: "Bodybuilding",
+      Other: "Other",
+    } as Record<string, string>,
   },
   de: {
     deleteTitle: "Athlet löschen",
@@ -123,6 +137,20 @@ const translations = {
       "Fat-Reduction Phase": "Fat-Reduction Phase",
       "Reverse-Diet-Phase": "Reverse-Diet-Phase",
     } as Record<string, string>,
+    categoryLabels: {
+      Lifestyle: "Lifestyle",
+      Fitmodel: "Fitmodel",
+      Bikini: "Bikini",
+      Figure: "Figur",
+      Wellness: "Wellness",
+      "Women's Physique": "Women's Physique",
+      "Women's Bodybuilding": "Women's Bodybuilding",
+      "Men's Physique": "Men's Physique",
+      "Classic Physique": "Classic Physique",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Bodybuilding: "Bodybuilding",
+      Other: "Andere",
+    } as Record<string, string>,
   },
 };
 
@@ -154,6 +182,7 @@ export default function AthleteManagement() {
   } = useAppSelector((state) => state.athlete);
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
+  const dateLocale = language === "de" ? "de-DE" : "en-US";
 
   const [searchTerm, setSearchTerm] = useState(reduxSearchQuery);
   const [statusFilter, setStatusFilter] = useState(
@@ -407,7 +436,9 @@ export default function AthleteManagement() {
             >
               {allCategories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat === "CATEGORY_ALL" ? t.categoryPlaceholder : cat}
+                  {cat === "CATEGORY_ALL"
+                    ? t.categoryPlaceholder
+                    : t.categoryLabels[cat] ?? cat}
                 </option>
               ))}
             </select>
@@ -523,14 +554,19 @@ export default function AthleteManagement() {
                           </div>
                         </td>
                         <td className="px-6 py-3 text-white">
-                          {athlete.gender}
+                          {athlete.gender === "Male"
+                            ? t.genderMale
+                            : athlete.gender === "Female"
+                            ? t.genderFemale
+                            : athlete.gender}
                         </td>
                         <td className="px-6 py-3 text-white">{athlete.age}</td>
                         <td className="px-6 py-3 text-green-500">
-                          {athlete.category}
+                          {t.categoryLabels[athlete.category] ??
+                            athlete.category}
                         </td>
                         <td className="px-6 py-3 text-white">
-                          {athlete.phase}
+                          {t.phases[athlete.phase] ?? athlete.phase}
                         </td>
                         <td className="px-6 py-3 text-white">
                           {athlete.weight}
@@ -551,7 +587,7 @@ export default function AthleteManagement() {
                         </td>
                         <td className="px-6 py-3 text-white">
                           {new Date(athlete.updatedAt).toLocaleDateString(
-                            "en-US",
+                            dateLocale,
                             {
                               year: "numeric",
                               month: "2-digit",

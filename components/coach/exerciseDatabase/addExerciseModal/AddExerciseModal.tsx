@@ -4,6 +4,7 @@ import type React from "react";
 import { X, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useAppSelector } from "@/redux/hooks";
 
 interface Exercise {
   id?: string;
@@ -46,6 +47,109 @@ const SUBCATEGORIES = [
 ];
 const DIFFICULTY_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
+const translations = {
+  en: {
+    titleAdd: "Add Exercise",
+    titleEdit: "Edit Exercise",
+    nameLabel: "Exercise Name *",
+    namePlaceholder: "e.g. Barbell Bench Press",
+    muscleGroupLabel: "Muscle Group *",
+    muscleGroupPlaceholder: "Select a muscle group...",
+    difficultyLabel: "Difficulty Level *",
+    difficultyPlaceholder: "Select difficulty...",
+    equipmentLabel: "Equipment",
+    equipmentPlaceholder: "e.g. Barbell, Dumbbell, Bodyweight...",
+    descriptionLabel: "Description",
+    descriptionPlaceholder: "Describe the exercise in detail...",
+    subcategoriesLabel: "Sub Categories",
+    uploadImageLabel: "Upload Image",
+    uploadImageText: "Select or drag image file",
+    uploadImageHint: "PNG, JPG, GIF up to 10MB",
+    uploadVideoLabel: "Upload Video",
+    uploadVideoText: "Drag & drop video or click to browse",
+    uploadVideoHint: "MP4, WebM up to 100MB",
+    validationRequired:
+      "Please fill in all required fields (Name, Muscle Group, and Difficulty)",
+    submitSaving: "Saving...",
+    submitCreate: "Create Exercise",
+    submitUpdate: "Update Exercise",
+    muscleGroupLabels: {
+      Chest: "Chest",
+      Neck: "Neck",
+      Shoulders: "Shoulders",
+      Arms: "Arms",
+      Back: "Back",
+      Core: "Core",
+      Legs: "Legs",
+    } as Record<string, string>,
+    difficultyLabels: {
+      Beginner: "Beginner",
+      Intermediate: "Intermediate",
+      Advanced: "Advanced",
+    } as Record<string, string>,
+    subcategoryLabels: {
+      Chest: "Chest",
+      Neck: "Neck",
+      Shoulders: "Shoulders",
+      Arms: "Arms",
+      Back: "Back",
+      Core: "Core",
+      Legs: "Legs",
+      Triceps: "Triceps",
+    } as Record<string, string>,
+  },
+  de: {
+    titleAdd: "Übung hinzufügen",
+    titleEdit: "Übung bearbeiten",
+    nameLabel: "Übungsname *",
+    namePlaceholder: "z. B. Bankdrücken mit Langhantel",
+    muscleGroupLabel: "Muskelgruppe *",
+    muscleGroupPlaceholder: "Muskelgruppe auswählen...",
+    difficultyLabel: "Schwierigkeitsgrad *",
+    difficultyPlaceholder: "Schwierigkeitsgrad auswählen...",
+    equipmentLabel: "Geräte",
+    equipmentPlaceholder: "z. B. Langhantel, Kurzhantel, Eigengewicht...",
+    descriptionLabel: "Beschreibung",
+    descriptionPlaceholder: "Beschreibe die Übung im Detail...",
+    subcategoriesLabel: "Unterkategorien",
+    uploadImageLabel: "Bild hochladen",
+    uploadImageText: "Bilddatei auswählen oder ziehen",
+    uploadImageHint: "PNG, JPG, GIF bis 10 MB",
+    uploadVideoLabel: "Video hochladen",
+    uploadVideoText: "Video ziehen & ablegen oder klicken zum Auswählen",
+    uploadVideoHint: "MP4, WebM bis 100 MB",
+    validationRequired:
+      "Bitte alle Pflichtfelder ausfüllen (Name, Muskelgruppe und Schwierigkeitsgrad)",
+    submitSaving: "Speichern...",
+    submitCreate: "Übung erstellen",
+    submitUpdate: "Übung aktualisieren",
+    muscleGroupLabels: {
+      Chest: "Brust",
+      Neck: "Nacken",
+      Shoulders: "Schultern",
+      Arms: "Arme",
+      Back: "Rücken",
+      Core: "Rumpf",
+      Legs: "Beine",
+    } as Record<string, string>,
+    difficultyLabels: {
+      Beginner: "Anfänger",
+      Intermediate: "Mittelstufe",
+      Advanced: "Fortgeschritten",
+    } as Record<string, string>,
+    subcategoryLabels: {
+      Chest: "Brust",
+      Neck: "Nacken",
+      Shoulders: "Schultern",
+      Arms: "Arme",
+      Back: "Rücken",
+      Core: "Rumpf",
+      Legs: "Beine",
+      Triceps: "Trizeps",
+    } as Record<string, string>,
+  },
+};
+
 export default function AddExerciseModal({
   exercise,
   onSave,
@@ -67,6 +171,8 @@ export default function AddExerciseModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
     if (exercise) {
@@ -168,11 +274,8 @@ export default function AddExerciseModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.name || !formData.muscleGroup || !formData.difficulty) {
-      alert(
-        "Please fill in all required fields (Name, Muscle Group, and Difficulty)"
-      );
+      alert(t.validationRequired);
       return;
     }
 
@@ -192,7 +295,7 @@ export default function AddExerciseModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-card/95 backdrop-blur-sm">
           <h2 className="text-2xl font-bold">
-            {exercise ? "Edit Exercise" : "Add Exercise"}
+            {exercise ? t.titleEdit : t.titleAdd}
           </h2>
           <button
             onClick={onClose}
@@ -208,14 +311,14 @@ export default function AddExerciseModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-foreground">
-                Exercise Name *
+                {t.nameLabel}
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="e.g. Barbell Bench Press"
+                placeholder={t.namePlaceholder}
                 required
                 disabled={loading}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -223,7 +326,7 @@ export default function AddExerciseModal({
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2 text-foreground">
-                Muscle Group *
+                {t.muscleGroupLabel}
               </label>
               <select
                 name="muscleGroup"
@@ -233,10 +336,10 @@ export default function AddExerciseModal({
                 disabled={loading}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Select a muscle group...</option>
+                <option value="">{t.muscleGroupPlaceholder}</option>
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat}
+                    {t.muscleGroupLabels[cat] ?? cat}
                   </option>
                 ))}
               </select>
@@ -247,7 +350,7 @@ export default function AddExerciseModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-foreground">
-                Difficulty Level *
+                {t.difficultyLabel}
               </label>
               <select
                 name="difficulty"
@@ -255,26 +358,26 @@ export default function AddExerciseModal({
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-[#303245] focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Select difficulty...</option>
+                <option value="">{t.difficultyPlaceholder}</option>
                 {DIFFICULTY_LEVELS.map((level) => (
                   <option key={level} value={level}>
-                    {level}
+                    {t.difficultyLabels[level] ?? level}
                   </option>
                 ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2 text-foreground">
-                Equipment
+                {t.equipmentLabel}
               </label>
               <input
                 type="text"
                 name="equipment"
                 value={formData.equipment}
                 onChange={handleChange}
-                placeholder="e.g. Barbell, Dumbbell, Bodyweight..."
+                placeholder={t.equipmentPlaceholder}
                 disabled={loading}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               />
@@ -284,13 +387,13 @@ export default function AddExerciseModal({
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-foreground">
-              Description
+              {t.descriptionLabel}
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Describe the exercise in detail..."
+              placeholder={t.descriptionPlaceholder}
               disabled={loading}
               rows={3}
               className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -300,7 +403,7 @@ export default function AddExerciseModal({
           {/* Subcategories */}
           <div>
             <label className="block text-sm font-semibold mb-3 text-foreground">
-              Sub Categories
+              {t.subcategoriesLabel}
             </label>
             <div className="grid grid-cols-2 gap-4 bg-secondary border border-[#303245] rounded-lg p-4">
               {SUBCATEGORIES.map((subcat) => (
@@ -316,7 +419,7 @@ export default function AddExerciseModal({
                     className="w-5 h-5 rounded border-border bg-card accent-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium group-hover:text-primary transition-colors">
-                    {subcat}
+                    {t.subcategoryLabels[subcat] ?? subcat}
                   </span>
                 </label>
               ))}
@@ -340,7 +443,7 @@ export default function AddExerciseModal({
                 />
               </svg>
               <label className="text-sm font-semibold text-foreground">
-                Upload Image
+                {t.uploadImageLabel}
               </label>
             </div>
             <label
@@ -363,10 +466,10 @@ export default function AddExerciseModal({
                   />
                 </svg>
                 <span className="text-[#c6c9dd] font-medium">
-                  Select or drag image file
+                  {t.uploadImageText}
                 </span>
                 <span className="text-xs text-[#65698b] -foreground mt-1">
-                  PNG, JPG, GIF up to 10MB
+                  {t.uploadImageHint}
                 </span>
               </div>
               <input
@@ -414,7 +517,7 @@ export default function AddExerciseModal({
                 />
               </svg>
               <label className="text-sm font-semibold text-foreground">
-                Upload Video
+                {t.uploadVideoLabel}
               </label>
             </div>
             <div
@@ -445,10 +548,10 @@ export default function AddExerciseModal({
                   />
                 </svg>
                 <span className="text-[#c6c9dd] font-medium">
-                  Drag & drop video or click to browse
+                  {t.uploadVideoText}
                 </span>
                 <span className="text-xs text-[#65698b] mt-1">
-                  MP4, WebM up to 100MB
+                  {t.uploadVideoHint}
                 </span>
               </div>
               <input
@@ -475,10 +578,10 @@ export default function AddExerciseModal({
             {loading ? (
               <>
                 <Loader className="w-5 h-5 animate-spin" />
-                Saving...
+                {t.submitSaving}
               </>
             ) : (
-              <span>{exercise ? "Update Exercise" : "Create Exercise"}</span>
+              <span>{exercise ? t.submitUpdate : t.submitCreate}</span>
             )}
           </button>
         </form>
