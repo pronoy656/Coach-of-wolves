@@ -45,7 +45,7 @@ const translations = {
 export default function Sidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.auth);
+  // const { loading } = useAppSelector((state) => state.auth);
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
   const router = useRouter();

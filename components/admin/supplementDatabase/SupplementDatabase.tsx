@@ -33,11 +33,66 @@ interface ComponentSupplement {
 
 const ITEMS_PER_PAGE = 8;
 
+const translations = {
+  en: {
+    title: "Supplements",
+    addButton: "+ Add Supplement",
+    loadingButton: "Loading...",
+    searchPlaceholder: "Search Here...",
+    emptyState: "No supplements found",
+    table: {
+      name: "Name",
+      dosage: "Dosage",
+      time: "Time",
+      frequency: "Frequency",
+      purpose: "Purpose",
+      brand: "Brand",
+      comment: "Comment",
+      action: "Action",
+    } as Record<string, string>,
+    deleteTitle: "Delete Supplement",
+    deleteMessage:
+      "Are you sure you want to delete this supplement? This action cannot be undone.",
+    toastSaveError: "Failed to save supplement",
+    toastDeleteSuccess: "Supplement deleted successfully",
+    toastDeleteError: "Failed to delete supplement",
+    pagination: (start: number, end: number, total: number) =>
+      `Showing ${start} to ${end} of ${total} supplements`,
+  },
+  de: {
+    title: "Supplements",
+    addButton: "+ Supplement hinzufügen",
+    loadingButton: "Laden...",
+    searchPlaceholder: "Hier suchen...",
+    emptyState: "Keine Supplements gefunden",
+    table: {
+      name: "Name",
+      dosage: "Dosierung",
+      time: "Zeitpunkt",
+      frequency: "Häufigkeit",
+      purpose: "Zweck",
+      brand: "Marke",
+      comment: "Kommentar",
+      action: "Aktion",
+    } as Record<string, string>,
+    deleteTitle: "Supplement löschen",
+    deleteMessage:
+      "Möchtest du dieses Supplement wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    toastSaveError: "Supplement konnte nicht gespeichert werden",
+    toastDeleteSuccess: "Supplement erfolgreich gelöscht",
+    toastDeleteError: "Supplement konnte nicht gelöscht werden",
+    pagination: (start: number, end: number, total: number) =>
+      `Zeige ${start} bis ${end} von ${total} Supplements`,
+  },
+};
+
 export default function SupplementDatabase() {
   const dispatch = useDispatch<AppDispatch>();
   const { supplements, loading, error, successMessage, total } = useAppSelector(
     (state) => state.supplement
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,7 +154,7 @@ export default function SupplementDatabase() {
         })
       );
     } catch (error: any) {
-      toast.error(error.message || "Failed to save supplement");
+      toast.error(error.message || t.toastSaveError);
     }
   };
 
@@ -117,7 +172,7 @@ export default function SupplementDatabase() {
     if (deleteId) {
       try {
         await dispatch(deleteSupplement(deleteId)).unwrap();
-        toast.success("Supplement deleted successfully");
+        toast.success(t.toastDeleteSuccess);
 
         // If deleting last item on page, go to previous page if needed
         if (supplements.length === 1 && currentPage > 1) {
@@ -133,7 +188,7 @@ export default function SupplementDatabase() {
           );
         }
       } catch (error: any) {
-        toast.error(error.message || "Failed to delete supplement");
+        toast.error(error.message || t.toastDeleteError);
       }
     }
     setDeleteModalOpen(false);
@@ -174,7 +229,7 @@ export default function SupplementDatabase() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold">Supplements</h1>
+          <h1 className="text-4xl font-bold">{t.title}</h1>
           <button
             onClick={() => {
               setEditingId(null);
@@ -183,7 +238,7 @@ export default function SupplementDatabase() {
             disabled={loading}
             className="px-6 py-2 border-2 border-green-500 text-green-500 hover:bg-green-500/10 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Loading..." : "+ Add Supplement"}
+            {loading ? t.loadingButton : t.addButton}
           </button>
         </div>
 
@@ -191,7 +246,7 @@ export default function SupplementDatabase() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search Here..."
+            placeholder={t.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
@@ -207,7 +262,7 @@ export default function SupplementDatabase() {
             </div>
           ) : displayedSupplements.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              No supplements found
+              {t.emptyState}
             </div>
           ) : (
             <>
@@ -215,28 +270,28 @@ export default function SupplementDatabase() {
                 <thead>
                   <tr className="border border-[#24273f] bg-[#020231]">
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Name
+                      {t.table.name}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Dosage
+                      {t.table.dosage}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Time
+                      {t.table.time}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Frequency
+                      {t.table.frequency}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Purpose
+                      {t.table.purpose}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Brand
+                      {t.table.brand}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Comment
+                      {t.table.comment}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      Action
+                      {t.table.action}
                     </th>
                   </tr>
                 </thead>
@@ -309,7 +364,7 @@ export default function SupplementDatabase() {
               {/* Pagination */}
               <div className="flex items-center justify-between bg-card border-t border-[#303245] px-4 py-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {startIndex} to {endIndex} of {total} supplements
+                  {t.pagination(startIndex, endIndex, total)}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -360,8 +415,8 @@ export default function SupplementDatabase() {
       {deleteModalOpen && (
         <DeleteModal
           isOpen={deleteModalOpen}
-          title="Delete Supplement"
-          message="Are you sure you want to delete this supplement? This action cannot be undone."
+          title={t.deleteTitle}
+          message={t.deleteMessage}
           onConfirm={confirmDelete}
           onCancel={() => {
             setDeleteModalOpen(false);

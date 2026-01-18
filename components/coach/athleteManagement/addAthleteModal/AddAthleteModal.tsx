@@ -232,10 +232,16 @@ export default function AddAthleteModal({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        ["weight", "height", "age", "trainingDaySteps", "restDaySteps", "waterQuantity"].includes(name)
-          ? Number(value) || 0
-          : value,
+      [name]: [
+        "weight",
+        "height",
+        "age",
+        "trainingDaySteps",
+        "restDaySteps",
+        "waterQuantity",
+      ].includes(name)
+        ? Number(value) || 0
+        : value,
     }));
   };
 
@@ -522,11 +528,13 @@ export default function AddAthleteModal({
               id="image-upload"
             />
             <label htmlFor="image-upload" className="cursor-pointer block">
-              <div className="w-full px-6 py-8 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/40 rounded-lg hover:border-emerald-400/60 transition-colors flex flex-col items-center justify-center gap-3 group">
+              <div className="w-full px-6 py-8 bg-linear-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/40 rounded-lg hover:border-emerald-400/60 transition-colors flex flex-col items-center justify-center gap-3 group">
                 <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
                   <Upload className="w-6 h-6 text-emerald-400" />
                 </div>
-                <span className="text-white font-semibold">{t.uploadButton}</span>
+                <span className="text-white font-semibold">
+                  {t.uploadButton}
+                </span>
               </div>
             </label>
 
@@ -562,7 +570,7 @@ export default function AddAthleteModal({
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50"
+              className="flex-1 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50"
             >
               {t.save}
             </button>

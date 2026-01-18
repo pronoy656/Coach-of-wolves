@@ -16,7 +16,6 @@ import {
   setSearchQuery,
   setSelectedMuscleGroup,
   setSelectedDifficulty,
-  // setSelectedEquipment,
   resetFilters,
 } from "@/redux/features/exercise/exerciseSlice";
 import toast from "react-hot-toast";
@@ -56,6 +55,105 @@ const difficultyLevels = [
   "Advanced",
 ];
 
+const translations = {
+  en: {
+    title: "Exercise Database",
+    subtitle: "Global exercise library shared across all coaches",
+    addButtonLoading: "Loading...",
+    addButton: "+ Add Exercise",
+    searchPlaceholder: "Search Exercise...",
+    muscleFilterAll: "All Muscle Groups",
+    difficultyFilterAll: "All Difficulties",
+    equipmentFilterAll: "All Equipment",
+    chipSearch: "Search",
+    chipMuscle: "Muscle",
+    chipDifficulty: "Difficulty",
+    chipEquipment: "Equipment",
+    clearFilters: "Clear Filters",
+    emptyState: "No exercises found matching your criteria",
+    emptyReset: "Clear filters to see all exercises",
+    deleteTitle: "Delete Exercise",
+    deleteMessage:
+      "Are you sure you want to delete this exercise? This action cannot be undone.",
+    difficultyLabels: {
+      Beginner: "Beginner",
+      Intermediate: "Intermediate",
+      Advanced: "Advanced",
+    } as Record<string, string>,
+    muscleGroupLabels: {
+      "All Muscle Groups": "All Muscle Groups",
+      Chest: "Chest",
+      Back: "Back",
+      Legs: "Legs",
+      Arms: "Arms",
+      Shoulders: "Shoulders",
+      Core: "Core",
+      Neck: "Neck",
+    } as Record<string, string>,
+    subcategoryLabels: {
+      Chest: "Chest",
+      Back: "Back",
+      Legs: "Legs",
+      Arms: "Arms",
+      Shoulders: "Shoulders",
+      Core: "Core",
+      Neck: "Neck",
+      Triceps: "Triceps",
+    } as Record<string, string>,
+    infoMuscleLabel: "MUSCLE GROUP",
+    infoEquipmentLabel: "EQUIPMENT",
+    equipmentNone: "None",
+  },
+  de: {
+    title: "Übungsdatenbank",
+    subtitle: "Globale Übungsbibliothek, die alle Coaches gemeinsam nutzen",
+    addButtonLoading: "Laden...",
+    addButton: "+ Übung hinzufügen",
+    searchPlaceholder: "Übung suchen...",
+    muscleFilterAll: "Alle Muskelgruppen",
+    difficultyFilterAll: "Alle Schwierigkeitsgrade",
+    equipmentFilterAll: "Alle Geräte",
+    chipSearch: "Suche",
+    chipMuscle: "Muskel",
+    chipDifficulty: "Schwierigkeit",
+    chipEquipment: "Geräte",
+    clearFilters: "Filter zurücksetzen",
+    emptyState: "Keine Übungen entsprechen deinen Kriterien",
+    emptyReset: "Filter löschen, um alle Übungen zu sehen",
+    deleteTitle: "Übung löschen",
+    deleteMessage:
+      "Möchtest du diese Übung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    difficultyLabels: {
+      Beginner: "Anfänger",
+      Intermediate: "Mittelstufe",
+      Advanced: "Fortgeschritten",
+    } as Record<string, string>,
+    muscleGroupLabels: {
+      "All Muscle Groups": "Alle Muskelgruppen",
+      Chest: "Brust",
+      Back: "Rücken",
+      Legs: "Beine",
+      Arms: "Arme",
+      Shoulders: "Schultern",
+      Core: "Rumpf",
+      Neck: "Nacken",
+    } as Record<string, string>,
+    subcategoryLabels: {
+      Chest: "Brust",
+      Back: "Rücken",
+      Legs: "Beine",
+      Arms: "Arme",
+      Shoulders: "Schultern",
+      Core: "Rumpf",
+      Neck: "Nacken",
+      Triceps: "Trizeps",
+    } as Record<string, string>,
+    infoMuscleLabel: "MUSKELGRUPPE",
+    infoEquipmentLabel: "GERÄTE",
+    equipmentNone: "Keine",
+  },
+};
+
 // Get unique equipment from backend data
 const getUniqueEquipment = (exercises: ReduxExercise[]): string[] => {
   const equipmentSet = new Set<string>();
@@ -78,6 +176,8 @@ export default function AdminExerciseDatabase() {
     selectedMuscleGroup,
     selectedDifficulty,
   } = useAppSelector((state) => state.exercise);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] =
@@ -279,10 +379,8 @@ export default function AdminExerciseDatabase() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold">Exercise Database</h1>
-                  <p className="text-muted-foreground">
-                    Global exercise library shared across all coaches
-                  </p>
+                  <h1 className="text-3xl font-bold">{t.title}</h1>
+                  <p className="text-muted-foreground">{t.subtitle}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <button
@@ -290,7 +388,7 @@ export default function AdminExerciseDatabase() {
                     disabled={loading}
                     className="px-6 py-3 border-2 border-green-500 text-green-500 rounded-3xl hover:bg-[#4A9E4A]/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Loading..." : "+ Add Exercise"}
+                    {loading ? t.addButtonLoading : t.addButton}
                   </button>
                 </div>
               </div>
@@ -303,7 +401,7 @@ export default function AdminExerciseDatabase() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search Exercise..."
+                  placeholder={t.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   disabled={loading}
@@ -327,7 +425,7 @@ export default function AdminExerciseDatabase() {
                         value={group}
                         className="bg-[#08081A]"
                       >
-                        {group}
+                        {t.muscleGroupLabels[group] ?? group}
                       </option>
                     ))}
                   </select>
@@ -347,7 +445,9 @@ export default function AdminExerciseDatabase() {
                         value={difficulty}
                         className="bg-[#08081A]"
                       >
-                        {difficulty}
+                        {difficulty === "All Difficulties"
+                          ? t.difficultyFilterAll
+                          : t.difficultyLabels[difficulty] ?? difficulty}
                       </option>
                     ))}
                   </select>
@@ -367,7 +467,9 @@ export default function AdminExerciseDatabase() {
                         value={equip}
                         className="bg-[#08081A]"
                       >
-                        {equip}
+                        {equip === "All Equipment"
+                          ? t.equipmentFilterAll
+                          : equip}
                       </option>
                     ))}
                   </select>
@@ -381,22 +483,26 @@ export default function AdminExerciseDatabase() {
                 <div className="flex flex-wrap gap-2">
                   {searchQuery && (
                     <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                      Search: {searchQuery}
+                      {t.chipSearch}: {searchQuery}
                     </span>
                   )}
                   {selectedMuscleGroup !== "All Muscle Groups" && (
                     <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                      Muscle: {selectedMuscleGroup}
+                      {t.chipMuscle}:{" "}
+                      {t.muscleGroupLabels[selectedMuscleGroup] ??
+                        selectedMuscleGroup}
                     </span>
                   )}
                   {selectedDifficulty !== "All Difficulties" && (
                     <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">
-                      Difficulty: {selectedDifficulty}
+                      {t.chipDifficulty}:{" "}
+                      {t.difficultyLabels[selectedDifficulty] ??
+                        selectedDifficulty}
                     </span>
                   )}
                   {selectedEquipment !== "All Equipment" && (
                     <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                      Equipment: {selectedEquipment}
+                      {t.chipEquipment}: {selectedEquipment}
                     </span>
                   )}
                 </div>
@@ -408,7 +514,7 @@ export default function AdminExerciseDatabase() {
                   className="flex items-center gap-2 px-4 py-2 border border-red-500 rounded-2xl text-sm text-red-400 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer"
                 >
                   <X size={16} />
-                  Clear Filters
+                  {t.clearFilters}
                 </button>
               )}
             </div>
@@ -490,7 +596,7 @@ export default function AdminExerciseDatabase() {
                           <div className="space-y-2 pt-4 border-t border-[#303245]">
                             <div className="flex justify-between items-center">
                               <span className="text-xs text-muted-foreground font-medium">
-                                MUSCLE GROUP
+                                {t.infoMuscleLabel}
                               </span>
                               <span className="text-sm font-semibold text-primary">
                                 {exercise.muscleGroup}
@@ -499,10 +605,10 @@ export default function AdminExerciseDatabase() {
 
                             <div className="flex justify-between items-center">
                               <span className="text-xs text-muted-foreground font-medium">
-                                EQUIPMENT
+                                {t.infoEquipmentLabel}
                               </span>
                               <span className="text-sm font-medium text-foreground">
-                                {exercise.equipment || "None"}
+                                {exercise.equipment || t.equipmentNone}
                               </span>
                             </div>
                           </div>
@@ -523,7 +629,7 @@ export default function AdminExerciseDatabase() {
                                         : "bg-linear-to-r from-blue-400/20 to-blue-400/20 text-blue-600 dark:text-blue-400 border-blue-400/40 hover:border-blue-400/60"
                                     }`}
                                   >
-                                    {sub}
+                                    {t.subcategoryLabels[sub] ?? sub}
                                   </span>
                                 );
                               })}
@@ -538,14 +644,14 @@ export default function AdminExerciseDatabase() {
                 {exercises.length === 0 && !loading && (
                   <div className="text-center py-12">
                     <p className="text-muted-foreground text-lg">
-                      No exercises found matching your criteria
+                      {t.emptyState}
                     </p>
                     {isFilterActive && (
                       <button
                         onClick={handleResetFilters}
                         className="mt-4 px-4 py-2 text-red-400 hover:text-red-300 transition-colors"
                       >
-                        Clear filters to see all exercises
+                        {t.emptyReset}
                       </button>
                     )}
                   </div>
@@ -571,8 +677,8 @@ export default function AdminExerciseDatabase() {
       {showDeleteModal && (
         <DeleteModal
           isOpen={showDeleteModal}
-          title="Delete Exercise"
-          message="Are you sure you want to delete this exercise? This action cannot be undone."
+          title={t.deleteTitle}
+          message={t.deleteMessage}
           onConfirm={confirmDelete}
           onCancel={() => {
             setShowDeleteModal(false);

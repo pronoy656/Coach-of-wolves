@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -15,11 +14,42 @@ import CheckInTable from "./checkInTable/CheckInTable";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
+const translations = {
+  en: {
+    title: "Weekly Check-Ins",
+    subtitle: "Monitor all athlete check-ins and progress",
+    loadingOverlay: "Loading check-ins...",
+    searchPlaceholder: "Search athlete or coach...",
+    statusFilterAll: "All Status",
+    statusFilterPending: "Pending",
+    statusFilterCompleted: "Completed",
+    activeFiltersPrefix: "Showing",
+    activeFiltersFor: "check-ins for",
+    activeFiltersOnlySuffix: (status: string) => ` (${status} only)`,
+    activeFiltersSearchSuffix: (term: string) => ` matching "${term}"`,
+  },
+  de: {
+    title: "Wöchentliche Check-ins",
+    subtitle: "Überwache alle Check-ins und Fortschritte deiner Athleten",
+    loadingOverlay: "Check-ins werden geladen...",
+    searchPlaceholder: "Athlet oder Coach suchen...",
+    statusFilterAll: "Alle Status",
+    statusFilterPending: "Ausstehend",
+    statusFilterCompleted: "Abgeschlossen",
+    activeFiltersPrefix: "Zeige",
+    activeFiltersFor: "Check-ins für",
+    activeFiltersOnlySuffix: (status: string) => ` (${status} nur)`,
+    activeFiltersSearchSuffix: (term: string) => ` passend zu „${term}“`,
+  },
+};
+
 export default function WeeklyCheckIns() {
   const dispatch = useAppDispatch();
   const { checkins, loading, error, successMessage, stats } = useAppSelector(
     (state) => state.weeklyCheckin
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
@@ -32,10 +62,10 @@ export default function WeeklyCheckIns() {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric'
+      return date.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
       });
     } catch {
       return "Invalid Date";
@@ -70,8 +100,7 @@ export default function WeeklyCheckIns() {
         checkIn.coachName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        selectedStatus === "All" ||
-        checkIn.checkinCompleted === selectedStatus;
+        selectedStatus === "All" || checkIn.checkinCompleted === selectedStatus;
 
       const matchesWeek = checkIn.weekNumber === weekNumber;
 
@@ -87,7 +116,9 @@ export default function WeeklyCheckIns() {
       week: `Week ${checkIn.weekNumber}`,
       checkInDate: formatDate(checkIn.nextCheckInDate),
       coach: checkIn.coachName,
-      weightChange: `${checkIn.weight > 0 ? '+' : ''}${checkIn.weight.toFixed(1)}(kg)`,
+      weightChange: `${checkIn.weight > 0 ? "+" : ""}${checkIn.weight.toFixed(
+        1
+      )}(kg)`,
       status: checkIn.checkinCompleted,
       originalData: checkIn, // Keep original for operations
     }));
@@ -100,9 +131,15 @@ export default function WeeklyCheckIns() {
   );
 
   // Handle delete
-  const handleDeleteCheckIn = async (id: number, athleteName: string, weekNumber: number) => {
+  const handleDeleteCheckIn = async (
+    id: number,
+    athleteName: string,
+    weekNumber: number
+  ) => {
     // We need to find the correct _id for the thunk
-    const checkinToDelete = filteredCheckIns.find(c => c.athleteName === athleteName && c.weekNumber === weekNumber);
+    const checkinToDelete = filteredCheckIns.find(
+      (c) => c.athleteName === athleteName && c.weekNumber === weekNumber
+    );
     if (!checkinToDelete) {
       toast.error("Could not find check-in ID to delete");
       return;
@@ -131,28 +168,23 @@ export default function WeeklyCheckIns() {
     setCurrentPage(1);
   };
 
-
-
   return (
     <div className="flex h-screen bg-black text-white">
       <div className="flex-1 overflow-hidden flex flex-col">
         <main className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">
-            {/* Loading overlay */}
             {loading && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 <div className="bg-[#1a1a2e] p-6 rounded-lg flex flex-col items-center">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
-                  <span className="text-gray-300">Loading check-ins...</span>
+                  <span className="text-gray-300">{t.loadingOverlay}</span>
                 </div>
               </div>
             )}
 
             <div>
-              <h1 className="text-3xl font-bold mb-2">Weekly Check-Ins</h1>
-              <p className="text-gray-400">
-                Monitor all athlete check-ins and progress
-              </p>
+              <h1 className="text-3xl font-bold mb-2">{t.title}</h1>
+              <p className="text-gray-400">{t.subtitle}</p>
             </div>
 
             {/* Stats Cards Component */}
@@ -167,23 +199,22 @@ export default function WeeklyCheckIns() {
               <div className="flex gap-3 flex-wrap">
                 <input
                   type="text"
-                  placeholder="Search athlete or coach..."
+                  placeholder={t.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="flex-1 min-w-[200px] px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                   disabled={loading}
                 />
 
-                {/* Status Filter Dropdown */}
                 <select
                   value={selectedStatus}
                   onChange={(e) => handleStatusChange(e.target.value)}
                   className="px-4 py-2 bg-[#08081A] border border-[#303245] rounded-lg text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
                   disabled={loading}
                 >
-                  <option value="All">All Status</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Completed">Completed</option>
+                  <option value="All">{t.statusFilterAll}</option>
+                  <option value="Pending">{t.statusFilterPending}</option>
+                  <option value="Completed">{t.statusFilterCompleted}</option>
                 </select>
 
                 {/* Week Calendar */}
@@ -193,11 +224,12 @@ export default function WeeklyCheckIns() {
                 />
               </div>
 
-              {/* Active filters info */}
               <div className="text-sm text-gray-400">
-                Showing {filteredCheckIns.length} check-ins for {selectedWeek}
-                {selectedStatus !== "All" && ` (${selectedStatus} only)`}
-                {searchTerm && ` matching "${searchTerm}"`}
+                {t.activeFiltersPrefix} {filteredCheckIns.length}{" "}
+                {t.activeFiltersFor} {selectedWeek}
+                {selectedStatus !== "All" &&
+                  t.activeFiltersOnlySuffix(selectedStatus)}
+                {searchTerm && t.activeFiltersSearchSuffix(searchTerm)}
               </div>
             </div>
 

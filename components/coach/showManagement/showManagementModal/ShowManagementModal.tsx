@@ -5,6 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Show } from "@/redux/features/show/showTypes";
+import { useAppSelector } from "@/redux/hooks";
 
 interface ShowFormData {
   name: string;
@@ -31,8 +32,79 @@ const DIVISION_OPTIONS = [
   "Wellness",
   "Fitness",
   "212 Bodybuilding",
-  "Other"
+  "Other",
 ];
+
+const translations = {
+  en: {
+    titleAdd: "Add Show",
+    titleEdit: "Edit Show",
+    nameLabel: "Show Name *",
+    namePlaceholder: "Enter show name",
+    divisionLabel: "Division *",
+    divisionPlaceholder: "Select division",
+    dateLabel: "Date *",
+    dateHelp: "Select a future date for the show",
+    locationLabel: "Location *",
+    locationPlaceholder: "Enter show location",
+    cancel: "Cancel",
+    saveSaving: "Saving...",
+    saveUpdate: "Update Show",
+    saveAdd: "Add Show",
+    errorNameRequired: "Show name is required",
+    errorDivisionRequired: "Division is required",
+    errorDateRequired: "Date is required",
+    errorDatePast: "Date cannot be in the past",
+    errorLocationRequired: "Location is required",
+    divisionLabels: {
+      Bodybuilding: "Bodybuilding",
+      Lifestyle: "Lifestyle",
+      "Classic Physique": "Classic Physique",
+      "Men's Physique": "Men's Physique",
+      "Women's Physique": "Women's Physique",
+      Bikini: "Bikini",
+      Figure: "Figure",
+      Wellness: "Wellness",
+      Fitness: "Fitness",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Other: "Other",
+    } as Record<string, string>,
+  },
+  de: {
+    titleAdd: "Show hinzufügen",
+    titleEdit: "Show bearbeiten",
+    nameLabel: "Show-Name *",
+    namePlaceholder: "Show-Namen eingeben",
+    divisionLabel: "Division *",
+    divisionPlaceholder: "Division auswählen",
+    dateLabel: "Datum *",
+    dateHelp: "Wähle ein zukünftiges Datum für die Show",
+    locationLabel: "Ort *",
+    locationPlaceholder: "Show-Ort eingeben",
+    cancel: "Abbrechen",
+    saveSaving: "Wird gespeichert...",
+    saveUpdate: "Show aktualisieren",
+    saveAdd: "Show hinzufügen",
+    errorNameRequired: "Show-Name ist erforderlich",
+    errorDivisionRequired: "Division ist erforderlich",
+    errorDateRequired: "Datum ist erforderlich",
+    errorDatePast: "Datum darf nicht in der Vergangenheit liegen",
+    errorLocationRequired: "Ort ist erforderlich",
+    divisionLabels: {
+      Bodybuilding: "Bodybuilding",
+      Lifestyle: "Lifestyle",
+      "Classic Physique": "Classic Physique",
+      "Men's Physique": "Men's Physique",
+      "Women's Physique": "Women's Physique",
+      Bikini: "Bikini",
+      Figure: "Figure",
+      Wellness: "Wellness",
+      Fitness: "Fitness",
+      "212 Bodybuilding": "212 Bodybuilding",
+      Other: "Andere",
+    } as Record<string, string>,
+  },
+};
 
 export default function ShowManagementModal({
   show,
@@ -48,6 +120,8 @@ export default function ShowManagementModal({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
     if (show) {
@@ -72,27 +146,27 @@ export default function ShowManagementModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Show name is required";
+      newErrors.name = t.errorNameRequired;
     }
 
     if (!formData.division.trim()) {
-      newErrors.division = "Division is required";
+      newErrors.division = t.errorDivisionRequired;
     }
 
     if (!formData.date.trim()) {
-      newErrors.date = "Date is required";
+      newErrors.date = t.errorDateRequired;
     } else {
       const selectedDate = new Date(formData.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
-        newErrors.date = "Date cannot be in the past";
+        newErrors.date = t.errorDatePast;
       }
     }
 
     if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
+      newErrors.location = t.errorLocationRequired;
     }
 
     setErrors(newErrors);
@@ -136,21 +210,20 @@ export default function ShowManagementModal({
           )}
 
           <h2 className="text-2xl font-bold mb-6 text-white">
-            {show ? "Edit Show" : "Add Show"}
+            {show ? t.titleEdit : t.titleAdd}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Show Name */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-emerald-300">
-                Show Name *
+                {t.nameLabel}
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter show name"
+                placeholder={t.namePlaceholder}
                 disabled={loading}
                 className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${errors.name ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
                   }`}
@@ -160,10 +233,9 @@ export default function ShowManagementModal({
               )}
             </div>
 
-            {/* Division */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-emerald-300">
-                Division *
+                {t.divisionLabel}
               </label>
               <select
                 name="division"
@@ -173,10 +245,10 @@ export default function ShowManagementModal({
                 className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none transition-colors appearance-none cursor-pointer disabled:opacity-50 ${errors.division ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
                   }`}
               >
-                <option value="">Select division</option>
+                <option value="">{t.divisionPlaceholder}</option>
                 {DIVISION_OPTIONS.map((division) => (
                   <option key={division} value={division}>
-                    {division}
+                    {t.divisionLabels[division] ?? division}
                   </option>
                 ))}
               </select>
@@ -185,10 +257,9 @@ export default function ShowManagementModal({
               )}
             </div>
 
-            {/* Date */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-emerald-300">
-                Date *
+                {t.dateLabel}
               </label>
               <input
                 type="date"
@@ -204,22 +275,21 @@ export default function ShowManagementModal({
                 <p className="text-red-400 text-xs mt-1">{errors.date}</p>
               ) : (
                 <p className="text-gray-400 text-xs mt-1">
-                  Select a future date for the show
+                  {t.dateHelp}
                 </p>
               )}
             </div>
 
-            {/* Location */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-emerald-300">
-                Location *
+                {t.locationLabel}
               </label>
               <input
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="Enter show location"
+                placeholder={t.locationPlaceholder}
                 disabled={loading}
                 className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${errors.location ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
                   }`}
@@ -229,7 +299,6 @@ export default function ShowManagementModal({
               )}
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-4 pt-6 border-t border-emerald-500/20">
               <button
                 type="button"
@@ -237,14 +306,18 @@ export default function ShowManagementModal({
                 disabled={loading}
                 className="flex-1 px-6 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white font-semibold hover:border-emerald-400 hover:bg-slate-800/70 transition-colors disabled:opacity-50"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Saving..." : show ? "Update Show" : "Add Show"}
+                {loading
+                  ? t.saveSaving
+                  : show
+                  ? t.saveUpdate
+                  : t.saveAdd}
               </button>
             </div>
           </form>

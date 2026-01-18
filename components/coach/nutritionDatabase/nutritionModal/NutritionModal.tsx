@@ -3,6 +3,7 @@
 import { Loader, X } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
 
 // Exact backend interface
 interface Nutrition {
@@ -38,6 +39,77 @@ const CATEGORIES = [
   "Other",
 ];
 
+const translations = {
+  en: {
+    headingAdd: "Add Nutrition",
+    headingEdit: "Edit Nutrition",
+    fieldFoodName: "Food Name",
+    placeholderFoodName: "Insert a food name",
+    fieldBrand: "Brand (Optional)",
+    placeholderBrand: "Insert a brand name",
+    fieldCategory: "Category",
+    selectCategory: "Select category",
+    categoryLabels: {
+      Protein: "Protein",
+      Carbs: "Carbs",
+      Fats: "Fats",
+      Vegetables: "Vegetables",
+      Fruits: "Fruits",
+      Dairy: "Dairy",
+      Supplements: "Supplements",
+      Other: "Other",
+    } as Record<string, string>,
+    defaultQuantityLabel: "Default quantity(100g, 1pcs)",
+    caloriesLabel: "Calories per default quantity",
+    proteinsLabel: "Proteins per default quantity",
+    carbsLabel: "Carbohydrates per default quantity",
+    fatsLabel: "Fats per default quantity",
+    sugarLabel: "Sugar default quantity",
+    fiberLabel: "Fiber default quantity",
+    saturatedFatsLabel: "Saturated fats default quantity",
+    unsaturatedFatsLabel: "Unsaturated fats default quantity",
+    placeholderValue: "Insert a value",
+    alertRequired: "Please fill in all required fields",
+    alertSaveFailed: "Failed to save nutrition. Please try again.",
+    saveButton: "Save",
+    saveButtonLoading: "Saving...",
+  },
+  de: {
+    headingAdd: "Ernährungseintrag hinzufügen",
+    headingEdit: "Ernährungseintrag bearbeiten",
+    fieldFoodName: "Lebensmittelname",
+    placeholderFoodName: "Lebensmittelname eingeben",
+    fieldBrand: "Marke (optional)",
+    placeholderBrand: "Markennamen eingeben",
+    fieldCategory: "Kategorie",
+    selectCategory: "Kategorie auswählen",
+    categoryLabels: {
+      Protein: "Protein",
+      Carbs: "Kohlenhydrate",
+      Fats: "Fette",
+      Vegetables: "Gemüse",
+      Fruits: "Obst",
+      Dairy: "Milchprodukte",
+      Supplements: "Nahrungsergänzungen",
+      Other: "Sonstiges",
+    } as Record<string, string>,
+    defaultQuantityLabel: "Standardmenge (100 g, 1 Stk.)",
+    caloriesLabel: "Kalorien pro Standardmenge",
+    proteinsLabel: "Proteine pro Standardmenge",
+    carbsLabel: "Kohlenhydrate pro Standardmenge",
+    fatsLabel: "Fette pro Standardmenge",
+    sugarLabel: "Zucker pro Standardmenge",
+    fiberLabel: "Ballaststoffe pro Standardmenge",
+    saturatedFatsLabel: "Gesättigte Fette pro Standardmenge",
+    unsaturatedFatsLabel: "Ungesättigte Fette pro Standardmenge",
+    placeholderValue: "Wert eingeben",
+    alertRequired: "Bitte fülle alle Pflichtfelder aus",
+    alertSaveFailed: "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    saveButton: "Speichern",
+    saveButtonLoading: "Speichern...",
+  },
+};
+
 export default function NutritionModal({
   nutrition,
   onSave,
@@ -61,6 +133,8 @@ export default function NutritionModal({
   );
 
   const [loading, setLoading] = useState(false);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -87,7 +161,7 @@ export default function NutritionModal({
     e.preventDefault();
 
     if (!formData.name || !formData.category) {
-      alert("Please fill in all required fields");
+      alert(t.alertRequired);
       return;
     }
 
@@ -96,7 +170,7 @@ export default function NutritionModal({
       onSave(formData);
     } catch (error) {
       setLoading(false);
-      alert("Failed to save nutrition. Please try again.");
+      alert(t.alertSaveFailed);
     }
   };
 
@@ -111,7 +185,7 @@ export default function NutritionModal({
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
-                {nutrition ? "Edit Nutrition" : "Add Nutrition"}
+                {nutrition ? t.headingEdit : t.headingAdd}
               </h2>
               <button
                 onClick={onClose}
@@ -125,33 +199,33 @@ export default function NutritionModal({
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Food Name
+                      {t.fieldFoodName}
                     </label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Insert a food name"
+                      placeholder={t.placeholderFoodName}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Brand (Optional)
+                      {t.fieldBrand}
                     </label>
                     <input
                       type="text"
                       name="brand"
                       value={formData.brand || ""}
                       onChange={handleChange}
-                      placeholder="Insert a brand name"
+                      placeholder={t.placeholderBrand}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Category
+                      {t.fieldCategory}
                     </label>
                     <select
                       name="category"
@@ -163,7 +237,7 @@ export default function NutritionModal({
                         value=""
                         style={{ backgroundColor: "#1E1F25", color: "white" }}
                       >
-                        Select category
+                        {t.selectCategory}
                       </option>
                       {CATEGORIES.map((cat) => (
                         <option
@@ -171,7 +245,7 @@ export default function NutritionModal({
                           value={cat}
                           style={{ backgroundColor: "#1E1F25" }}
                         >
-                          {cat}
+                          {t.categoryLabels[cat] ?? cat}
                         </option>
                       ))}
                     </select>
@@ -181,27 +255,27 @@ export default function NutritionModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Default quantity(100g, 1pcs)
+                      {t.defaultQuantityLabel}
                     </label>
                     <input
                       type="text"
                       name="defaultQuantity"
                       value={formData.defaultQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Calories per default quantity
+                      {t.caloriesLabel}
                     </label>
                     <input
                       type="number"
                       name="caloriesQuantity"
                       value={formData.caloriesQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -210,27 +284,27 @@ export default function NutritionModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Proteins per default quantity
+                      {t.proteinsLabel}
                     </label>
                     <input
                       type="number"
                       name="proteinQuantity"
                       value={formData.proteinQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Carbohydrates per default quantity
+                      {t.carbsLabel}
                     </label>
                     <input
                       type="number"
                       name="carbsQuantity"
                       value={formData.carbsQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -239,27 +313,27 @@ export default function NutritionModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Fats per default quantity
+                      {t.fatsLabel}
                     </label>
                     <input
                       type="number"
                       name="fatsQuantity"
                       value={formData.fatsQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Sugar default quantity
+                      {t.sugarLabel}
                     </label>
                     <input
                       type="number"
                       name="sugarQuantity"
                       value={formData.sugarQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -268,14 +342,14 @@ export default function NutritionModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Fiber default quantity
+                      {t.fiberLabel}
                     </label>
                     <input
                       type="number"
                       name="fiberQuantity"
                       value={formData.fiberQuantity}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -288,27 +362,27 @@ export default function NutritionModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Saturated fats default quantity
+                      {t.saturatedFatsLabel}
                     </label>
                     <input
                       type="number"
                       name="saturatedFats"
                       value={formData.saturatedFats}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">
-                      Unsaturated fats default quantity
+                      {t.unsaturatedFatsLabel}
                     </label>
                     <input
                       type="number"
                       name="unsaturatedFats"
                       value={formData.unsaturatedFats}
                       onChange={handleChange}
-                      placeholder="Insert a value"
+                      placeholder={t.placeholderValue}
                       className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                     />
                   </div>
@@ -321,10 +395,10 @@ export default function NutritionModal({
                   {loading ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
-                      Saving...
+                      {t.saveButtonLoading}
                     </>
                   ) : (
-                    "Save"
+                    t.saveButton
                   )}
                 </button>
               </div>

@@ -4,6 +4,7 @@
 import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteModal";
 import { Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
 
 interface CheckIn {
   id: number;
@@ -28,6 +29,53 @@ interface CheckInTableProps {
   loading?: boolean;
 }
 
+const translations = {
+  en: {
+    headers: {
+      athlete: "Athlete",
+      week: "Week",
+      checkinDate: "Check-in Date",
+      coach: "Coach",
+      weightChange: "Weight Change",
+      status: "Status",
+      action: "Action",
+    } as Record<string, string>,
+    loading: "Loading check-ins...",
+    empty: "No check-ins found matching your filters.",
+    pagination: (from: number, to: number, total: number) =>
+      `Showing ${from} to ${to} of ${total} results`,
+    previous: "Previous",
+    next: "Next",
+    pageOf: (current: number, total: number) => `Page ${current} of ${total}`,
+    deleteTitle: "Delete Check-In",
+    deleteMessage: (athlete: string, week: number) =>
+      `Are you sure you want to delete ${athlete}'s check-in for Week ${week}? This action cannot be undone.`,
+    deleteTooltip: "Delete check-in",
+  },
+  de: {
+    headers: {
+      athlete: "Athlet",
+      week: "Woche",
+      checkinDate: "Check-in-Datum",
+      coach: "Coach",
+      weightChange: "Gewichtsänderung",
+      status: "Status",
+      action: "Aktion",
+    } as Record<string, string>,
+    loading: "Check-ins werden geladen...",
+    empty: "Keine Check-ins für die aktuellen Filter gefunden.",
+    pagination: (from: number, to: number, total: number) =>
+      `Zeige ${from} bis ${to} von ${total} Ergebnissen`,
+    previous: "Zurück",
+    next: "Weiter",
+    pageOf: (current: number, total: number) => `Seite ${current} von ${total}`,
+    deleteTitle: "Check-in löschen",
+    deleteMessage: (athlete: string, week: number) =>
+      `Möchtest du den Check-in von ${athlete} für Woche ${week} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+    deleteTooltip: "Check-in löschen",
+  },
+};
+
 export default function CheckInTable({
   checkIns,
   onDelete,
@@ -47,6 +95,8 @@ export default function CheckInTable({
     athlete: "",
     weekNumber: 0,
   });
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const handleDeleteClick = (id: number, athlete: string, weekNumber: number) => {
     setDeleteModal({ isOpen: true, id, athlete, weekNumber });
@@ -79,25 +129,25 @@ export default function CheckInTable({
             <thead>
               <tr className="bg-[#020231] border-b border-[#24273f]">
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Athlete
+                  {t.headers.athlete}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Week
+                  {t.headers.week}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Check-in Date
+                  {t.headers.checkinDate}
                 </th>
                 <th className="px6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Coach
+                  {t.headers.coach}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Weight Change
+                  {t.headers.weightChange}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Status
+                  {t.headers.status}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                  Action
+                  {t.headers.action}
                 </th>
               </tr>
             </thead>
@@ -107,7 +157,7 @@ export default function CheckInTable({
                   <td colSpan={7} className="text-center py-12">
                     <div className="flex flex-col items-center">
                       <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
-                      <span className="text-gray-400">Loading check-ins...</span>
+                      <span className="text-gray-400">{t.loading}</span>
                     </div>
                   </td>
                 </tr>
@@ -162,7 +212,7 @@ export default function CheckInTable({
                         }
                         disabled={loading}
                         className="p-2 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete check-in"
+                        title={t.deleteTooltip}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -175,7 +225,7 @@ export default function CheckInTable({
                     colSpan={7}
                     className="text-center py-12 text-gray-400"
                   >
-                    No check-ins found matching your filters.
+                    {t.empty}
                   </td>
                 </tr>
               )}
@@ -186,13 +236,14 @@ export default function CheckInTable({
           {totalPages > 1 && !loading && (
             <div className="flex items-center justify-between px-6 py-4 bg-[#020231]/50 border-t border-[#303245]">
               <p className="text-sm text-gray-400">
-                Showing {checkIns.length > 0 ? (currentPage - 1) * 10 + 1 : 0}{" "}
-                to{" "}
-                {Math.min(
-                  currentPage * 10,
+                {t.pagination(
+                  checkIns.length > 0 ? (currentPage - 1) * 10 + 1 : 0,
+                  Math.min(
+                    currentPage * 10,
+                    checkIns.length + (currentPage - 1) * 10
+                  ),
                   checkIns.length + (currentPage - 1) * 10
-                )}{" "}
-                of {checkIns.length + (currentPage - 1) * 10} results
+                )}
               </p>
 
               <div className="flex items-center gap-2">
@@ -201,11 +252,11 @@ export default function CheckInTable({
                   disabled={currentPage === 1}
                   className="px-4 py-2 text-sm rounded-lg bg-[#08081A] border border-[#303245] text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#303245]/50 transition-colors"
                 >
-                  Previous
+                  {t.previous}
                 </button>
 
                 <span className="px-4 text-sm text-gray-300">
-                  Page {currentPage} of {totalPages}
+                  {t.pageOf(currentPage, totalPages)}
                 </span>
 
                 <button
@@ -213,7 +264,7 @@ export default function CheckInTable({
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 text-sm rounded-lg bg-[#08081A] border border-[#303245] text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#303245]/50 transition-colors"
                 >
-                  Next
+                  {t.next}
                 </button>
               </div>
             </div>
@@ -224,8 +275,8 @@ export default function CheckInTable({
       {/* Delete Confirmation Modal */}
       <DeleteModal
         isOpen={deleteModal.isOpen}
-        title="Delete Check-In"
-        message={`Are you sure you want to delete ${deleteModal.athlete}'s check-in for Week ${deleteModal.weekNumber}? This action cannot be undone.`}
+        title={t.deleteTitle}
+        message={t.deleteMessage(deleteModal.athlete, deleteModal.weekNumber)}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
