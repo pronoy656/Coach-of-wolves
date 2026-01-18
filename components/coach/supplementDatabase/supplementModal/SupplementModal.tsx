@@ -189,6 +189,81 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { Loader, X } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
+
+const frequencyOptions = [
+  "Once daily",
+  "2x Daily",
+  "3x Daily",
+  "4x Daily",
+  "As needed",
+  "Weekly",
+  "Every other day",
+  "Before meals",
+  "After meals",
+  "With meals",
+];
+
+const translations = {
+  en: {
+    titleAdd: "Add Supplement",
+    titleEdit: "Edit Supplement",
+    nameLabel: "Supplements Name *",
+    dosageLabel: "Dosage *",
+    timeLabel: "Time *",
+    purposeLabel: "Purpose *",
+    brandLabel: "Brand",
+    frequencyLabel: "Frequency *",
+    commentLabel: "Comment",
+    placeholderValue: "Insert a value",
+    frequencyPlaceholder: "Select Frequency",
+    frequencyOptions: {
+      "Once daily": "Once daily",
+      "2x Daily": "2x Daily",
+      "3x Daily": "3x Daily",
+      "4x Daily": "4x Daily",
+      "As needed": "As needed",
+      Weekly: "Weekly",
+      "Every other day": "Every other day",
+      "Before meals": "Before meals",
+      "After meals": "After meals",
+      "With meals": "With meals",
+    } as Record<string, string>,
+    alertRequired: "Please fill in all required fields",
+    alertSaveFailed: "Failed to save supplement. Please try again.",
+    saveButton: "Save",
+    saveButtonLoading: "Saving...",
+  },
+  de: {
+    titleAdd: "Supplement hinzufügen",
+    titleEdit: "Supplement bearbeiten",
+    nameLabel: "Supplementname *",
+    dosageLabel: "Dosierung *",
+    timeLabel: "Zeitpunkt *",
+    purposeLabel: "Zweck *",
+    brandLabel: "Marke",
+    frequencyLabel: "Häufigkeit *",
+    commentLabel: "Kommentar",
+    placeholderValue: "Wert eingeben",
+    frequencyPlaceholder: "Häufigkeit auswählen",
+    frequencyOptions: {
+      "Once daily": "Einmal täglich",
+      "2x Daily": "Zweimal täglich",
+      "3x Daily": "Dreimal täglich",
+      "4x Daily": "Viermal täglich",
+      "As needed": "Nach Bedarf",
+      Weekly: "Wöchentlich",
+      "Every other day": "Jeden zweiten Tag",
+      "Before meals": "Vor den Mahlzeiten",
+      "After meals": "Nach den Mahlzeiten",
+      "With meals": "Zu den Mahlzeiten",
+    } as Record<string, string>,
+    alertRequired: "Bitte fülle alle Pflichtfelder aus",
+    alertSaveFailed: "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    saveButton: "Speichern",
+    saveButtonLoading: "Speichern...",
+  },
+};
 
 interface SupplementModalProps {
   isOpen: boolean;
@@ -230,6 +305,8 @@ export default function SupplementModal({
   });
 
   const [loading, setLoading] = useState(false);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
     if (initialData) {
@@ -259,7 +336,6 @@ export default function SupplementModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (
       !formData.name ||
       !formData.dosage ||
@@ -267,7 +343,7 @@ export default function SupplementModal({
       !formData.frequency ||
       !formData.purpose
     ) {
-      alert("Please fill in all required fields");
+      alert(t.alertRequired);
       return;
     }
 
@@ -275,7 +351,7 @@ export default function SupplementModal({
     try {
       onSave(formData);
     } catch (error) {
-      alert("Failed to save supplement. Please try again.");
+      alert(t.alertSaveFailed);
     } finally {
       setLoading(false);
     }
@@ -288,7 +364,7 @@ export default function SupplementModal({
       <div className="bg-[#08081A] border border-[#303245] rounded-lg p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">
-            {initialData ? "Edit Supplement" : "Add Supplement"}
+            {initialData ? t.titleEdit : t.titleAdd}
           </h2>
           <button
             onClick={onClose}
@@ -304,40 +380,44 @@ export default function SupplementModal({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Supplements Name *
+                {t.nameLabel}
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Insert a value"
+                placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dosage *</label>
+              <label className="block text-sm font-medium mb-2">
+                {t.dosageLabel}
+              </label>
               <input
                 type="text"
                 name="dosage"
                 value={formData.dosage}
                 onChange={handleChange}
-                placeholder="Insert a value"
+                placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Time *</label>
+              <label className="block text-sm font-medium mb-2">
+                {t.timeLabel}
+              </label>
               <input
                 type="text"
                 name="time"
                 value={formData.time}
                 onChange={handleChange}
-                placeholder="Insert a value"
+                placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
                 disabled={loading}
@@ -349,34 +429,36 @@ export default function SupplementModal({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Purpose *
+                {t.purposeLabel}
               </label>
               <input
                 type="text"
                 name="purpose"
                 value={formData.purpose}
                 onChange={handleChange}
-                placeholder="Insert a value"
+                placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 required
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Brand</label>
+              <label className="block text-sm font-medium mb-2">
+                {t.brandLabel}
+              </label>
               <input
                 type="text"
                 name="brand"
                 value={formData.brand}
                 onChange={handleChange}
-                placeholder="Insert a value"
+                placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 disabled={loading}
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Frequency *
+                {t.frequencyLabel}
               </label>
               <select
                 name="frequency"
@@ -387,77 +469,31 @@ export default function SupplementModal({
                 disabled={loading}
               >
                 <option value="" className="bg-[#08081A] text-foreground">
-                  Select Frequency
+                  {t.frequencyPlaceholder}
                 </option>
-                <option
-                  value="Once daily"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  Once daily
-                </option>
-                <option
-                  value="2x Daily"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  2x Daily
-                </option>
-                <option
-                  value="3x Daily"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  3x Daily
-                </option>
-                <option
-                  value="4x Daily"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  4x Daily
-                </option>
-                <option
-                  value="As needed"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  As needed
-                </option>
-                <option value="Weekly" className="bg-[#08081A] text-foreground">
-                  Weekly
-                </option>
-                <option
-                  value="Every other day"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  Every other day
-                </option>
-                <option
-                  value="Before meals"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  Before meals
-                </option>
-                <option
-                  value="After meals"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  After meals
-                </option>
-                <option
-                  value="With meals"
-                  className="bg-[#08081A] text-foreground"
-                >
-                  With meals
-                </option>
+                {frequencyOptions.map((option) => (
+                  <option
+                    key={option}
+                    value={option}
+                    className="bg-[#08081A] text-foreground"
+                  >
+                    {t.frequencyOptions[option] ?? option}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           {/* Row 3: Comment (Full width textarea) */}
           <div>
-            <label className="block text-sm font-medium mb-2">Comment</label>
+            <label className="block text-sm font-medium mb-2">
+              {t.commentLabel}
+            </label>
             <textarea
               name="comment"
               value={formData.comment}
               onChange={handleChange}
-              placeholder="Insert a value"
+              placeholder={t.placeholderValue}
               rows={3}
               className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] resize-none"
               disabled={loading}
@@ -474,10 +510,10 @@ export default function SupplementModal({
               {loading ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin mr-2" />
-                  Saving...
+                  {t.saveButtonLoading}
                 </>
               ) : (
-                "Save"
+                t.saveButton
               )}
             </button>
           </div>

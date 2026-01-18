@@ -17,11 +17,70 @@ import ShowManagementModal from "./showManagementModal/ShowManagementModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    title: "Show Management",
+    subtitle: "Manage competition schedules and peak week triggers",
+    loading: "Loading shows...",
+    processing: "Processing...",
+    addShowButton: "+ Add Show",
+    tableHeaders: {
+      showName: "Show Name",
+      division: "Division",
+      date: "Date",
+      location: "Location",
+      countdown: "Countdown",
+      actions: "Actions",
+    } as Record<string, string>,
+    emptyStateText:
+      "No shows added yet. Add your first show to get started.",
+    emptyStateButton: "Add Your First Show",
+    deleteTitle: "Delete Show",
+    deleteMessage: (name: string) =>
+      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+    editTooltip: "Edit",
+    deleteTooltip: "Delete",
+    countdownCompleted: "Completed",
+    countdownToday: "Today",
+    countdownDays: (count: number) =>
+      `${count} Day${count !== 1 ? "s" : ""}`,
+  },
+  de: {
+    title: "Show-Verwaltung",
+    subtitle: "Verwalte Wettkampfpläne und Peak-Week-Auslöser",
+    loading: "Shows werden geladen...",
+    processing: "Wird verarbeitet...",
+    addShowButton: "+ Show hinzufügen",
+    tableHeaders: {
+      showName: "Show-Name",
+      division: "Division",
+      date: "Datum",
+      location: "Ort",
+      countdown: "Countdown",
+      actions: "Aktionen",
+    } as Record<string, string>,
+    emptyStateText:
+      "Noch keine Shows hinzugefügt. Füge deine erste Show hinzu, um zu starten.",
+    emptyStateButton: "Erste Show hinzufügen",
+    deleteTitle: "Show löschen",
+    deleteMessage: (name: string) =>
+      `Möchtest du die Show „${name}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+    editTooltip: "Bearbeiten",
+    deleteTooltip: "Löschen",
+    countdownCompleted: "Abgeschlossen",
+    countdownToday: "Heute",
+    countdownDays: (count: number) =>
+      `${count} Tag${count !== 1 ? "e" : ""}`,
+  },
+};
+
 export default function ShowManagement() {
   const dispatch = useAppDispatch();
   const { shows, loading, error, successMessage } = useAppSelector(
     (state) => state.show
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingShow, setEditingShow] = useState<Show | null>(null);
@@ -138,9 +197,9 @@ export default function ShowManagement() {
 
   // Format countdown
   const formatCountdown = (countdown: number) => {
-    if (countdown < 0) return "Completed";
-    if (countdown === 0) return "Today";
-    return `${countdown} Day${countdown !== 1 ? 's' : ''}`;
+    if (countdown < 0) return t.countdownCompleted;
+    if (countdown === 0) return t.countdownToday;
+    return t.countdownDays(countdown);
   };
 
   // Sort shows by date (most recent first)
@@ -153,13 +212,12 @@ export default function ShowManagement() {
       <div className="flex-1 overflow-hidden flex flex-col">
         <main className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">
-            {/* Loading overlay */}
             {(loading || isProcessing) && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 <div className="bg-[#1a1a2e] p-6 rounded-lg flex flex-col items-center">
                   <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
                   <span className="text-gray-300">
-                    {isProcessing ? "Processing..." : "Loading shows..."}
+                    {isProcessing ? t.processing : t.loading}
                   </span>
                 </div>
               </div>
@@ -168,17 +226,15 @@ export default function ShowManagement() {
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Show Management</h1>
-                <p className="text-gray-400">
-                  Manage competition schedules and peak week triggers
-                </p>
+                <h1 className="text-3xl font-bold mb-2">{t.title}</h1>
+                <p className="text-gray-400">{t.subtitle}</p>
               </div>
               <button
                 onClick={handleAddShow}
                 disabled={loading || isProcessing}
                 className="px-6 py-2 border border-green-500 text-green-500 rounded-full hover:bg-green-500/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                + Add Show
+                {t.addShowButton}
               </button>
             </div>
 
@@ -195,22 +251,22 @@ export default function ShowManagement() {
                 <thead className="border-b border-[#24273f] bg-[#020231]">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Show Name
+                      {t.tableHeaders.showName}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Division
+                      {t.tableHeaders.division}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Date
+                      {t.tableHeaders.date}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Location
+                      {t.tableHeaders.location}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Countdown
+                      {t.tableHeaders.countdown}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                      Actions
+                      {t.tableHeaders.actions}
                     </th>
                   </tr>
                 </thead>
@@ -252,7 +308,7 @@ export default function ShowManagement() {
                               onClick={() => handleEditShow(show)}
                               disabled={loading || isProcessing}
                               className="w-8 h-8 bg-blue-600/20 border border-blue-600 hover:bg-blue-600/30 rounded-full flex items-center justify-center text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Edit"
+                              title={t.editTooltip}
                             >
                               <Edit2 size={16} />
                             </button>
@@ -260,7 +316,7 @@ export default function ShowManagement() {
                               onClick={() => handleDeleteShow(show)}
                               disabled={loading || isProcessing}
                               className="w-8 h-8 bg-red-600/20 border border-red-600 hover:bg-red-600/30 rounded-full flex items-center justify-center text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Delete"
+                              title={t.deleteTooltip}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -276,13 +332,13 @@ export default function ShowManagement() {
               {!loading && shows.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-gray-400 text-lg mb-4">
-                    No shows added yet. Add your first show to get started.
+                    {t.emptyStateText}
                   </p>
                   <button
                     onClick={handleAddShow}
                     className="px-6 py-2 border border-green-500 text-green-500 rounded-full hover:bg-green-500/10 transition-colors font-medium"
                   >
-                    Add Your First Show
+                    {t.emptyStateButton}
                   </button>
                 </div>
               )}
@@ -307,8 +363,8 @@ export default function ShowManagement() {
       {deleteConfirmShow && (
         <DeleteModal
           isOpen={!!deleteConfirmShow}
-          title="Delete Show"
-          message={`Are you sure you want to delete "${deleteConfirmShow.name}"? This action cannot be undone.`}
+          title={t.deleteTitle}
+          message={t.deleteMessage(deleteConfirmShow.name)}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteConfirmShow(null)}
         />
