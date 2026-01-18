@@ -1,10 +1,10 @@
 import ConfirmPassword from "@/components/common/forgetPassword/ConfirmPassword";
-import React from "react";
+import { Suspense } from "react";
 
 export default function CreatePasswordPage() {
   return (
-    <div>
+    <Suspense fallback={<div className="text-white">Loading...</div>}>
       <ConfirmPassword />
-    </div>
+    </Suspense>
   );
 }

@@ -1,10 +1,10 @@
 import VerificationCode from "@/components/common/forgetPassword/VerificationCode";
-import React from "react";
+import { Suspense } from "react";
 
 export default function CodeVerificationPage() {
   return (
-    <div>
+    <Suspense fallback={<div className="text-white">Loading...</div>}>
       <VerificationCode />
-    </div>
+    </Suspense>
   );
 }

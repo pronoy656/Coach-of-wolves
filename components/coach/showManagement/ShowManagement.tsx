@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -32,8 +33,7 @@ const translations = {
       countdown: "Countdown",
       actions: "Actions",
     } as Record<string, string>,
-    emptyStateText:
-      "No shows added yet. Add your first show to get started.",
+    emptyStateText: "No shows added yet. Add your first show to get started.",
     emptyStateButton: "Add Your First Show",
     deleteTitle: "Delete Show",
     deleteMessage: (name: string) =>
@@ -42,8 +42,7 @@ const translations = {
     deleteTooltip: "Delete",
     countdownCompleted: "Completed",
     countdownToday: "Today",
-    countdownDays: (count: number) =>
-      `${count} Day${count !== 1 ? "s" : ""}`,
+    countdownDays: (count: number) => `${count} Day${count !== 1 ? "s" : ""}`,
   },
   de: {
     title: "Show-Verwaltung",
@@ -69,8 +68,7 @@ const translations = {
     deleteTooltip: "Löschen",
     countdownCompleted: "Abgeschlossen",
     countdownToday: "Heute",
-    countdownDays: (count: number) =>
-      `${count} Tag${count !== 1 ? "e" : ""}`,
+    countdownDays: (count: number) => `${count} Tag${count !== 1 ? "e" : ""}`,
   },
 };
 
@@ -165,10 +163,12 @@ export default function ShowManagement() {
       setIsProcessing(true);
       if (editingShow) {
         // Edit existing show
-        await dispatch(updateShow({
-          id: editingShow._id,
-          data: formData
-        })).unwrap();
+        await dispatch(
+          updateShow({
+            id: editingShow._id,
+            data: formData,
+          })
+        ).unwrap();
         toast.success("Show updated successfully");
       } else {
         // Add new show
@@ -188,10 +188,10 @@ export default function ShowManagement() {
   // Format date for display
   const formatDisplayDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -277,8 +277,9 @@ export default function ShowManagement() {
                     return (
                       <tr
                         key={show._id}
-                        className={`border-b border-[#303245] hover:bg-[#1a1a2a] transition-colors ${index % 2 === 0 ? "bg-[#0f0f1e]" : "bg-[#0a0a14]"
-                          } ${isPast ? "opacity-70" : ""}`}
+                        className={`border-b border-[#303245] hover:bg-[#1a1a2a] transition-colors ${
+                          index % 2 === 0 ? "bg-[#0f0f1e]" : "bg-[#0a0a14]"
+                        } ${isPast ? "opacity-70" : ""}`}
                       >
                         <td className="px-6 py-4 text-white font-medium">
                           {show.name}
@@ -293,12 +294,15 @@ export default function ShowManagement() {
                           {show.location}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`font-medium ${show.countdown <= 0
-                            ? "text-gray-400"
-                            : show.countdown <= 7
-                              ? "text-amber-400"
-                              : "text-emerald-400"
-                            }`}>
+                          <span
+                            className={`font-medium ${
+                              show.countdown <= 0
+                                ? "text-gray-400"
+                                : show.countdown <= 7
+                                ? "text-amber-400"
+                                : "text-emerald-400"
+                            }`}
+                          >
                             {formatCountdown(show.countdown)}
                           </span>
                         </td>
