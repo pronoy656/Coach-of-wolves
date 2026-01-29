@@ -2,8 +2,34 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
+
+const translations = {
+  en: {
+    editSupplement: "Edit Supplement",
+    addSupplement: "Add Supplement",
+    supplementName: "Supplements Name",
+    dosage: "Dosage",
+    frequency: "Frequency",
+    purpose: "Purpose",
+    note: "Note",
+    typePlaceholder: "Type..",
+    save: "Save",
+  },
+  de: {
+    editSupplement: "Ergänzungsmittel bearbeiten",
+    addSupplement: "Ergänzungsmittel hinzufügen",
+    supplementName: "Name des Ergänzungsmittels",
+    dosage: "Dosierung",
+    frequency: "Häufigkeit",
+    purpose: "Zweck",
+    note: "Notiz",
+    typePlaceholder: "Eingeben..",
+    save: "Speichern",
+  },
+};
 
 interface Supplement {
   id: string;
@@ -27,36 +53,19 @@ export default function AddSupplimentModal({
   onClose,
   onSave,
 }: SupplementFormModalProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
+
   const [formData, setFormData] = useState({
-    name: "",
-    dosage: "",
-    frequency: "",
-    purpose: "",
-    note: "",
+    name: supplement?.name || "",
+    dosage: supplement?.dosage || "",
+    frequency: supplement?.frequency || "",
+    purpose: supplement?.purpose || "",
+    note: supplement?.note || "",
   });
 
-  useEffect(() => {
-    if (supplement) {
-      setFormData({
-        name: supplement.name,
-        dosage: supplement.dosage,
-        frequency: supplement.frequency,
-        purpose: supplement.purpose,
-        note: supplement.note,
-      });
-    } else {
-      setFormData({
-        name: "",
-        dosage: "",
-        frequency: "",
-        purpose: "",
-        note: "",
-      });
-    }
-  }, [supplement, isOpen]);
-
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -69,8 +78,6 @@ export default function AddSupplimentModal({
     e.preventDefault();
     onSave(formData);
   };
-
-  if (!isOpen) return null;
 
   return (
     <>
@@ -104,42 +111,42 @@ export default function AddSupplimentModal({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Supplements Name
+                    {t.supplementName}
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Type.."
+                    placeholder={t.typePlaceholder}
                     className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Dosage
+                    {t.dosage}
                   </label>
                   <input
                     type="text"
                     name="dosage"
                     value={formData.dosage}
                     onChange={handleChange}
-                    placeholder="Type.."
+                    placeholder={t.typePlaceholder}
                     className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Frequency
+                    {t.frequency}
                   </label>
                   <input
                     type="text"
                     name="frequency"
                     value={formData.frequency}
                     onChange={handleChange}
-                    placeholder="Type.."
+                    placeholder={t.typePlaceholder}
                     className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
                     required
                   />
@@ -150,28 +157,28 @@ export default function AddSupplimentModal({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Purpose
+                    {t.purpose}
                   </label>
                   <input
                     type="text"
                     name="purpose"
                     value={formData.purpose}
                     onChange={handleChange}
-                    placeholder="Type.."
+                    placeholder={t.typePlaceholder}
                     className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Note
+                    {t.note}
                   </label>
                   <input
                     type="text"
                     name="note"
                     value={formData.note}
                     onChange={handleChange}
-                    placeholder="Type.."
+                    placeholder={t.typePlaceholder}
                     className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
                     required
                   />
@@ -185,7 +192,7 @@ export default function AddSupplimentModal({
                 type="submit"
                 className="w-full px-6 py-3 bg-[#4040D3] text-white rounded-lg hover:bg-blue-600 transition-colors font-bold"
               >
-                Save
+                {t.save}
               </button>
             </div>
           </form>

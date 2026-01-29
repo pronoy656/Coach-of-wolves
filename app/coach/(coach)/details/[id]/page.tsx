@@ -18,12 +18,12 @@ export default async function AthleteDetailsPage({
 
   return (
     <div className="min-h-screen text-white">
-      <p className="text-gray-300">
-        <code className="mx-3 px-4 rounded-lg font-mono text-[#8CCA4D] text-2xl">
+      <div className="text-gray-300">
+        <div className="mx-3 px-4 rounded-lg font-mono text-[#8CCA4D] text-2xl">
           <CoachDashboard athleteId={athleteId} />
           {/* {athleteId} */}
-        </code>
-      </p>
+        </div>
+      </div>
     </div>
   );
 }

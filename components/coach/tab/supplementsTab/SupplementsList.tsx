@@ -1,6 +1,24 @@
 "use client";
 
 import { Edit2, Trash2 } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
+
+const translations = {
+  en: {
+    noSupplementsFound: "No supplements found",
+    dosage: "Dosage",
+    frequency: "Frequency",
+    purpose: "Purpose",
+    note: "Note",
+  },
+  de: {
+    noSupplementsFound: "Keine Nahrungsergänzungsmittel gefunden",
+    dosage: "Dosierung",
+    frequency: "Häufigkeit",
+    purpose: "Zweck",
+    note: "Notiz",
+  },
+};
 
 interface Supplement {
   id: string;
@@ -22,6 +40,9 @@ export default function SupplementsList({
   onEdit,
   onDelete,
 }: SupplementsListProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
+
   if (supplements.length === 0) {
     return (
       <div className="text-center py-12">
@@ -62,7 +83,7 @@ export default function SupplementsList({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Dosage */}
             <div>
-              <p className="text-gray-300 mb-1 text-xl">Dosage</p>
+              <p className="text-gray-300 mb-1 text-xl">{t.dosage}</p>
               <p className="text-emerald-400 font-medium text-base">
                 {supplement.dosage}
               </p>
@@ -70,7 +91,7 @@ export default function SupplementsList({
 
             {/* Frequency */}
             <div>
-              <p className="text-gray-300 mb-1 text-xl">Frequency</p>
+              <p className="text-gray-300 mb-1 text-xl">{t.frequency}</p>
               <p className="text-emerald-400 font-medium text-base">
                 {supplement.frequency}
               </p>
@@ -78,7 +99,7 @@ export default function SupplementsList({
 
             {/* Purpose */}
             <div>
-              <p className="text-gray-300 mb-1 text-xl">Purpose</p>
+              <p className="text-gray-300 mb-1 text-xl">{t.purpose}</p>
               <p className="text-emerald-400 font-medium text-base">
                 {supplement.purpose}
               </p>
@@ -86,7 +107,7 @@ export default function SupplementsList({
 
             {/* Note */}
             <div>
-              <p className="text-gray-300 mb-1 text-xl">Note</p>
+              <p className="text-gray-300 mb-1 text-xl">{t.note}</p>
               <p className="text-emerald-400 font-medium text-base">
                 {supplement.note}
               </p>
