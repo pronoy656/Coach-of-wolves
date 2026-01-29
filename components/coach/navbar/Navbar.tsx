@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -44,13 +45,14 @@ const translations = {
     updating: "Profil wird aktualisiert...",
     updated: "Profil erfolgreich aktualisiert!",
     failed: "Profil-Update fehlgeschlagen",
-    imgUpload: "Klicken Sie auf das Upload-Symbol, um das Profilbild zu ändern (Max. 5MB)",
+    imgUpload:
+      "Klicken Sie auf das Upload-Symbol, um das Profilbild zu ändern (Max. 5MB)",
   },
 };
 
 export default function Header() {
   const { profile, loading, error, updateLoading, updateError } = useSelector(
-    (state: RootState) => state.coachProfile
+    (state: RootState) => state.coachProfile,
   );
   const { language } = useSelector((state: RootState) => state.language);
   const t = translations[language as keyof typeof translations];
@@ -168,30 +170,37 @@ export default function Header() {
     <>
       <header className="bg-[#101021] border border-[#2F312F] backdrop-blur px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">
-            {t.dashboard}
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground">{t.dashboard}</h1>
           <div className="flex items-center gap-4">
             {/* Language Toggle */}
             <div className="flex items-center p-1 bg-[#1A1A2E]/80 border border-white/5 rounded-xl shadow-inner-lg backdrop-blur-md mr-3 relative group">
               {/* Sliding Background Indicator */}
               <div
-                className={`absolute h-[calc(100%-8px)] rounded-lg bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 ease-out z-0 ${language === "en" ? "w-[38px] left-[4px]" : "w-[38px] left-[42px]"
-                  }`}
+                className={`absolute h-[calc(100%-8px)] rounded-lg bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 ease-out z-0 ${
+                  language === "en"
+                    ? "w-[38px] left-[4px]"
+                    : "w-[38px] left-[42px]"
+                }`}
               />
 
               <button
                 onClick={() => handleLanguageChange("en")}
-                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "en" ? "text-white" : "text-gray-400 hover:text-gray-200"
-                  }`}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${
+                  language === "en"
+                    ? "text-white"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
               >
                 EN
               </button>
 
               <button
                 onClick={() => handleLanguageChange("de")}
-                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${language === "de" ? "text-white" : "text-gray-400 hover:text-gray-200"
-                  }`}
+                className={`relative z-10 w-[38px] py-1.5 text-[11px] font-black tracking-wider transition-colors duration-300 ${
+                  language === "de"
+                    ? "text-white"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
               >
                 DE
               </button>
@@ -205,13 +214,15 @@ export default function Header() {
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={handleProfileClick}
             >
+              {/* {console.log(`${process.env.NEXT_PUBLIC_LOCAL_BASE_URL}`)} */}
+
               <div className="relative">
                 {loading && !profile ? (
                   <div className="w-10 h-10 rounded-full bg-gray-700 animate-pulse"></div>
                 ) : (
                   <>
-                    <Image
-                      src={displayImage}
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_LOCAL_BASE_URL}/${profile?.image}`}
                       alt={profile?.name || "Coach"}
                       width={40}
                       height={40}
@@ -268,8 +279,8 @@ export default function Header() {
                     {loading && !profile ? (
                       <div className="w-full h-full bg-gray-700 animate-pulse"></div>
                     ) : (
-                      <Image
-                        src={displayImage}
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_LOCAL_BASE_URL}/${profile?.image}`}
                         alt="Profile Preview"
                         width={128}
                         height={128}
