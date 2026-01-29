@@ -84,6 +84,7 @@
 
 // components/AthleteCard.tsx
 
+/* eslint-disable @next/next/no-img-element */
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -129,9 +130,10 @@ export default function AthleteCard({
       <div className="border border-[#4C8B1B]/60 bg-[#08081A] rounded-lg p-5 hover:border-[#4C8B1B] transition-all duration-200 group">
         <div className="flex items-center justify-between gap-6">
           {/* Left: Avatar + Info */}
+
           <div className="flex items-start gap-5 flex-1">
-            <Image
-              src={image || "/placeholder.svg"}
+            <img
+              src={`${process.env.NEXT_PUBLIC_LOCAL_BASE_URL}${image}`}
               alt={name}
               width={64}
               height={64}
@@ -169,7 +171,6 @@ export default function AthleteCard({
               </div>
             </div>
           </div>
-
           {/* Right: Arrow (appears on hover) */}
           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
             <ChevronRight size={28} className="text-[#8CCA4D]" />

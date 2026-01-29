@@ -4,7 +4,7 @@
 
 import { Bell, Upload, X } from "lucide-react";
 import { useState, useRef, ChangeEvent, useEffect } from "react";
-import Image from "next/image";
+
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -21,7 +22,8 @@ const translations = {
     completeCheckIn: "Complete Check-In",
     descTotal: "Total athletes assigned to you",
     descActive: "Currently active athletes",
-    descDaily: (submitted: number, total: number) => `${submitted} of ${total} submitted today`,
+    descDaily: (submitted: number, total: number) =>
+      `${submitted} of ${total} submitted today`,
     descPending: "Waiting for athlete response",
     descComplete: "Successfully completed",
     dynamicTotal: (count: number) => `${count} total athletes`,
@@ -38,7 +40,8 @@ const translations = {
     completeCheckIn: "Abgeschlossene Check-Ins",
     descTotal: "Gesamtanzahl der Ihnen zugewiesenen Athleten",
     descActive: "Derzeit aktive Athleten",
-    descDaily: (submitted: number, total: number) => `${submitted} von ${total} heute eingereicht`,
+    descDaily: (submitted: number, total: number) =>
+      `${submitted} von ${total} heute eingereicht`,
     descPending: "Warten auf Rückmeldung des Athleten",
     descComplete: "Erfolgreich abgeschlossen",
     dynamicTotal: (count: number) => `${count} Athleten insgesamt`,
@@ -59,7 +62,7 @@ interface StatCard {
 export default function StatsCard() {
   const dispatch = useDispatch<AppDispatch>();
   const { data, loading, error } = useSelector(
-    (state: RootState) => state.coachDashboard
+    (state: RootState) => state.coachDashboard,
   );
   const { language } = useSelector((state: RootState) => state.language);
   const t = translations[language as keyof typeof translations];
@@ -91,75 +94,78 @@ export default function StatsCard() {
   // Format the cards based on API data
   const cards: StatCard[] = data
     ? [
-      {
-        label: t.totalAthletes,
-        value: data.totalAthletes,
-        icon: Users,
-        color: "text-[#8CCA4D]",
-        description: t.descTotal,
-      },
-      {
-        label: t.activeAthletes,
-        value: data.totalActiveUsers,
-        icon: Activity,
-        color: "text-[#8CCA4D]",
-        description: t.descActive,
-      },
-      {
-        label: t.dailyTracking,
-        value: calculateDailyTrackingPercentage(),
-        icon: TrendingUp,
-        color: "text-[#8CCA4D]",
-        description: t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes),
-      },
-      {
-        label: t.pendingCheckIn,
-        value: data.checkins.pending,
-        icon: Clock,
-        color: "text-[#FF6B6B]",
-        description: t.descPending,
-      },
-      {
-        label: t.completeCheckIn,
-        value: data.checkins.completed,
-        icon: CheckCircle,
-        color: "text-[#8CCA4D]",
-        description: t.descComplete,
-      },
-    ]
+        {
+          label: t.totalAthletes,
+          value: data.totalAthletes,
+          icon: Users,
+          color: "text-[#8CCA4D]",
+          description: t.descTotal,
+        },
+        {
+          label: t.activeAthletes,
+          value: data.totalActiveUsers,
+          icon: Activity,
+          color: "text-[#8CCA4D]",
+          description: t.descActive,
+        },
+        {
+          label: t.dailyTracking,
+          value: calculateDailyTrackingPercentage(),
+          icon: TrendingUp,
+          color: "text-[#8CCA4D]",
+          description: t.descDaily(
+            data.dailyTracking.submittedToday,
+            data.totalAthletes,
+          ),
+        },
+        {
+          label: t.pendingCheckIn,
+          value: data.checkins.pending,
+          icon: Clock,
+          color: "text-[#FF6B6B]",
+          description: t.descPending,
+        },
+        {
+          label: t.completeCheckIn,
+          value: data.checkins.completed,
+          icon: CheckCircle,
+          color: "text-[#8CCA4D]",
+          description: t.descComplete,
+        },
+      ]
     : [
-      // Fallback data while loading or if no data
-      {
-        label: t.totalAthletes,
-        value: "0",
-        icon: Users,
-        color: "text-[#8CCA4D]",
-      },
-      {
-        label: t.activeAthletes,
-        value: "0",
-        icon: Activity,
-        color: "text-[#8CCA4D]",
-      },
-      {
-        label: t.dailyTracking,
-        value: "0",
-        icon: TrendingUp,
-        color: "text-[#8CCA4D]",
-      },
-      {
-        label: t.pendingCheckIn,
-        value: "0",
-        icon: Clock,
-        color: "text-[#FF6B6B]",
-      },
-      {
-        label: t.completeCheckIn,
-        value: "0",
-        icon: CheckCircle,
-        color: "text-[#8CCA4D]",
-      },
-    ];
+        // Fallback data while loading or if no data
+        {
+          label: t.totalAthletes,
+          value: "0",
+          icon: Users,
+          color: "text-[#8CCA4D]",
+        },
+        {
+          label: t.activeAthletes,
+          value: "0",
+          icon: Activity,
+          color: "text-[#8CCA4D]",
+        },
+        {
+          label: t.dailyTracking,
+          value: "0",
+          icon: TrendingUp,
+          color: "text-[#8CCA4D]",
+        },
+        {
+          label: t.pendingCheckIn,
+          value: "0",
+          icon: Clock,
+          color: "text-[#FF6B6B]",
+        },
+        {
+          label: t.completeCheckIn,
+          value: "0",
+          icon: CheckCircle,
+          color: "text-[#8CCA4D]",
+        },
+      ];
 
   // Add dynamic description to cards if data exists with translation
   if (data) {
@@ -172,7 +178,10 @@ export default function StatsCard() {
           card.description = t.dynamicActive(data.totalActiveUsers);
           break;
         case 2: // Daily Tracking
-          card.description = t.descDaily(data.dailyTracking.submittedToday, data.totalAthletes);
+          card.description = t.descDaily(
+            data.dailyTracking.submittedToday,
+            data.totalAthletes,
+          );
           break;
         case 3: // Pending Check-In
           card.description = t.dynamicPending(data.checkins.pending);
@@ -190,9 +199,7 @@ export default function StatsCard() {
       {loading && !data && (
         <div className="text-center py-4">
           <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#4A9E4A]"></div>
-          <p className="mt-2 text-gray-400 text-sm">
-            {t.loading}
-          </p>
+          <p className="mt-2 text-gray-400 text-sm">{t.loading}</p>
         </div>
       )}
 
