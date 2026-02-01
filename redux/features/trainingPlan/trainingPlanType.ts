@@ -1,18 +1,14 @@
-// redux/features/trainingPlan/trainingPlanType.ts
 
-export interface SetDetail {
+export interface ExerciseSet {
     sets: string;
-    reps: string;
+    repRange: string;
     rir: string;
 }
 
 export interface BackendExercise {
     exerciseName: string;
-    sets: string;
-    repRange: string;
-    rir: string;
-    setDetails?: SetDetail[];
     excerciseNote: string;
+    exerciseSets: ExerciseSet[];
     _id?: string;
 }
 
@@ -20,10 +16,10 @@ export interface TrainingPlan {
     _id: string;
     userId: string;
     coachId: string;
-    traingPlanName: string; // Backend typo: traingPlanName
-    exercise: BackendExercise[];
-    dificulty: string; // Backend typo: dificulty
+    traingPlanName: string;
+    dificulty: string;
     comment: string;
+    exercise: BackendExercise[];
     createdAt: string;
     updatedAt: string;
     __v?: number;
@@ -31,9 +27,9 @@ export interface TrainingPlan {
 
 export interface TrainingPlanFormData {
     traingPlanName: string;
-    exercise: BackendExercise[];
     dificulty: string;
     comment: string;
+    exercise: BackendExercise[];
 }
 
 export interface TrainingPlanState {

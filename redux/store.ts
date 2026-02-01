@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
 import nutritionReducer from "./features/nutrition/nutritionSlice";
 import supplementReducer from "./features/supplement/supplementSlice";
+import coachSupplementReducer from "./features/supplement/coachSupplementSlice";
 import exerciseReducer from "./features/exercise/exerciseSlice";
 import mealPlanReducer from "./features/mealPlan/mealplanSlice";
 import coachReducer from "./features/coach/coachSlice";
@@ -28,6 +29,7 @@ export const store = configureStore({
     auth: authReducer,
     nutrition: nutritionReducer,
     supplement: supplementReducer,
+    coachSupplement: coachSupplementReducer,
     exercise: exerciseReducer,
     mealPlan: mealPlanReducer,
     coach: coachReducer,

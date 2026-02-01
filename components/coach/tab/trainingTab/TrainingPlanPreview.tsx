@@ -37,7 +37,7 @@ export default function TrainingPlanPreview({
               </h3>
               <span
                 className={`px-2.5 py-0.5 border text-[10px] uppercase tracking-wider rounded-full font-semibold ${getDifficultyColor(
-                  plan.dificulty
+                  plan.dificulty,
                 )}`}
               >
                 {plan.dificulty}
@@ -94,42 +94,35 @@ export default function TrainingPlanPreview({
 
                 {/* Stats: Sets, Reps-Range, RIR */}
                 <div className="flex flex-col gap-2 pl-9 sm:pl-0 shrink-0">
-                  {ex.setDetails && ex.setDetails.length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold block w-full mb-1">Set Details</span>
-                      {ex.setDetails.map((set, i) => (
-                        <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#111120] border border-[#2d2d45] rounded-lg">
-                          <span className="text-[11px] text-emerald-500 font-bold">{set.sets} Sets</span>
-                          <span className="text-gray-600 font-bold text-[10px]">×</span>
-                          <span className="text-xs text-white font-medium">{set.reps} Reps</span>
-                          <span className="text-[10px] text-gray-500 italic ml-1">@</span>
-                          <span className="text-xs text-blue-400 font-medium">RIR {set.rir}</span>
+                  {ex.exerciseSets && ex.exerciseSets.length > 0 ? (
+                    <div className="flex flex-col items-start gap-2">
+                      {ex.exerciseSets.map((set, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-wrap items-center gap-2"
+                        >
+                          <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                            <span className="text-[11px] text-emerald-500 font-bold">
+                              Sets: {set.sets}
+                            </span>
+                          </div>
+                          <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                            <span className="text-xs text-white font-medium">
+                              Reps: {set.repRange}
+                            </span>
+                          </div>
+                          <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                            <span className="text-xs text-blue-400 font-medium">
+                              RIR: {set.rir}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-xs">
-                      {ex.sets && (
-                        <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                          <span className="text-emerald-500 font-semibold">
-                            {ex.sets}
-                          </span>{" "}
-                          Sets
-                        </span>
-                      )}
-                      {ex.repRange && (
-                        <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                          Rep Range: <span className="text-white font-semibold">
-                            {ex.repRange}
-                          </span>
-                        </span>
-                      )}
-                      {ex.rir && (
-                        <span className="px-2 py-1 bg-[#111120] border border-[#2d2d45] text-gray-400 rounded-md whitespace-nowrap">
-                          RIR: <span className="text-white">{ex.rir}</span>
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-xs text-gray-500 italic">
+                      No sets added.
+                    </p>
                   )}
                 </div>
               </div>

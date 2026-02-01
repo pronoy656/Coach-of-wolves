@@ -114,7 +114,7 @@ const trainingSplitSlice = createSlice({
                 state.loading = false;
                 state.splits = action.payload.data.data || [];
                 state.currentAthleteId = action.payload.athleteId;
-                state.successMessage = action.payload.data.message;
+                // Do not set success message for fetch operations
             })
             .addCase(fetchTrainingSplits.rejected, (state, action) => {
                 state.loading = false;

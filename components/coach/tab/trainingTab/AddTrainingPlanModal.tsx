@@ -1,10 +1,15 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
-import { BackendExercise, TrainingPlan, TrainingPlanFormData, SetDetail } from "@/redux/features/trainingPlan/trainingPlanType";
+import {
+  BackendExercise,
+  TrainingPlan,
+  TrainingPlanFormData,
+  ExerciseSet,
+} from "@/redux/features/trainingPlan/trainingPlanType";
 
 interface ExerciseState extends BackendExercise {
   id: string;
@@ -28,17 +33,16 @@ export default function AddTrainingPlanModal({
   const initialExercise: ExerciseState = {
     id: Date.now().toString(),
     exerciseName: "",
-    sets: "1",
-    repRange: "",
-    rir: "",
-    setDetails: [{ sets: "1", reps: "", rir: "" }],
     excerciseNote: "",
+    exerciseSets: [{ sets: "1", repRange: "", rir: "" }],
   };
 
   const [traingPlanName, setTraingPlanName] = useState("");
   const [dificulty, setDificulty] = useState("Begineer");
   const [comment, setComment] = useState("");
-  const [exercises, setExercises] = useState<ExerciseState[]>([initialExercise]);
+  const [exercises, setExercises] = useState<ExerciseState[]>([
+    initialExercise,
+  ]);
 
   useEffect(() => {
     if (editingPlan) {
@@ -47,14 +51,20 @@ export default function AddTrainingPlanModal({
       setComment(editingPlan.comment || "");
       setExercises(
         editingPlan.exercise && editingPlan.exercise.length > 0
-          ? editingPlan.exercise.map(ex => ({
-            ...ex,
-            id: ex._id || Math.random().toString(),
-            setDetails: (ex.setDetails && ex.setDetails.length > 0)
-              ? ex.setDetails.map(sd => ({ ...sd, sets: sd.sets || "1" }))
-              : [{ sets: ex.sets || "1", reps: ex.repRange || "", rir: ex.rir || "" }]
-          }))
-          : [initialExercise]
+          ? editingPlan.exercise.map((ex) => ({
+              ...ex,
+              id: ex._id || Math.random().toString(),
+              exerciseSets:
+                ex.exerciseSets && ex.exerciseSets.length > 0
+                  ? ex.exerciseSets.map((sd) => ({
+                      ...sd,
+                      sets: sd.sets || "1",
+                      repRange: sd.repRange || "",
+                      rir: sd.rir || "",
+                    }))
+                  : [{ sets: "1", repRange: "", rir: "" }],
+            }))
+          : [initialExercise],
       );
     } else {
       setTraingPlanName("");
@@ -70,11 +80,8 @@ export default function AddTrainingPlanModal({
       {
         id: Date.now().toString() + Math.random(),
         exerciseName: "",
-        sets: "1",
-        repRange: "",
-        rir: "",
-        setDetails: [{ sets: "1", reps: "", rir: "" }],
         excerciseNote: "",
+        exerciseSets: [{ sets: "1", repRange: "", rir: "" }],
       },
     ]);
   };
@@ -90,49 +97,59 @@ export default function AddTrainingPlanModal({
   const handleExerciseChange = (
     id: string,
     field: keyof ExerciseState,
-    value: any
+    value: any,
   ) => {
     setExercises((prev) =>
-      prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex))
+      prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex)),
     );
   };
 
   const handleAddSet = (exerciseId: string) => {
-    setExercises(prev => prev.map(ex => {
-      if (ex.id === exerciseId) {
-        const newSets = [...(ex.setDetails || []), { sets: "1", reps: "", rir: "" }];
-        return { ...ex, setDetails: newSets };
-      }
-      return ex;
-    }));
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id === exerciseId) {
+          const newSets = [
+            ...(ex.exerciseSets || []),
+            { sets: "1", repRange: "", rir: "" },
+          ];
+          return { ...ex, exerciseSets: newSets };
+        }
+        return ex;
+      }),
+    );
   };
 
   const handleRemoveSet = (exerciseId: string, setIndex: number) => {
-    setExercises(prev => prev.map(ex => {
-      if (ex.id === exerciseId && (ex.setDetails?.length || 0) > 1) {
-        const newSets = (ex.setDetails || []).filter((_, i) => i !== setIndex);
-        return { ...ex, setDetails: newSets };
-      }
-      return ex;
-    }));
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id === exerciseId && (ex.exerciseSets?.length || 0) > 1) {
+          const newSets = (ex.exerciseSets || []).filter(
+            (_, i) => i !== setIndex,
+          );
+          return { ...ex, exerciseSets: newSets };
+        }
+        return ex;
+      }),
+    );
   };
 
-  const handleSetDetailChange = (exerciseId: string, setIndex: number, field: keyof SetDetail, value: string) => {
-    setExercises(prev => prev.map(ex => {
-      if (ex.id === exerciseId) {
-        const newSets = (ex.setDetails || []).map((set, i) =>
-          i === setIndex ? { ...set, [field]: value } : set
-        );
-        // Sync top-level fields with the first group for backward compatibility
-        if (setIndex === 0) {
-          if (field === "sets") ex.sets = value;
-          if (field === "reps") ex.repRange = value;
-          if (field === "rir") ex.rir = value;
+  const handleSetDetailChange = (
+    exerciseId: string,
+    setIndex: number,
+    field: keyof ExerciseSet,
+    value: string,
+  ) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id === exerciseId) {
+          const newSets = (ex.exerciseSets || []).map((set, i) =>
+            i === setIndex ? { ...set, [field]: value } : set,
+          );
+          return { ...ex, exerciseSets: newSets };
         }
-        return { ...ex, setDetails: newSets };
-      }
-      return ex;
-    }));
+        return ex;
+      }),
+    );
   };
 
   const handleSave = () => {
@@ -236,7 +253,7 @@ export default function AddTrainingPlanModal({
                           handleExerciseChange(
                             exercise.id,
                             "exerciseName",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg pl-4 pr-12 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
@@ -252,17 +269,29 @@ export default function AddTrainingPlanModal({
                   </div>
 
                   <div className="space-y-4">
-                    {exercise.setDetails?.map((set, setIndex) => (
-                      <div key={setIndex} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end animate-in fade-in slide-in-from-left-2 transition-all duration-200 bg-[#1a1a1a] p-3 rounded-lg border border-[#2a2a2a]/50 relative group/set">
+                    {exercise.exerciseSets?.map((set, setIndex) => (
+                      <div
+                        key={setIndex}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end animate-in fade-in slide-in-from-left-2 transition-all duration-200 bg-[#1a1a1a] p-3 rounded-lg border border-[#2a2a2a]/50 relative group/set"
+                      >
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-gray-400">Sets</label>
+                          <label className="text-xs font-medium text-gray-400">
+                            Sets
+                          </label>
                           <div className="relative">
                             <input
                               type="number"
                               min="1"
                               placeholder="1"
                               value={set.sets}
-                              onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "sets", e.target.value)}
+                              onChange={(e) =>
+                                handleSetDetailChange(
+                                  exercise.id,
+                                  setIndex,
+                                  "sets",
+                                  e.target.value,
+                                )
+                              }
                               className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
                             />
                             <button
@@ -276,40 +305,63 @@ export default function AddTrainingPlanModal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-gray-400">Rep Range</label>
+                          <label className="text-xs font-medium text-gray-400">
+                            Rep Range
+                          </label>
                           <input
                             type="text"
                             placeholder="e.g. 10-12"
-                            value={set.reps}
-                            onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "reps", e.target.value)}
+                            value={set.repRange}
+                            onChange={(e) =>
+                              handleSetDetailChange(
+                                exercise.id,
+                                setIndex,
+                                "repRange",
+                                e.target.value,
+                              )
+                            }
                             className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
                           />
                         </div>
 
                         <div className="space-y-2 relative">
-                          <label className="text-xs font-medium text-gray-400">RIR</label>
+                          <label className="text-xs font-medium text-gray-400">
+                            RIR
+                          </label>
                           <input
                             type="text"
                             placeholder="e.g. 2"
                             value={set.rir}
-                            onChange={(e) => handleSetDetailChange(exercise.id, setIndex, "rir", e.target.value)}
+                            onChange={(e) =>
+                              handleSetDetailChange(
+                                exercise.id,
+                                setIndex,
+                                "rir",
+                                e.target.value,
+                              )
+                            }
                             className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-emerald-500"
                           />
-                          {exercise.setDetails && exercise.setDetails.length > 1 && (
-                            <button
-                              onClick={() => handleRemoveSet(exercise.id, setIndex)}
-                              className="absolute -right-2 -top-2 bg-red-500/20 text-red-500 hover:bg-red-500 p-1 rounded-full opacity-0 group-hover/set:opacity-100 transition-all border border-red-500/50 z-10"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          )}
+                          {exercise.exerciseSets &&
+                            exercise.exerciseSets.length > 1 && (
+                              <button
+                                onClick={() =>
+                                  handleRemoveSet(exercise.id, setIndex)
+                                }
+                                className="absolute -right-2 -top-2 bg-red-500/20 text-red-500 hover:bg-red-500 p-1 rounded-full opacity-0 group-hover/set:opacity-100 transition-all border border-red-500/50 z-10"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            )}
                         </div>
                       </div>
                     ))}
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Exercise Note</label>
+                    <label className="text-sm font-medium text-white">
+                      Exercise Note
+                    </label>
                     <textarea
                       placeholder="Specific notes for this exercise..."
                       value={exercise.excerciseNote}
@@ -317,7 +369,7 @@ export default function AddTrainingPlanModal({
                         handleExerciseChange(
                           exercise.id,
                           "excerciseNote",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 resize-none"
@@ -330,7 +382,9 @@ export default function AddTrainingPlanModal({
 
             {/* Main Plan Notes Section */}
             <div className="space-y-2 border-t border-[#2a2a2a] pt-6">
-              <label className="text-lg font-bold text-white">Main Plan Notes</label>
+              <label className="text-lg font-bold text-white">
+                Main Plan Notes
+              </label>
               <textarea
                 placeholder="Add general instructions or notes for the entire plan..."
                 value={comment}

@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search } from "lucide-react";
 import SupplementsList from "./SupplementsList";
 import AddSupplimentModal from "./AddSupplimentModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  getAllSupplements,
+  createSupplement,
+  updateSupplement,
+  deleteSupplement,
+  clearSupplementSuccess,
+  clearSupplementError,
+  Supplement,
+  CreateSupplementPayload,
+} from "@/redux/features/supplement/coachSupplementSlice";
+import toast from "react-hot-toast";
 
 const translations = {
   en: {
@@ -26,37 +37,17 @@ const translations = {
   },
 };
 
-interface Supplement {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  purpose: string;
-  note: string;
+interface SupplementsPageProps {
+  athleteId?: string;
 }
 
-export default function SupplementsPage() {
+export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
+  const dispatch = useAppDispatch();
   const { language } = useAppSelector((state) => state.language);
+  const { supplements, loading, error, successMessage } = useAppSelector(
+    (state) => state.coachSupplement,
+  );
   const t = translations[language as keyof typeof translations];
-
-  const [supplements, setSupplements] = useState<Supplement[]>([
-    {
-      id: "1",
-      name: "Zinc",
-      dosage: "30g",
-      frequency: "2x Daily",
-      purpose: "Muscle Growth",
-      note: "Added",
-    },
-    {
-      id: "2",
-      name: "Multivitamin",
-      dosage: "30g",
-      frequency: "2x Daily",
-      purpose: "Muscle Growth",
-      note: "Added",
-    },
-  ]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -66,6 +57,26 @@ export default function SupplementsPage() {
   const [supplementToDelete, setSupplementToDelete] = useState<string | null>(
     null,
   );
+
+  // Handle toast notifications
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearSupplementSuccess());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearSupplementError());
+    }
+  }, [successMessage, error, dispatch]);
+
+  // Fetch supplements when athleteId changes
+  useEffect(() => {
+    if (athleteId) {
+      // Use a larger limit to get more items since we are doing local filtering for now
+      dispatch(getAllSupplements({ athleteId, limit: 100 }));
+    }
+  }, [dispatch, athleteId]);
 
   const filteredSupplements = supplements.filter((supplement) =>
     supplement.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -86,33 +97,46 @@ export default function SupplementsPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (supplementToDelete) {
-      setSupplements(supplements.filter((s) => s.id !== supplementToDelete));
+  const handleConfirmDelete = async () => {
+    if (supplementToDelete && athleteId) {
+      await dispatch(
+        deleteSupplement({ athleteId, supplementId: supplementToDelete }),
+      );
       setIsDeleteModalOpen(false);
       setSupplementToDelete(null);
     }
   };
 
-  const handleSaveSupplement = (data: Omit<Supplement, "id">) => {
+  const handleSaveSupplement = async (data: CreateSupplementPayload) => {
+    if (!athleteId) return;
+
     if (selectedSupplement) {
       // Edit existing
-      setSupplements(
-        supplements.map((s) =>
-          s.id === selectedSupplement.id ? { ...data, id: s.id } : s,
-        ),
+      await dispatch(
+        updateSupplement({
+          athleteId,
+          supplementId: selectedSupplement._id,
+          data,
+        }),
       );
+      // Refetch after update to ensure list is consistent
+      dispatch(getAllSupplements({ athleteId, limit: 100 }));
     } else {
       // Add new
-      const newSupplement: Supplement = {
-        ...data,
-        id: Date.now().toString(),
-      };
-      setSupplements([...supplements, newSupplement]);
+      await dispatch(
+        createSupplement({
+          athleteId,
+          data,
+        }),
+      );
     }
     setIsFormModalOpen(false);
     setSelectedSupplement(null);
   };
+
+  if (!athleteId) {
+    return <div className="p-6 text-white">No Athlete ID provided</div>;
+  }
 
   return (
     <main className="min-h-screen bg-[#03030b] p-6">
@@ -142,11 +166,15 @@ export default function SupplementsPage() {
         </div>
 
         {/* Supplements List */}
-        <SupplementsList
-          supplements={filteredSupplements}
-          onEdit={handleEditSupplement}
-          onDelete={handleDeleteSupplement}
-        />
+        {loading && supplements.length === 0 ? (
+          <div className="text-white">Loading...</div>
+        ) : (
+          <SupplementsList
+            supplements={filteredSupplements}
+            onEdit={handleEditSupplement}
+            onDelete={handleDeleteSupplement}
+          />
+        )}
       </div>
 
       {/* Modals */}

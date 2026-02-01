@@ -9,9 +9,12 @@ import {
   updateTrainingPlan,
   deleteTrainingPlan,
   searchTrainingPlans,
-  clearMessages
+  clearMessages,
 } from "@/redux/features/trainingPlan/trainingPlanSlice";
-import { TrainingPlan, TrainingPlanFormData } from "@/redux/features/trainingPlan/trainingPlanType";
+import {
+  TrainingPlan,
+  TrainingPlanFormData,
+} from "@/redux/features/trainingPlan/trainingPlanType";
 import TrainingPlanPreview from "./TrainingPlanPreview";
 import TrainingSplitManager from "./TrainingSplitManager";
 import AddTrainingPlanModal from "./AddTrainingPlanModal";
@@ -25,7 +28,9 @@ interface TrainingPageProps {
 
 export default function TrainingPage({ athleteId }: TrainingPageProps) {
   const dispatch = useAppDispatch();
-  const { plans, loading, error, successMessage } = useAppSelector((state) => state.trainingPlan);
+  const { plans, loading, error, successMessage } = useAppSelector(
+    (state) => state.trainingPlan,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddPlanModal, setShowAddPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<TrainingPlan | null>(null);
@@ -66,10 +71,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
     }
   };
 
-  const handleDeleteClick = (
-    type: "plan" | "preview",
-    id: string
-  ) => {
+  const handleDeleteClick = (type: "plan" | "preview", id: string) => {
     setDeleteModal({ isOpen: true, type, id });
   };
 
@@ -102,7 +104,6 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
         });
     }
   };
-
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
@@ -165,16 +166,21 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                               </span>
                             )}
                           </p>
-                          {plan.exercise.length > 0 && (
-                            <div className="flex items-center gap-2 text-[10px] text-gray-500">
-                              <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
-                                Reps: {plan.exercise[0].repRange}
-                              </span>
-                              <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
-                                RIR: {plan.exercise[0].rir}
-                              </span>
-                            </div>
-                          )}
+                          {plan.exercise.length > 0 &&
+                            plan.exercise[0].exerciseSets &&
+                            plan.exercise[0].exerciseSets.length > 0 && (
+                              <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                                <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
+                                  Reps:{" "}
+                                  {plan.exercise[0].exerciseSets[0].repRange ||
+                                    "-"}
+                                </span>
+                                <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
+                                  RIR:{" "}
+                                  {plan.exercise[0].exerciseSets[0].rir || "-"}
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -182,12 +188,13 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                     {/* Footer with Difficulty Badge Only */}
                     <div className="flex items-end mt-auto">
                       <span
-                        className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${plan.dificulty === "Advanced"
-                          ? "border-red-500/30 text-red-400 bg-red-500/10"
-                          : plan.dificulty === "Intermediate"
-                            ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
-                            : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-                          }`}
+                        className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          plan.dificulty === "Advanced"
+                            ? "border-red-500/30 text-red-400 bg-red-500/10"
+                            : plan.dificulty === "Intermediate"
+                              ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
+                              : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                        }`}
                       >
                         {plan.dificulty}
                       </span>
@@ -246,7 +253,6 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
             ? "Delete Training Plan"
             : "Delete Plan Preview"
         }
-
         message="Are you sure you want to delete this item? This action cannot be undone."
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModal({ isOpen: false, type: null, id: null })}

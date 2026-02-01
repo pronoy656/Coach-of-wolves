@@ -108,7 +108,7 @@ const trainingPlanSlice = createSlice({
             .addCase(fetchTrainingPlans.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
                 state.plans = action.payload.data || [];
-                state.successMessage = action.payload.message;
+                // Do not set success message for fetch operations to avoid unnecessary toasts
             })
             .addCase(fetchTrainingPlans.rejected, (state, action) => {
                 state.loading = false;

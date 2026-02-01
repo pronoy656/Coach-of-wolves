@@ -5,16 +5,22 @@ import type React from "react";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
+import {
+  Supplement,
+  CreateSupplementPayload,
+} from "@/redux/features/supplement/coachSupplementSlice";
 
 const translations = {
   en: {
     editSupplement: "Edit Supplement",
     addSupplement: "Add Supplement",
     supplementName: "Supplements Name",
+    brand: "Brand",
     dosage: "Dosage",
     frequency: "Frequency",
     purpose: "Purpose",
     note: "Note",
+    time: "Time",
     typePlaceholder: "Type..",
     save: "Save",
   },
@@ -22,29 +28,22 @@ const translations = {
     editSupplement: "Ergänzungsmittel bearbeiten",
     addSupplement: "Ergänzungsmittel hinzufügen",
     supplementName: "Name des Ergänzungsmittels",
+    brand: "Marke",
     dosage: "Dosierung",
     frequency: "Häufigkeit",
     purpose: "Zweck",
     note: "Notiz",
+    time: "Zeit",
     typePlaceholder: "Eingeben..",
     save: "Speichern",
   },
 };
 
-interface Supplement {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  purpose: string;
-  note: string;
-}
-
 interface SupplementFormModalProps {
   isOpen: boolean;
   supplement: Supplement | null;
   onClose: () => void;
-  onSave: (data: Omit<Supplement, "id">) => void;
+  onSave: (data: CreateSupplementPayload) => void;
 }
 
 export default function AddSupplimentModal({
@@ -56,12 +55,19 @@ export default function AddSupplimentModal({
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
 
-  const [formData, setFormData] = useState({
+  // Initialize state from props if supplement exists, otherwise empty defaults
+  // Note: We use a key on the modal or useEffect in parent to reset this when opening
+  // But for now, we'll initialize it once.
+  // Ideally, this component should be fully controlled or use a key to reset.
+  // Assuming the parent handles the key or conditional rendering (which it does based on previous fixes).
+  const [formData, setFormData] = useState<CreateSupplementPayload>({
     name: supplement?.name || "",
     dosage: supplement?.dosage || "",
     frequency: supplement?.frequency || "",
     purpose: supplement?.purpose || "",
     note: supplement?.note || "",
+    time: supplement?.time || "",
+    brand: supplement?.brand || "",
   });
 
   const handleChange = (
@@ -79,6 +85,8 @@ export default function AddSupplimentModal({
     onSave(formData);
   };
 
+  if (!isOpen) return null;
+
   return (
     <>
       {/* Backdrop */}
@@ -93,104 +101,134 @@ export default function AddSupplimentModal({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-[#08081A]">
             <h2 className="text-2xl font-bold text-white">
-              {supplement ? "Edit Supplement" : "Add Supplement"}
+              {supplement ? t.editSupplement : t.addSupplement}
             </h2>
             <button
               onClick={onClose}
               className="p-1 hover:bg-[#303245] rounded-lg transition-colors text-gray-400 hover:text-white"
-              aria-label="Close modal"
             >
               <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6">
-            <div className="space-y-6">
-              {/* First Row - Supplements Name, Dosage, Frequency */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.supplementName}
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder={t.typePlaceholder}
-                    className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.dosage}
-                  </label>
-                  <input
-                    type="text"
-                    name="dosage"
-                    value={formData.dosage}
-                    onChange={handleChange}
-                    placeholder={t.typePlaceholder}
-                    className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.frequency}
-                  </label>
-                  <input
-                    type="text"
-                    name="frequency"
-                    value={formData.frequency}
-                    onChange={handleChange}
-                    placeholder={t.typePlaceholder}
-                    className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
-                    required
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Supplement Name */}
+              <div>
+                <label className="block text-gray-400 mb-2">
+                  {t.supplementName}
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
               </div>
 
-              {/* Second Row - Purpose, Note, Time */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.purpose}
-                  </label>
-                  <input
-                    type="text"
-                    name="purpose"
-                    value={formData.purpose}
-                    onChange={handleChange}
-                    placeholder={t.typePlaceholder}
-                    className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.note}
-                  </label>
-                  <input
-                    type="text"
-                    name="note"
-                    value={formData.note}
-                    onChange={handleChange}
-                    placeholder={t.typePlaceholder}
-                    className="w-full px-3 py-2 bg-[#0F0F23] border border-[#303245] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring focus:ring-green-400/50 focus:border-green-400"
-                    required
-                  />
-                </div>
+              {/* Brand */}
+              <div>
+                <label className="block text-gray-400 mb-2">{t.brand}</label>
+                <input
+                  type="text"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
               </div>
             </div>
 
-            {/* Save Button */}
-            <div className="mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Dosage */}
+              <div>
+                <label className="block text-gray-400 mb-2">{t.dosage}</label>
+                <input
+                  type="text"
+                  name="dosage"
+                  value={formData.dosage}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              {/* Frequency */}
+              <div>
+                <label className="block text-gray-400 mb-2">
+                  {t.frequency}
+                </label>
+                <input
+                  type="text"
+                  name="frequency"
+                  value={formData.frequency}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="block text-gray-400 mb-2">{t.time}</label>
+                <input
+                  type="text"
+                  name="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              {/* Purpose */}
+              <div>
+                <label className="block text-gray-400 mb-2">{t.purpose}</label>
+                <input
+                  type="text"
+                  name="purpose"
+                  value={formData.purpose}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Note */}
+            <div>
+              <label className="block text-gray-400 mb-2">{t.note}</label>
+              <textarea
+                name="note"
+                value={formData.note}
+                onChange={handleChange}
+                placeholder={t.typePlaceholder}
+                className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 h-32 resize-none"
+              />
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex justify-end gap-4 pt-4 border-t border-[#303245]">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2 rounded-lg bg-[#1F2130] text-white hover:bg-[#303245] transition-colors"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-[#4040D3] text-white rounded-lg hover:bg-blue-600 transition-colors font-bold"
+                className="px-6 py-2 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition-colors"
               >
                 {t.save}
               </button>
