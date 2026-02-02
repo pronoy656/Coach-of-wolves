@@ -15,6 +15,7 @@ import {
   clearSupplementError,
   Supplement,
   CreateSupplementPayload,
+  clearSupplements,
 } from "@/redux/features/supplement/coachSupplementSlice";
 import toast from "react-hot-toast";
 
@@ -44,9 +45,8 @@ interface SupplementsPageProps {
 export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
   const dispatch = useAppDispatch();
   const { language } = useAppSelector((state) => state.language);
-  const { supplements, loading, error, successMessage } = useAppSelector(
-    (state) => state.coachSupplement,
-  );
+  const { supplements, loading, error, successMessage, currentAthleteId } =
+    useAppSelector((state) => state.coachSupplement);
   const t = translations[language as keyof typeof translations];
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,14 +73,20 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
   // Fetch supplements when athleteId changes
   useEffect(() => {
     if (athleteId) {
+      // Clear previous supplements to prevent stale data when switching athletes
+      dispatch(clearSupplements());
       // Use a larger limit to get more items since we are doing local filtering for now
       dispatch(getAllSupplements({ athleteId, limit: 100 }));
     }
   }, [dispatch, athleteId]);
 
-  const filteredSupplements = supplements.filter((supplement) =>
-    supplement.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const isDataForCurrentAthlete = currentAthleteId === athleteId;
+
+  const filteredSupplements = isDataForCurrentAthlete
+    ? supplements.filter((supplement) =>
+        supplement.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : [];
 
   const handleAddSupplement = () => {
     setSelectedSupplement(null);
@@ -166,7 +172,7 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
         </div>
 
         {/* Supplements List */}
-        {loading && supplements.length === 0 ? (
+        {!isDataForCurrentAthlete || (loading && supplements.length === 0) ? (
           <div className="text-white">Loading...</div>
         ) : (
           <SupplementsList

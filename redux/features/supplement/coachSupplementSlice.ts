@@ -68,6 +68,7 @@ export interface SupplementState {
   page: number;
   limit: number;
   searchQuery: string;
+  currentAthleteId: string | null;
 }
 
 /* ================= INITIAL STATE ================= */
@@ -82,6 +83,7 @@ const initialState: SupplementState = {
   page: 1,
   limit: 10,
   searchQuery: "",
+  currentAthleteId: null,
 };
 
 /* ================= ASYNC THUNKS ================= */
@@ -227,13 +229,24 @@ const coachSupplementSlice = createSlice({
         (item) => item._id !== action.payload
       );
     },
+    clearSupplements: (state) => {
+      state.supplements = [];
+      state.total = 0;
+      state.page = 1;
+      state.currentAthleteId = null;
+    },
   },
   extraReducers: (builder) => {
     builder
       /* GET ALL SUPPLEMENTS */
-      .addCase(getAllSupplements.pending, (state) => {
+      .addCase(getAllSupplements.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        // If fetching for a different athlete, clear existing data immediately
+        if (state.currentAthleteId !== action.meta.arg.athleteId) {
+          state.supplements = [];
+          state.currentAthleteId = null;
+        }
       })
       .addCase(getAllSupplements.fulfilled, (state, action) => {
         state.loading = false;
@@ -241,6 +254,7 @@ const coachSupplementSlice = createSlice({
         state.total = action.payload.total;
         state.page = action.payload.page;
         state.limit = action.payload.limit;
+        state.currentAthleteId = action.meta.arg.athleteId;
       })
       .addCase(getAllSupplements.rejected, (state, action) => {
         state.loading = false;
@@ -330,6 +344,7 @@ export const {
   addSupplement,
   updateSupplementInList,
   removeSupplementFromList,
+  clearSupplements,
 } = coachSupplementSlice.actions;
 
 export default coachSupplementSlice.reducer;
