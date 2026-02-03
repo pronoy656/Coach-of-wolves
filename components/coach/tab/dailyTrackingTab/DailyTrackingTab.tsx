@@ -123,12 +123,12 @@ export default function Dashboard() {
   const userId = params.id as string;
   const dispatch = useAppDispatch();
   const { weekData, averages, loading, error } = useAppSelector(
-    (state) => state.dailyTracking
+    (state) => state.dailyTracking,
   );
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [coachNote, setCoachNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -151,7 +151,7 @@ export default function Dashboard() {
 
       const dateStr = monday.toISOString().split("T")[0];
       options.push({
-        label: `Week of ${monday.toLocaleDateString()}`,
+        label: `Week of ${dateStr}`,
         value: dateStr,
       });
     }
@@ -176,7 +176,7 @@ export default function Dashboard() {
     try {
       // Mocking submission logic - This should be replaced with a real API call or Redux thunk
       // For now we'll just show a success message as the backend endpoint is not yet defined
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Coach note submitted successfully!");
       setCoachNote("");
     } catch (err) {
@@ -371,7 +371,7 @@ export default function Dashboard() {
           label: "TRAINING",
           type: "text",
           values: Array.from({ length: 7 }).map(
-            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""
+            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || "",
           ),
           average: "",
         },
@@ -407,7 +407,7 @@ export default function Dashboard() {
           subLabel: "YES / NO",
           type: "dropdown",
           values: Array.from({ length: 7 }).map((_, i) =>
-            weekData[i] ? (weekData[i].sick ? "YES" : "NO") : ""
+            weekData[i] ? (weekData[i].sick ? "YES" : "NO") : "",
           ),
           average: "",
           cellColors: [
@@ -524,7 +524,7 @@ export default function Dashboard() {
               ? weekData[i].training?.trainingCompleted
                 ? "Yes"
                 : "No"
-              : ""
+              : "",
           ),
           average: "",
         },
@@ -533,7 +533,7 @@ export default function Dashboard() {
           label: "Training Plan",
           type: "text",
           values: Array.from({ length: 7 }).map(
-            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || ""
+            (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || "",
           ),
           average: "",
         },
@@ -546,7 +546,7 @@ export default function Dashboard() {
               ? weekData[i].training?.cardioCompleted
                 ? "Yes"
                 : "No"
-              : ""
+              : "",
           ),
           average: "",
         },
@@ -623,7 +623,7 @@ export default function Dashboard() {
           label: "Symptoms",
           type: "text",
           values: Array.from({ length: 7 }).map(
-            (_, i) => weekData[i]?.woman?.symptoms?.join(", ") || ""
+            (_, i) => weekData[i]?.woman?.symptoms?.join(", ") || "",
           ),
           average: "",
         },
@@ -662,8 +662,8 @@ export default function Dashboard() {
           }),
           average: averages?.bloodPressure
             ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(
-              averages.bloodPressure.diastolic
-            ).toFixed(0)}`
+                averages.bloodPressure.diastolic,
+              ).toFixed(0)}`
             : "",
         },
         {
@@ -707,13 +707,12 @@ export default function Dashboard() {
         >
           <CalendarIcon />
           <span className="text-base">
-            {selectedDate
-              ? `Week of ${new Date(selectedDate).toLocaleDateString()}`
-              : "Current Week"}
+            {selectedDate ? `Week of ${selectedDate}` : "Current Week"}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${isCalendarOpen ? "rotate-180" : ""
-              }`}
+            className={`w-4 h-4 transition-transform ${
+              isCalendarOpen ? "rotate-180" : ""
+            }`}
           />
         </button>
 
@@ -727,10 +726,11 @@ export default function Dashboard() {
                     setSelectedDate(option.value);
                     setIsCalendarOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value
-                    ? "bg-[#2B2B3D] text-emerald-500"
-                    : "text-gray-300"
-                    }`}
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                    selectedDate === option.value
+                      ? "bg-[#2B2B3D] text-emerald-500"
+                      : "text-gray-300"
+                  }`}
                 >
                   {option.label}
                 </button>
@@ -759,7 +759,9 @@ export default function Dashboard() {
               </div>
               <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700 px-1">
                 <span className="text-gray-300 text-[10px] text-center">
-                  {weekData[i]?.date || `Day ${i + 1}`}
+                  {weekData[i]?.date
+                    ? `${weekData[i].date} ${weekData[i].day || ""}`
+                    : `Day ${i + 1}`}
                 </span>
               </div>
             </div>
@@ -833,7 +835,9 @@ export default function Dashboard() {
           <div className="p-2 bg-emerald-500/10 rounded-lg">
             <MessageSquare className="w-5 h-5 text-emerald-500" />
           </div>
-          <h3 className="text-xl font-bold text-white uppercase tracking-tight">Coach Note</h3>
+          <h3 className="text-xl font-bold text-white uppercase tracking-tight">
+            Coach Note
+          </h3>
         </div>
 
         <div className="space-y-4">
