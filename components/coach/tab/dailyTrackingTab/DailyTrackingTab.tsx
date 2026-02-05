@@ -774,7 +774,7 @@ export default function Dashboard() {
         </div>
 
         {/* Data Sections */}
-        <div className="flex flex-col gap-[1px] bg-[#0B0C15]">
+        <div className="flex flex-col gap-px bg-[#0B0C15]">
           {dataSections.map((section, secIndex) => (
             <React.Fragment key={secIndex}>
               {/* Section Title */}
@@ -790,7 +790,7 @@ export default function Dashboard() {
               {section.rows.map((row) => (
                 <div
                   key={row.id}
-                  className="grid grid-cols-[1.2fr_repeat(7,1fr)_0.8fr] gap-[1px] bg-[#0B0C15] min-h-[50px]"
+                  className="grid grid-cols-[1.2fr_repeat(7,1fr)_0.8fr] gap-px bg-[#0B0C15] min-h-[50px]"
                 >
                   {/* Label Column */}
                   <LabelCell

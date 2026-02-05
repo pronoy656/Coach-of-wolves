@@ -9,7 +9,11 @@
 import { useState, useEffect } from "react";
 import { Loader2, Calendar, Weight } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchLatestCheckinByAthlete, clearMessages, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import {
+  fetchLatestCheckinByAthlete,
+  clearMessages,
+  updateCheckinStatus,
+} from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import CheckInDetailsPage from "./CheckInDetailsPage";
@@ -21,8 +25,12 @@ interface CheckInTabProps {
 
 export default function CheckInTab({ athleteId }: CheckInTabProps) {
   const dispatch = useAppDispatch();
-  const { checkins, loading, error, successMessage } = useAppSelector((state) => state.weeklyCheckin);
-  const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(null);
+  const { checkins, loading, error, successMessage } = useAppSelector(
+    (state) => state.weeklyCheckin,
+  );
+  const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(
+    null,
+  );
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -90,39 +98,58 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                     <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-8 relative text-center md:text-left">
                       <div className="space-y-8 flex-1">
                         <div>
-                          <p className="text-gray-500 text-xs uppercase tracking-widest mb-2 font-semibold">Check-in Date</p>
+                          <p className="text-gray-500 text-xs uppercase tracking-widest mb-2 font-semibold">
+                            Check-in Date
+                          </p>
                           <p className="text-white font-black text-2xl md:text-3xl uppercase tracking-tighter">
-                            {new Date(currentCheckIn.createdAt).toLocaleDateString(undefined, {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
+                            {new Date(
+                              currentCheckIn.createdAt,
+                            ).toLocaleDateString(undefined, {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
                             })}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap justify-center md:justify-start gap-12 md:gap-20">
                           <div>
-                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">Current Weight</p>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">
+                              Current Weight
+                            </p>
                             <p className="text-emerald-500 text-4xl md:text-5xl font-black">
-                              {currentCheckIn.currentWeight} <span className="text-lg font-normal text-gray-500 ml-1">kg</span>
+                              {currentCheckIn.currentWeight}{" "}
+                              <span className="text-lg font-normal text-gray-500 ml-1">
+                                kg
+                              </span>
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">Average Weight</p>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">
+                              Average Weight
+                            </p>
                             <p className="text-emerald-500/80 text-4xl md:text-5xl font-black">
-                              {currentCheckIn.averageWeight} <span className="text-lg font-normal text-gray-500 ml-1">kg</span>
+                              {currentCheckIn.averageWeight}{" "}
+                              <span className="text-lg font-normal text-gray-500 ml-1">
+                                kg
+                              </span>
                             </p>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex flex-col items-center md:items-end gap-4">
-                        <span className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${currentCheckIn.checkinCompleted === "Completed"
-                          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
-                          : "bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
-                          }`}>
-                          {currentCheckIn.checkinCompleted === "Completed" ? "Completed" : "Action Required"}
+                        <span
+                          className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${
+                            currentCheckIn.checkinCompleted === "Completed"
+                              ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                              : "bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                          }`}
+                        >
+                          {currentCheckIn.checkinCompleted === "Completed"
+                            ? "Completed"
+                            : "Action Required"}
                         </span>
                       </div>
                     </div>
@@ -131,7 +158,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                       <div className="relative group">
                         <div className="absolute -left-4 top-0 bottom-0 w-1 bg-emerald-500 rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
                         <p className="text-gray-400 text-lg leading-relaxed italic pl-4">
-                          "{currentCheckIn.athleteNote || "The athlete didn't provide any specific notes for this check-in."}"
+                          {currentCheckIn.athleteNote ||
+                            "The athlete didn't provide any specific notes for this check-in."}
                         </p>
                       </div>
                     </div>
@@ -147,7 +175,9 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                   <div className="w-16 h-16 rounded-full bg-[#111111] border border-[#2a2a2a] flex items-center justify-center mb-4">
                     <Calendar className="w-8 h-8 text-gray-600" />
                   </div>
-                  <p className="text-gray-500 italic text-lg">Select a check-in card from the list above</p>
+                  <p className="text-gray-500 italic text-lg">
+                    Select a check-in card from the list above
+                  </p>
                 </div>
               )}
             </div>

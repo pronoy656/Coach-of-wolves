@@ -21,6 +21,7 @@ import trainingSplitReducer from "./features/trainingSplit/trainingSplitSlice";
 import trainingPlanReducer from "./features/trainingPlan/trainingPlanSlice";
 import timelineReducer from "./features/timeline/timelineSlice";
 import coachAthletesReducer from "./features/coachAthletes/coachAthletesSlice";
+import pedReducer from "./features/ped/pedSlice";
 
 import languageReducer from "./features/language/languageSlice";
 
@@ -47,6 +48,7 @@ export const store = configureStore({
     trainingPlan: trainingPlanReducer,
     timeline: timelineReducer,
     coachAthletes: coachAthletesReducer,
+    ped: pedReducer,
     language: languageReducer,
   },
 });
