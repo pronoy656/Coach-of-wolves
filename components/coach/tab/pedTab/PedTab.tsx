@@ -5,6 +5,10 @@ import { Edit3, Save, Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchPedData,
+  fetchAthletePedData,
+  updateAthletePedData,
+  clearPedSuccess,
+  clearPedError,
   PedCategory as BackendPedCategory,
 } from "@/redux/features/ped/pedSlice";
 import toast from "react-hot-toast";
@@ -22,47 +26,125 @@ interface PedCategory {
   items: PedItem[];
 }
 
-const PedTab: React.FC = () => {
+interface PedTabProps {
+  athleteId?: string;
+}
+
+const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
   const dispatch = useAppDispatch();
   const {
-    data: pedData,
+    data: globalPedData,
+    athletePedData,
     loading,
     error,
+    successMessage,
   } = useAppSelector((state) => state.ped);
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [schedule, setSchedule] = useState<PedCategory[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<string>("week_1");
 
-  // Fetch data on mount
+  // Fetch global data (Structure)
   useEffect(() => {
     dispatch(fetchPedData());
   }, [dispatch]);
 
-  // Sync Redux state to local state
+  // Fetch athlete specific data (Values)
   useEffect(() => {
-    if (pedData?.categories) {
-      const mappedData: PedCategory[] = pedData.categories.map(
-        (cat: BackendPedCategory) => ({
-          category: cat.name,
-          items: cat.subCategory.map((sub) => ({
-            name: sub.name,
-            dosage: sub.dosage || "",
-            freq: sub.frequency || "",
-            days: [
-              sub.mon || "",
-              sub.tue || "",
-              sub.wed || "",
-              sub.thu || "",
-              sub.fri || "",
-              sub.sat || "",
-              sub.sun || "",
-            ],
-          })),
-        }),
+    if (athleteId) {
+      dispatch(fetchAthletePedData({ athleteId, week: selectedWeek }));
+    }
+  }, [dispatch, athleteId, selectedWeek]);
+
+  // Handle Success/Error Toasts
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearPedSuccess());
+      setIsEditing(false);
+      // Refetch data to ensure UI is in sync with backend
+      if (athleteId) {
+        dispatch(fetchAthletePedData({ athleteId, week: selectedWeek }));
+      }
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(clearPedError());
+    }
+  }, [successMessage, error, dispatch, athleteId, selectedWeek]);
+
+  // Sync Redux state to local state (Merge Global Structure with Athlete Values)
+  useEffect(() => {
+    if (globalPedData?.categories) {
+      const mappedData: PedCategory[] = globalPedData.categories.map(
+        (globalCat: BackendPedCategory) => {
+          // Find corresponding category in athlete data (if it exists)
+          const athleteCat = athletePedData?.categories?.find(
+            (ac) => ac.name === globalCat.name,
+          );
+
+          return {
+            category: globalCat.name,
+            items: globalCat.subCategory.map((globalSub) => {
+              // Find corresponding subcategory (item) in athlete data
+              const athleteSub = athleteCat?.subCategory?.find(
+                (as) => as.name === globalSub.name,
+              );
+
+              return {
+                name: globalSub.name,
+                // Use athlete's value if present, otherwise default to empty string
+                dosage: athleteSub?.dosage || "",
+                freq: athleteSub?.frequency || "",
+                days: [
+                  athleteSub?.mon || "",
+                  athleteSub?.tue || "",
+                  athleteSub?.wed || "",
+                  athleteSub?.thu || "",
+                  athleteSub?.fri || "",
+                  athleteSub?.sat || "",
+                  athleteSub?.sun || "",
+                ],
+              };
+            }),
+          };
+        },
       );
       setSchedule(mappedData);
+    } else {
+      setSchedule([]);
     }
-  }, [pedData]);
+  }, [globalPedData, athletePedData]);
+
+  const handleSave = () => {
+    if (!athleteId) return;
+
+    const payload = {
+      categories: schedule.map((cat) => ({
+        name: cat.category,
+        subCategory: cat.items.map((item) => ({
+          name: item.name,
+          dosage: item.dosage,
+          frequency: item.freq,
+          mon: item.days[0],
+          tue: item.days[1],
+          wed: item.days[2],
+          thu: item.days[3],
+          fri: item.days[4],
+          sat: item.days[5],
+          sun: item.days[6],
+        })),
+      })),
+    };
+
+    dispatch(
+      updateAthletePedData({
+        athleteId,
+        week: selectedWeek,
+        data: payload,
+      }),
+    );
+  };
 
   // Handle changes for Dosage or Frequency
   const handleInputChange = (
@@ -71,8 +153,16 @@ const PedTab: React.FC = () => {
     field: "dosage" | "freq",
     value: string,
   ) => {
-    const newData = [...schedule];
-    newData[catIndex].items[itemIndex][field] = value;
+    const newData = schedule.map((cat, cIdx) => {
+      if (cIdx !== catIndex) return cat;
+      return {
+        ...cat,
+        items: cat.items.map((item, iIdx) => {
+          if (iIdx !== itemIndex) return item;
+          return { ...item, [field]: value };
+        }),
+      };
+    });
     setSchedule(newData);
   };
 
@@ -83,32 +173,70 @@ const PedTab: React.FC = () => {
     dayIndex: number,
     value: string,
   ) => {
-    const newData = [...schedule];
-    newData[catIndex].items[itemIndex].days[dayIndex] = value;
+    const newData = schedule.map((cat, cIdx) => {
+      if (cIdx !== catIndex) return cat;
+      return {
+        ...cat,
+        items: cat.items.map((item, iIdx) => {
+          if (iIdx !== itemIndex) return item;
+          const newDays = [...item.days];
+          newDays[dayIndex] = value;
+          return { ...item, days: newDays };
+        }),
+      };
+    });
     setSchedule(newData);
   };
 
-  if (status === "loading") {
-    return <div className="p-8 text-white">Loading PED data...</div>;
-  }
-
-  if (status === "failed") {
-    return <div className="p-8 text-red-500">Error: {error}</div>;
+  if (loading && !schedule.length) {
+    return (
+      <div className="min-h-screen bg-[#0d0b14] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-[#0d0b14] p-8 text-xs font-sans">
       {/* Top Header / Buttons */}
-      <div className="flex justify-end mb-4 gap-4">
+      <div className="flex justify-between items-center mb-4">
+        {/* Week Selector */}
+        <div className="flex items-center gap-2">
+          <label className="text-gray-400 text-sm">Week:</label>
+          <select
+            value={selectedWeek}
+            onChange={(e) => setSelectedWeek(e.target.value)}
+            className="bg-[#1a1625] text-white border border-[#4b3c5e] rounded px-3 py-1 outline-none focus:border-emerald-500"
+          >
+            {Array.from({ length: 24 }, (_, i) => (
+              <option key={i + 1} value={`week_${i + 1}`}>
+                Week {i + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => {
+            if (isEditing) {
+              handleSave();
+            } else {
+              setIsEditing(true);
+            }
+          }}
           className={`flex items-center gap-2 px-4 py-2 rounded border transition-colors ${
             isEditing
-              ? "bg-green-600 border-green-500 text-white hover:bg-green-700"
+              ? "bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-700"
               : "bg-transparent border-[#4b3c5e] text-gray-300 hover:bg-[#1f1a2e]"
           }`}
         >
-          {isEditing ? <Save size={16} /> : <Edit3 size={16} />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isEditing ? (
+            <Save size={16} />
+          ) : (
+            <Edit3 size={16} />
+          )}
           {isEditing ? "Save PED" : "Edit PED"}
         </button>
       </div>
@@ -134,12 +262,12 @@ const PedTab: React.FC = () => {
           {/* Table Header */}
           <thead>
             <tr className="h-10 text-[10px] font-semibold">
-              {/* Top Left: WEEK 1 (Spans Category + Name columns) */}
+              {/* Top Left: WEEK (Spans Category + Name columns) */}
               <th
                 colSpan={2}
                 className="bg-[#1a1625] text-white border-r border-b border-[#4b3c5e] tracking-wider uppercase"
               >
-                WEEK 1
+                {selectedWeek.replace("_", " ").toUpperCase()}
               </th>
               {/* Dosage */}
               <th className="bg-[#f0f0f0] text-[#1a1625] border-r border-[#ccc]">

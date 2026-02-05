@@ -77,7 +77,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
       case "PED":
         return (
           <div className="">
-            <PedTab />
+            <PedTab athleteId={athleteId} />
           </div>
         );
 
