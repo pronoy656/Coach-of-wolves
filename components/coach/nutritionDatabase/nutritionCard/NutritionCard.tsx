@@ -1,6 +1,7 @@
 "use client";
 
 import { Edit, Trash } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
 
 // Exact backend interface
 interface Nutrition {
@@ -25,11 +26,61 @@ interface NutritionCardProps {
   onDelete: () => void;
 }
 
+const translations = {
+  en: {
+    brandName: "Brand Name:",
+    defaultQuantity: "Default quantity:",
+    kcal: "kcal",
+    protein: "P:",
+    carbs: "C:",
+    sugar: "Su:",
+    fats: "F:",
+    fiber: "Fi:",
+    saturatedFats: "Sat F:",
+    unsaturatedFats: "UnSat F:",
+    categoryLabels: {
+      Protein: "Protein",
+      Carbs: "Carbs",
+      Fats: "Fats",
+      Vegetables: "Vegetables",
+      Fruits: "Fruits",
+      Dairy: "Dairy",
+      Supplements: "Supplements",
+      Other: "Other",
+    } as Record<string, string>,
+  },
+  de: {
+    brandName: "Marke:",
+    defaultQuantity: "Standardmenge:",
+    kcal: "kcal",
+    protein: "P:",
+    carbs: "KH:",
+    sugar: "Z:",
+    fats: "F:",
+    fiber: "B:",
+    saturatedFats: "Ges. F:",
+    unsaturatedFats: "Unges. F:",
+    categoryLabels: {
+      Protein: "Protein",
+      Carbs: "Kohlenhydrate",
+      Fats: "Fette",
+      Vegetables: "Gemüse",
+      Fruits: "Obst",
+      Dairy: "Milchprodukte",
+      Supplements: "Nahrungsergänzungen",
+      Other: "Sonstiges",
+    } as Record<string, string>,
+  },
+};
+
 export default function NutritionCard({
   nutrition,
   onEdit,
   onDelete,
 }: NutritionCardProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
+
   const getCategoryColor = (category: string) => {
     const colorMap: { [key: string]: { bg: string; text: string } } = {
       Protein: { bg: "bg-red-500/20", text: "text-red-400" },
@@ -55,7 +106,7 @@ export default function NutritionCard({
           </h3>
           {nutrition.brand && (
             <p className="text-sm text-muted-foreground">
-              Brand Name:{" "}
+              {t.brandName}{" "}
               <span className="text-red-500">{nutrition.brand}</span>
             </p>
           )}
@@ -63,11 +114,13 @@ export default function NutritionCard({
             <span
               className={`text-sm px-2 py-1 rounded ${categoryColor.bg} ${categoryColor.text}`}
             >
-              {nutrition.category}
+              {t.categoryLabels[nutrition.category] || nutrition.category}
             </span>
           </div>
           <span className="font-semibold text-muted-foreground mt-2">
-            <p>Default quantity: {nutrition.defaultQuantity}</p>
+            <p>
+              {t.defaultQuantity} {nutrition.defaultQuantity}
+            </p>
           </span>
         </div>
         <div className="flex gap-2">
@@ -90,28 +143,28 @@ export default function NutritionCard({
 
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-primary font-semibold">
-          {nutrition.caloriesQuantity} kcal
+          {nutrition.caloriesQuantity} {t.kcal}
         </span>
         <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-sm">
-          P: {nutrition.proteinQuantity}g
+          {t.protein} {nutrition.proteinQuantity}g
         </span>
         <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-sm">
-          C: {nutrition.carbsQuantity}g
+          {t.carbs} {nutrition.carbsQuantity}g
         </span>
         <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-sm">
-          Su: {nutrition.sugarQuantity}g
+          {t.sugar} {nutrition.sugarQuantity}g
         </span>
         <span className="bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-sm">
-          F: {nutrition.fatsQuantity}g
+          {t.fats} {nutrition.fatsQuantity}g
         </span>
         <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-sm">
-          Fi: {nutrition.fiberQuantity}g
+          {t.fiber} {nutrition.fiberQuantity}g
         </span>
         <span className="bg-gray-600/30 text-gray-300 px-2 py-1 rounded text-sm">
-          Sat F: {nutrition.saturatedFats}g
+          {t.saturatedFats} {nutrition.saturatedFats}g
         </span>
         <span className="bg-gray-600/30 text-gray-300 px-2 py-1 rounded text-sm">
-          UnSat F: {nutrition.unsaturatedFats}g
+          {t.unsaturatedFats} {nutrition.unsaturatedFats}g
         </span>
       </div>
     </div>
