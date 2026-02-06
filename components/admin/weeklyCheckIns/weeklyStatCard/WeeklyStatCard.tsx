@@ -1,4 +1,7 @@
+"use client";
+
 import { CheckCircle, Clock } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
 
 const icons = {
   CheckCircle,
@@ -11,22 +14,40 @@ interface CheckInStatsProps {
   completionRate: number;
 }
 
+const translations = {
+  en: {
+    completedThisWeek: "Completed This Week",
+    pending: "Pending",
+    completionRate: "% completion rate",
+    pendingRate: "% pending",
+  },
+  de: {
+    completedThisWeek: "Diese Woche abgeschlossen",
+    pending: "Ausstehend",
+    completionRate: "% Abschlussquote",
+    pendingRate: "% ausstehend",
+  },
+};
+
 export default function WeeklyStatCard({
   completedCount,
   pendingCount,
   completionRate,
 }: CheckInStatsProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
+
   const statCards = [
     {
-      title: "Completed This Week",
+      title: t.completedThisWeek,
       count: completedCount,
       icon: "CheckCircle" as const,
       color: "text-green-400",
       bgColor: "bg-green-400/20",
-      getSubtext: () => `${completionRate}% completion rate`,
+      getSubtext: () => `${completionRate}${t.completionRate}`,
     },
     {
-      title: "Pending",
+      title: t.pending,
       count: pendingCount,
       icon: "Clock" as const,
       color: "text-red-500",
@@ -35,7 +56,7 @@ export default function WeeklyStatCard({
         const percentage = Math.round(
           (pendingCount / (completedCount + pendingCount || 1)) * 100
         );
-        return `${percentage}% pending`;
+        return `${percentage}${t.pendingRate}`;
       },
     },
   ];
