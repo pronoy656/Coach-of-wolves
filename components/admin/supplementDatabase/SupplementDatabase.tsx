@@ -172,7 +172,6 @@ export default function SupplementDatabase() {
     if (deleteId) {
       try {
         await dispatch(deleteSupplement(deleteId)).unwrap();
-        toast.success(t.toastDeleteSuccess);
 
         // If deleting last item on page, go to previous page if needed
         if (supplements.length === 1 && currentPage > 1) {
