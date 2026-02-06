@@ -41,7 +41,62 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
   } = useAppSelector((state) => state.ped);
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [schedule, setSchedule] = useState<PedCategory[]>([]);
+  // Helper function to map data
+  const mapPedDataToSchedule = (
+    globalData: typeof globalPedData,
+    athleteData: typeof athletePedData,
+  ): PedCategory[] => {
+    if (!globalData?.categories) return [];
+
+    return globalData.categories.map((globalCat: BackendPedCategory) => {
+      // Find corresponding category in athlete data (if it exists)
+      const athleteCat = athleteData?.categories?.find(
+        (ac) => ac.name === globalCat.name,
+      );
+
+      return {
+        category: globalCat.name,
+        items: globalCat.subCategory.map((globalSub) => {
+          // Find corresponding subcategory (item) in athlete data
+          const athleteSub = athleteCat?.subCategory?.find(
+            (as) => as.name === globalSub.name,
+          );
+
+          return {
+            name: globalSub.name,
+            // Use athlete's value if present, otherwise default to empty string
+            dosage: athleteSub?.dosage || "",
+            freq: athleteSub?.frequency || "",
+            days: [
+              athleteSub?.mon || "",
+              athleteSub?.tue || "",
+              athleteSub?.wed || "",
+              athleteSub?.thu || "",
+              athleteSub?.fri || "",
+              athleteSub?.sat || "",
+              athleteSub?.sun || "",
+            ],
+          };
+        }),
+      };
+    });
+  };
+
+  const [schedule, setSchedule] = useState<PedCategory[]>(() =>
+    mapPedDataToSchedule(globalPedData, athletePedData),
+  );
+
+  // Track previous props to implement "Adjust state on prop change" pattern
+  const [prevGlobalData, setPrevGlobalData] = useState(globalPedData);
+  const [prevAthleteData, setPrevAthleteData] = useState(athletePedData);
+
+  // Adjust state during render if dependencies change
+  if (globalPedData !== prevGlobalData || athletePedData !== prevAthleteData) {
+    setPrevGlobalData(globalPedData);
+    setPrevAthleteData(athletePedData);
+    setSchedule(mapPedDataToSchedule(globalPedData, athletePedData));
+  }
+
   const [selectedWeek, setSelectedWeek] = useState<string>("week_1");
 
   // Fetch global data (Structure)
@@ -61,62 +116,14 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
     if (successMessage) {
       toast.success(successMessage);
       dispatch(clearPedSuccess());
-      setIsEditing(false);
-      // Refetch data to ensure UI is in sync with backend
-      if (athleteId) {
-        dispatch(fetchAthletePedData({ athleteId, week: selectedWeek }));
-      }
     }
     if (error) {
       toast.error(error);
       dispatch(clearPedError());
     }
-  }, [successMessage, error, dispatch, athleteId, selectedWeek]);
+  }, [successMessage, error, dispatch]);
 
-  // Sync Redux state to local state (Merge Global Structure with Athlete Values)
-  useEffect(() => {
-    if (globalPedData?.categories) {
-      const mappedData: PedCategory[] = globalPedData.categories.map(
-        (globalCat: BackendPedCategory) => {
-          // Find corresponding category in athlete data (if it exists)
-          const athleteCat = athletePedData?.categories?.find(
-            (ac) => ac.name === globalCat.name,
-          );
-
-          return {
-            category: globalCat.name,
-            items: globalCat.subCategory.map((globalSub) => {
-              // Find corresponding subcategory (item) in athlete data
-              const athleteSub = athleteCat?.subCategory?.find(
-                (as) => as.name === globalSub.name,
-              );
-
-              return {
-                name: globalSub.name,
-                // Use athlete's value if present, otherwise default to empty string
-                dosage: athleteSub?.dosage || "",
-                freq: athleteSub?.frequency || "",
-                days: [
-                  athleteSub?.mon || "",
-                  athleteSub?.tue || "",
-                  athleteSub?.wed || "",
-                  athleteSub?.thu || "",
-                  athleteSub?.fri || "",
-                  athleteSub?.sat || "",
-                  athleteSub?.sun || "",
-                ],
-              };
-            }),
-          };
-        },
-      );
-      setSchedule(mappedData);
-    } else {
-      setSchedule([]);
-    }
-  }, [globalPedData, athletePedData]);
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!athleteId) return;
 
     const payload = {
@@ -137,13 +144,22 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
       })),
     };
 
-    dispatch(
-      updateAthletePedData({
-        athleteId,
-        week: selectedWeek,
-        data: payload,
-      }),
-    );
+    try {
+      await dispatch(
+        updateAthletePedData({
+          athleteId,
+          week: selectedWeek,
+          data: payload,
+        }),
+      ).unwrap();
+
+      // Success actions
+      setIsEditing(false);
+      // Refetch data to ensure UI is in sync with backend
+      dispatch(fetchAthletePedData({ athleteId, week: selectedWeek }));
+    } catch (err) {
+      console.error("Failed to update PED data:", err);
+    }
   };
 
   // Handle changes for Dosage or Frequency

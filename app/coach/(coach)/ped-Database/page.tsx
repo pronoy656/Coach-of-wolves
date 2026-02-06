@@ -35,7 +35,31 @@ const PedTracker: React.FC = () => {
   } = useAppSelector((state) => state.ped);
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [schedule, setSchedule] = useState<PedCategory[]>([]);
+  // Helper function to map backend data to frontend state
+  const mapPedDataToSchedule = (data: typeof pedData): PedCategory[] => {
+    if (!data?.categories) return [];
+    return data.categories.map((cat: BackendPedCategory) => ({
+      category: cat.name,
+      items: cat.subCategory.map((sub) => ({
+        name: sub.name,
+        dosage: sub.dosage || "",
+        freq: sub.frequency || "",
+        days: [
+          sub.mon || "",
+          sub.tue || "",
+          sub.wed || "",
+          sub.thu || "",
+          sub.fri || "",
+          sub.sat || "",
+          sub.sun || "",
+        ],
+      })),
+    }));
+  };
+
+  const [schedule, setSchedule] = useState<PedCategory[]>(() =>
+    mapPedDataToSchedule(pedData),
+  );
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,43 +68,21 @@ const PedTracker: React.FC = () => {
 
   // Fetch data on mount
   useEffect(() => {
-    dispatch(fetchPedData());
+    dispatch(fetchPedData())
+      .unwrap()
+      .then((data) => {
+        setSchedule(mapPedDataToSchedule({ ...pedData, ...data }));
+      })
+      .catch((err) => {
+        console.error("Failed to fetch PED data:", err);
+      });
   }, [dispatch]);
-
-  // Sync Redux state to local state
-  useEffect(() => {
-    if (pedData?.categories) {
-      const mappedData: PedCategory[] = pedData.categories.map(
-        (cat: BackendPedCategory) => ({
-          category: cat.name,
-          items: cat.subCategory.map((sub) => ({
-            name: sub.name,
-            dosage: sub.dosage || "",
-            freq: sub.frequency || "",
-            days: [
-              sub.mon || "",
-              sub.tue || "",
-              sub.wed || "",
-              sub.thu || "",
-              sub.fri || "",
-              sub.sat || "",
-              sub.sun || "",
-            ],
-          })),
-        }),
-      );
-      setSchedule(mappedData);
-    }
-  }, [pedData]);
 
   // Handle Success/Error Toasts
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
       dispatch(clearPedSuccess());
-      setIsModalOpen(false);
-      setNewCategory("");
-      setNewSubCategory("");
     }
     if (error) {
       toast.error(error);
@@ -118,12 +120,25 @@ const PedTracker: React.FC = () => {
       return;
     }
 
-    dispatch(
-      addPedData({
-        category: newCategory,
-        subCategory: [{ name: newSubCategory }],
-      }),
-    );
+    try {
+      const result = await dispatch(
+        addPedData({
+          category: newCategory,
+          subCategory: [{ name: newSubCategory }],
+        }),
+      ).unwrap();
+
+      // Update local state with the new data
+      setSchedule(mapPedDataToSchedule(result));
+
+      // Success actions
+      setIsModalOpen(false);
+      setNewCategory("");
+      setNewSubCategory("");
+    } catch (err) {
+      // Error handling is managed by the slice/effect
+      console.error("Failed to add PED:", err);
+    }
   };
 
   if (loading && !schedule.length) {
