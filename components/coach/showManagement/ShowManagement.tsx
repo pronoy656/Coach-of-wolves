@@ -75,7 +75,7 @@ const translations = {
 export default function ShowManagement() {
   const dispatch = useAppDispatch();
   const { shows, loading, error, successMessage } = useAppSelector(
-    (state) => state.show
+    (state) => state.show,
   );
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
@@ -149,10 +149,8 @@ export default function ShowManagement() {
       try {
         setIsProcessing(true);
         await dispatch(deleteShow(deleteConfirmShow._id)).unwrap();
-        toast.success("Show deleted successfully");
         setDeleteConfirmShow(null);
       } catch (error: any) {
-        toast.error(error.message || "Failed to delete show");
         setIsProcessing(false);
       }
     }
@@ -167,20 +165,15 @@ export default function ShowManagement() {
           updateShow({
             id: editingShow._id,
             data: formData,
-          })
+          }),
         ).unwrap();
-        toast.success("Show updated successfully");
       } else {
         // Add new show
         await dispatch(addShow(formData)).unwrap();
-        toast.success("Show added successfully");
       }
       setIsModalOpen(false);
       setEditingShow(null);
-      // Refresh shows
-      dispatch(fetchShows());
     } catch (error: any) {
-      toast.error(error.message || "Failed to save show");
       setIsProcessing(false);
     }
   };
@@ -299,8 +292,8 @@ export default function ShowManagement() {
                               show.countdown <= 0
                                 ? "text-gray-400"
                                 : show.countdown <= 7
-                                ? "text-amber-400"
-                                : "text-emerald-400"
+                                  ? "text-amber-400"
+                                  : "text-emerald-400"
                             }`}
                           >
                             {formatCountdown(show.countdown)}
