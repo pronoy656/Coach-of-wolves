@@ -25,6 +25,36 @@ interface PedCategory {
   items: PedItem[];
 }
 
+const translations = {
+  en: {
+    addPed: "Add PED",
+    week1: "WEEK 1",
+    dosage: "Dosage",
+    frequency: "Frequency",
+    noData: 'No PED data available. Click "Add PED" to start.',
+    category: "Category",
+    subCategory: "Sub-category (Item Name)",
+    addToDatabase: "Add to Database",
+    adding: "Adding...",
+    fillBoth: "Please fill in both Category and Sub-category",
+    days: ["MO", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+  },
+  de: {
+    addPed: "PED hinzufügen",
+    week1: "WOCHE 1",
+    dosage: "Dosierung",
+    frequency: "Häufigkeit",
+    noData:
+      'Keine PED-Daten verfügbar. Klicken Sie auf "PED hinzufügen", um zu beginnen.',
+    category: "Kategorie",
+    subCategory: "Unterkategorie (Artikelname)",
+    addToDatabase: "Zur Datenbank hinzufügen",
+    adding: "Hinzufügen...",
+    fillBoth: "Bitte füllen Sie sowohl Kategorie als auch Unterkategorie aus",
+    days: ["MO", "DI", "MI", "DO", "FR", "SA", "SO"],
+  },
+};
+
 const PedTracker: React.FC = () => {
   const dispatch = useAppDispatch();
   const {
@@ -33,6 +63,8 @@ const PedTracker: React.FC = () => {
     error,
     successMessage,
   } = useAppSelector((state) => state.ped);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations];
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   // Helper function to map backend data to frontend state
@@ -116,7 +148,7 @@ const PedTracker: React.FC = () => {
 
   const handleAddPed = async () => {
     if (!newCategory.trim() || !newSubCategory.trim()) {
-      toast.error("Please fill in both Category and Sub-category");
+      toast.error(t.fillBoth);
       return;
     }
 
@@ -158,7 +190,7 @@ const PedTracker: React.FC = () => {
           className="flex items-center gap-2 px-4 py-2 rounded border border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10 transition-colors"
         >
           <Plus size={16} />
-          Add PED
+          {t.addPed}
         </button>
       </div>
 
@@ -188,29 +220,27 @@ const PedTracker: React.FC = () => {
                 colSpan={2}
                 className="bg-[#1a1625] text-white border-r border-b border-[#4b3c5e] tracking-wider uppercase"
               >
-                WEEK 1
+                {t.week1}
               </th>
               {/* Dosage */}
               <th className="bg-[#f0f0f0] text-[#1a1625] border-r border-[#ccc]">
-                Dosage
+                {t.dosage}
               </th>
               {/* Frequency */}
               <th className="bg-[#f0f0f0] text-[#1a1625] border-r border-[#ccc]">
-                Frequency
+                {t.frequency}
               </th>
               {/* Days */}
-              {["MO", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map(
-                (day, i) => (
-                  <th
-                    key={day}
-                    className={`bg-[#f0f0f0] text-[#1a1625] ${
-                      i !== 6 ? "border-r border-[#ccc]" : ""
-                    }`}
-                  >
-                    {day}
-                  </th>
-                ),
-              )}
+              {t.days.map((day, i) => (
+                <th
+                  key={day}
+                  className={`bg-[#f0f0f0] text-[#1a1625] ${
+                    i !== 6 ? "border-r border-[#ccc]" : ""
+                  }`}
+                >
+                  {day}
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -328,7 +358,7 @@ const PedTracker: React.FC = () => {
             ) : (
               <tr>
                 <td colSpan={11} className="text-center py-8 text-gray-500">
-               { `  No PED data available. Click "Add PED" to start.`}
+                  {t.noData}
                 </td>
               </tr>
             )}
@@ -341,7 +371,7 @@ const PedTracker: React.FC = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-[#1a1625] border border-[#4b3c5e] rounded-lg p-6 w-96 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-white">Add PED</h3>
+              <h3 className="text-lg font-bold text-white">{t.addPed}</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -353,7 +383,7 @@ const PedTracker: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-400 mb-2 text-sm">
-                  Category
+                  {t.category}
                 </label>
                 <input
                   type="text"
@@ -366,7 +396,7 @@ const PedTracker: React.FC = () => {
 
               <div>
                 <label className="block text-gray-400 mb-2 text-sm">
-                  Sub-category (Item Name)
+                  {t.subCategory}
                 </label>
                 <input
                   type="text"
@@ -385,10 +415,10 @@ const PedTracker: React.FC = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Adding...
+                    {t.adding}
                   </>
                 ) : (
-                  "Add to Database"
+                  t.addToDatabase
                 )}
               </button>
             </div>
