@@ -42,33 +42,16 @@ export default function SignIn() {
     <div className="mt-8 bg-[#05050c] flex flex-col items-center justify-center text-white">
       <div className="mb-12">
         <Image
-          src="/wolves-logo-gym.png"
+          src="/Evolve_Logo_Transparent.png"
           alt="Coach of Wolves"
-          width={250}
-          height={330}
+          width={400}
+          height={528}
           priority
         />
       </div>
 
       <div className="w-full max-w-[500px]">
         <h2 className="text-4xl font-bold mb-8">Login</h2>
-
-        <div className="flex items-center gap-6 text-xl mb-6">
-          <div>
-            <h2>
-              <span className="text-green-500">Admin:</span>{" "}
-              litonakash13@gmail.com
-            </h2>
-            <h2>Password: 123456789</h2>
-          </div>
-          <div>
-            <h2>
-              <span className="text-green-500">Coach:</span>{" "}
-              pronoypl56@gmail.com
-            </h2>
-            <h2>Password: 123456789</h2>
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
