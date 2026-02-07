@@ -58,12 +58,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-2 pt-6 pb-4">
         {/* Image height increase */}
-        <div className="relative w-full h-32 md:h-40 lg:h-[320px]">
+        <div className="relative w-full h-32 md:h-40 lg:h-[120px]">
           <Image
             src="/Evolve_Logo_Transparent.png"
             alt="Coach of Wolves Logo"
             fill
-            className="object-contain"
+            className="object-contain scale-190"
             priority
           />
         </div>
