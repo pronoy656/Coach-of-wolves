@@ -210,7 +210,7 @@ export default function AddTrainingPlanModal({
                     onChange={(e) => setDificulty(e.target.value)}
                     className="w-full appearance-none bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="Begineer">Begineer</option>
+                    <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
                   </select>
