@@ -36,14 +36,12 @@ const CATEGORIES = [
   "Legs",
 ];
 const SUBCATEGORIES = [
-  "Chest",
-  "Neck",
-  "Shoulders",
-  "Arms",
-  "Back",
-  "Core",
-  "Legs",
-  "Triceps",
+  "Biceps",
+  "Glutes",
+  "Lower Back",
+  "Quadriceps",
+  "Hamstrings",
+  "Calves",
 ];
 const DIFFICULTY_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
@@ -88,14 +86,12 @@ const translations = {
       Advanced: "Advanced",
     } as Record<string, string>,
     subcategoryLabels: {
-      Chest: "Chest",
-      Neck: "Neck",
-      Shoulders: "Shoulders",
-      Arms: "Arms",
-      Back: "Back",
-      Core: "Core",
-      Legs: "Legs",
-      Triceps: "Triceps",
+      Biceps: "Biceps",
+      Glutes: "Glutes",
+      "Lower Back": "Lower Back",
+      Quadriceps: "Quadriceps",
+      Hamstrings: "Hamstrings",
+      Calves: "Calves",
     } as Record<string, string>,
   },
   de: {
@@ -138,14 +134,12 @@ const translations = {
       Advanced: "Fortgeschritten",
     } as Record<string, string>,
     subcategoryLabels: {
-      Chest: "Brust",
-      Neck: "Nacken",
-      Shoulders: "Schultern",
-      Arms: "Arme",
-      Back: "Rücken",
-      Core: "Rumpf",
-      Legs: "Beine",
-      Triceps: "Trizeps",
+      Biceps: "Bizeps",
+      Glutes: "Gesäß",
+      "Lower Back": "Unterer Rücken",
+      Quadriceps: "Quadrizeps",
+      Hamstrings: "Beinbeuger",
+      Calves: "Waden",
     } as Record<string, string>,
   },
 };
@@ -211,7 +205,7 @@ export default function AddExerciseModal({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -321,7 +315,7 @@ export default function AddExerciseModal({
                 placeholder={t.namePlaceholder}
                 required
                 disabled={loading}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slate-800/50 border border-[#303245] rounded-lg px-4 py-2 text-white placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -334,7 +328,7 @@ export default function AddExerciseModal({
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slate-800/50 border border-[#303245] rounded-lg px-4 py-2.5 text-white placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">{t.muscleGroupPlaceholder}</option>
                 {CATEGORIES.map((cat) => (
@@ -358,7 +352,7 @@ export default function AddExerciseModal({
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-[#303245] focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slate-800/50 border border-[#303245] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#303245] focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">{t.difficultyPlaceholder}</option>
                 {DIFFICULTY_LEVELS.map((level) => (
@@ -379,7 +373,7 @@ export default function AddExerciseModal({
                 onChange={handleChange}
                 placeholder={t.equipmentPlaceholder}
                 disabled={loading}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slate-800/50 border border-[#303245] rounded-lg px-4 py-2 text-white placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -396,7 +390,7 @@ export default function AddExerciseModal({
               placeholder={t.descriptionPlaceholder}
               disabled={loading}
               rows={3}
-              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-slate-800/50 border border-[#303245] rounded-lg px-4 py-2 text-white placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A] disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
