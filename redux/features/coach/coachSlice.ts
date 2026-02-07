@@ -419,7 +419,12 @@ export const createCoach = createAsyncThunk<
 
     const response = await axiosInstance.post<CoachResponse>(
       "/coach",
-      formData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.data;
   } catch (error: any) {
@@ -453,9 +458,15 @@ export const updateCoach = createAsyncThunk<
       formData.append("image", data.image);
     }
 
+    // Explicitly set Content-Type for FormData to ensure backend parses it correctly
     const response = await axiosInstance.patch<CoachResponse>(
       `/coach/${id}`,
-      formData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.data;
   } catch (error: any) {
