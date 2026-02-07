@@ -47,11 +47,9 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
   }, [dispatch, athleteId]);
 
   // If the active tab is PED but the athlete is not Enhanced, switch to Daily Tracking
-  useEffect(() => {
-    if (activeTab === "PED" && currentAthlete?.status !== "Enhanced") {
-      setActiveTab("Daily Tracking");
-    }
-  }, [currentAthlete, activeTab]);
+  if (activeTab === "PED" && currentAthlete?.status !== "Enhanced") {
+    setActiveTab("Daily Tracking");
+  }
 
   const visibleTabs = tabs.filter((tab) => {
     if (tab === "PED") {
