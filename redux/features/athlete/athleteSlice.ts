@@ -127,10 +127,10 @@ const initialState: AthleteState = {
   page: 1,
   limit: 10,
   searchQuery: "",
-  selectedStatus: "All Status",
-  selectedCategory: "Category",
-  selectedPhase: "All Phases",
-  selectedGender: "All Genders",
+  selectedStatus: "ALL_STATUS",
+  selectedCategory: "CATEGORY_ALL",
+  selectedPhase: "ALL_PHASES",
+  selectedGender: "ALL_GENDERS",
   filters: {},
 };
 
@@ -188,22 +188,22 @@ export const getAllAthletes = createAsyncThunk<
     }
     
     // Add status filter
-    if (status && status !== "All Status") {
+    if (status && status !== "ALL_STATUS") {
       url += `&status=${encodeURIComponent(status)}`;
     }
     
     // Add category filter
-    if (category && category !== "Category") {
+    if (category && category !== "CATEGORY_ALL") {
       url += `&category=${encodeURIComponent(category)}`;
     }
     
     // Add phase filter
-    if (phase && phase !== "All Phases") {
+    if (phase && phase !== "ALL_PHASES") {
       url += `&phase=${encodeURIComponent(phase)}`;
     }
     
     // Add gender filter
-    if (gender && gender !== "All Genders") {
+    if (gender && gender !== "ALL_GENDERS") {
       url += `&gender=${encodeURIComponent(gender)}`;
     }
 
@@ -480,10 +480,10 @@ const athleteSlice = createSlice({
     },
     resetFilters: (state) => {
       state.searchQuery = "";
-      state.selectedStatus = "All Status";
-      state.selectedCategory = "Category";
-      state.selectedPhase = "All Phases";
-      state.selectedGender = "All Genders";
+      state.selectedStatus = "ALL_STATUS";
+      state.selectedCategory = "CATEGORY_ALL";
+      state.selectedPhase = "ALL_PHASES";
+      state.selectedGender = "ALL_GENDERS";
       state.page = 1;
       state.limit = 10;
       state.filters = {};
