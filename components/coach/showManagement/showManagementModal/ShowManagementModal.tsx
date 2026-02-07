@@ -1,4 +1,3 @@
-
 "use client";
 
 import type React from "react";
@@ -22,16 +21,12 @@ interface ShowModalProps {
 }
 
 const DIVISION_OPTIONS = [
-  "Bodybuilding",
-  "Lifestyle",
-  "Classic Physique",
-  "Men's Physique",
-  "Women's Physique",
-  "Bikini",
-  "Figure",
-  "Wellness",
-  "Fitness",
-  "212 Bodybuilding",
+  "IFBB",
+  "NPC",
+  "WNBF",
+  "INBA / PNBA",
+  "OCB",
+  "DFBA",
   "Other",
 ];
 
@@ -57,16 +52,12 @@ const translations = {
     errorDatePast: "Date cannot be in the past",
     errorLocationRequired: "Location is required",
     divisionLabels: {
-      Bodybuilding: "Bodybuilding",
-      Lifestyle: "Lifestyle",
-      "Classic Physique": "Classic Physique",
-      "Men's Physique": "Men's Physique",
-      "Women's Physique": "Women's Physique",
-      Bikini: "Bikini",
-      Figure: "Figure",
-      Wellness: "Wellness",
-      Fitness: "Fitness",
-      "212 Bodybuilding": "212 Bodybuilding",
+      IFBB: "IFBB",
+      NPC: "NPC",
+      WNBF: "WNBF",
+      "INBA / PNBA": "INBA / PNBA",
+      OCB: "OCB",
+      DFBA: "DFBA",
       Other: "Other",
     } as Record<string, string>,
   },
@@ -91,16 +82,12 @@ const translations = {
     errorDatePast: "Datum darf nicht in der Vergangenheit liegen",
     errorLocationRequired: "Ort ist erforderlich",
     divisionLabels: {
-      Bodybuilding: "Bodybuilding",
-      Lifestyle: "Lifestyle",
-      "Classic Physique": "Classic Physique",
-      "Men's Physique": "Men's Physique",
-      "Women's Physique": "Women's Physique",
-      Bikini: "Bikini",
-      Figure: "Figure",
-      Wellness: "Wellness",
-      Fitness: "Fitness",
-      "212 Bodybuilding": "212 Bodybuilding",
+      IFBB: "IFBB",
+      NPC: "NPC",
+      WNBF: "WNBF",
+      "INBA / PNBA": "INBA / PNBA",
+      OCB: "OCB",
+      DFBA: "DFBA",
       Other: "Andere",
     } as Record<string, string>,
   },
@@ -128,7 +115,7 @@ export default function ShowManagementModal({
       setFormData({
         name: show.name,
         division: show.division,
-        date: show.date.split('T')[0], // Format date for input
+        date: show.date.split("T")[0], // Format date for input
         location: show.location,
       });
     } else {
@@ -174,7 +161,7 @@ export default function ShowManagementModal({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -225,8 +212,11 @@ export default function ShowManagementModal({
                 onChange={handleChange}
                 placeholder={t.namePlaceholder}
                 disabled={loading}
-                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${errors.name ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
-                  }`}
+                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${
+                  errors.name
+                    ? "border-red-500"
+                    : "border-emerald-500/30 focus:border-emerald-500/60"
+                }`}
               />
               {errors.name && (
                 <p className="text-red-400 text-xs mt-1">{errors.name}</p>
@@ -242,8 +232,11 @@ export default function ShowManagementModal({
                 value={formData.division}
                 onChange={handleChange}
                 disabled={loading}
-                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none transition-colors appearance-none cursor-pointer disabled:opacity-50 ${errors.division ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
-                  }`}
+                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none transition-colors appearance-none cursor-pointer disabled:opacity-50 ${
+                  errors.division
+                    ? "border-red-500"
+                    : "border-emerald-500/30 focus:border-emerald-500/60"
+                }`}
               >
                 <option value="">{t.divisionPlaceholder}</option>
                 {DIVISION_OPTIONS.map((division) => (
@@ -266,17 +259,18 @@ export default function ShowManagementModal({
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split("T")[0]}
                 disabled={loading}
-                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none transition-colors disabled:opacity-50 ${errors.date ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
-                  }`}
+                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none transition-colors disabled:opacity-50 ${
+                  errors.date
+                    ? "border-red-500"
+                    : "border-emerald-500/30 focus:border-emerald-500/60"
+                }`}
               />
               {errors.date ? (
                 <p className="text-red-400 text-xs mt-1">{errors.date}</p>
               ) : (
-                <p className="text-gray-400 text-xs mt-1">
-                  {t.dateHelp}
-                </p>
+                <p className="text-gray-400 text-xs mt-1">{t.dateHelp}</p>
               )}
             </div>
 
@@ -291,8 +285,11 @@ export default function ShowManagementModal({
                 onChange={handleChange}
                 placeholder={t.locationPlaceholder}
                 disabled={loading}
-                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${errors.location ? "border-red-500" : "border-emerald-500/30 focus:border-emerald-500/60"
-                  }`}
+                className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors disabled:opacity-50 ${
+                  errors.location
+                    ? "border-red-500"
+                    : "border-emerald-500/30 focus:border-emerald-500/60"
+                }`}
               />
               {errors.location && (
                 <p className="text-red-400 text-xs mt-1">{errors.location}</p>
@@ -313,11 +310,7 @@ export default function ShowManagementModal({
                 disabled={loading}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading
-                  ? t.saveSaving
-                  : show
-                  ? t.saveUpdate
-                  : t.saveAdd}
+                {loading ? t.saveSaving : show ? t.saveUpdate : t.saveAdd}
               </button>
             </div>
           </form>
