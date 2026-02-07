@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PedTab from "../tab/pedTab/PedTab";
 import TimelineTab from "../tab/timelineTab/TimelineTab";
 import SupplementsTab from "../tab/supplementsTab/SupplementsTab";
@@ -8,6 +8,8 @@ import NutritionTab from "../tab/nutritionTab/NutritionTab";
 import TrainingTab from "../tab/trainingTab/TrainingTab";
 import CheckInTab from "../tab/checkInTab/CheckInTab";
 import DailyTrackingTab from "../tab/dailyTrackingTab/DailyTrackingTab";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { getAthleteById } from "@/redux/features/athlete/athleteSlice";
 
 // Define the tab types
 type Tab =
@@ -34,7 +36,29 @@ interface CoachDashboardProps {
 }
 
 export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
+  const dispatch = useAppDispatch();
+  const { currentAthlete } = useAppSelector((state) => state.athlete);
   const [activeTab, setActiveTab] = useState<Tab>("Daily Tracking");
+
+  useEffect(() => {
+    if (athleteId) {
+      dispatch(getAthleteById(athleteId));
+    }
+  }, [dispatch, athleteId]);
+
+  // If the active tab is PED but the athlete is not Enhanced, switch to Daily Tracking
+  useEffect(() => {
+    if (activeTab === "PED" && currentAthlete?.status !== "Enhanced") {
+      setActiveTab("Daily Tracking");
+    }
+  }, [currentAthlete, activeTab]);
+
+  const visibleTabs = tabs.filter((tab) => {
+    if (tab === "PED") {
+      return currentAthlete?.status === "Enhanced";
+    }
+    return true;
+  });
 
   const renderContent = () => {
     switch (activeTab) {
@@ -101,15 +125,16 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
       {/* --- Navigation Tabs --- */}
       <div className="inline-flex w-full items-center rounded-full bg-[#0d0d18] px-2 py-2 sm:w-auto border border-white/5">
         <div className="flex w-full flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar sm:justify-start">
-          {tabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`
                 whitespace-nowrap rounded-full px-12 py-3 text-sm font-medium transition-all duration-200 min-w-[120px] text-center
-                ${activeTab === tab
-                  ? "bg-[#4f961f] text-white shadow-sm"
-                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                ${
+                  activeTab === tab
+                    ? "bg-[#4f961f] text-white shadow-sm"
+                    : "text-gray-300 hover:text-white hover:bg-white/5"
                 }
               `}
             >
