@@ -57,16 +57,14 @@ export default function Sidebar() {
   return (
     <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col">
       {/* Logo */}
-      <div className="p-4">
+      <div className="px-2 pt-6 pb-4">
         {/* Image height increase */}
-        <div className="relative w-full h-24 md:h-32 lg:h-70">
-          {" "}
-          {/* Responsive heights */}
+        <div className="relative w-full h-32 md:h-40 lg:h-[220px]">
           <Image
-            src="/logo (2).png"
+            src="/Evolve_Logo_Transparent.png"
             alt="Coach of Wolves Logo"
             fill
-            className=""
+            className="object-contain w-full h-full"
             priority
           />
         </div>
