@@ -171,7 +171,7 @@ const translations = {
 export default function AthleteManagement() {
   const dispatch = useAppDispatch();
   const { athletes, loading, error, successMessage } = useAppSelector(
-    (state) => state.coachAthletes
+    (state) => state.coachAthletes,
   );
   const { profile } = useAppSelector((state) => state.coachProfile);
   const { language } = useAppSelector((state) => state.language);
@@ -431,6 +431,7 @@ export default function AthleteManagement() {
                           alt={athlete.name}
                           width={40}
                           height={40}
+                          unoptimized
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
@@ -451,8 +452,8 @@ export default function AthleteManagement() {
                       {athlete.gender === "Male"
                         ? t.genderMale
                         : athlete.gender === "Female"
-                        ? t.genderFemale
-                        : athlete.gender}
+                          ? t.genderFemale
+                          : athlete.gender}
                     </td>
                     <td className="px-6 py-4 text-white">{athlete.age}</td>
                     <td className="px-6 py-4 text-green-500">
@@ -466,7 +467,7 @@ export default function AthleteManagement() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3.5 py-2 rounded-full text-xs font-semibold ${getStatusColor(
-                          athlete.status
+                          athlete.status,
                         )}`}
                       >
                         {athlete.status === "Natural"
@@ -482,7 +483,7 @@ export default function AthleteManagement() {
                               year: "numeric",
                               month: "2-digit",
                               day: "2-digit",
-                            }
+                            },
                           )
                         : t.na}
                     </td>

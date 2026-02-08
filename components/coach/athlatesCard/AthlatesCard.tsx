@@ -34,10 +34,24 @@ export default function AthleteCard({
   phase,
   createdAt,
   image,
+  gender,
 }: AthleteCardProps) {
   const statusColor = status === "Natural" ? "bg-green-600" : "bg-orange-500";
 
-  console.log(_id, name, status, category, phase, createdAt, image);
+  const getGenderStyle = (gender: string) => {
+    switch (gender?.toLowerCase()) {
+      case "male":
+        return "bg-blue-500/20 text-blue-400";
+      case "female":
+        return "bg-pink-500/20 text-pink-400";
+      default:
+        return "text-[#8CCA4D]";
+    }
+  };
+
+  const genderStyle = getGenderStyle(gender);
+
+  console.log(_id, name, status, category, phase, createdAt, image, gender);
 
   return (
     <Link href={`/coach/details/${_id}`} className="block">
@@ -57,7 +71,15 @@ export default function AthleteCard({
             <div className="flex-1">
               <h3 className="font-bold text-xl text-white mb-3">{name}</h3>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Gender</p>
+                  <span
+                    className={`${genderStyle} text-xs px-3 py-1 rounded-full font-semibold`}
+                  >
+                    {gender}
+                  </span>
+                </div>
                 <div>
                   <p className="text-muted-foreground text-xs mb-1">Category</p>
                   <p className="text-[#8CCA4D] font-semibold">{category}</p>
