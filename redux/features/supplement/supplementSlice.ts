@@ -9,8 +9,8 @@ export interface Supplement {
   _id: string;
   name: string;
   brand?: string;
-  dosage: string;
-  frequency: string;
+  dosage?: string;
+  frequency?: string;
   time: string;
   purpose: string;
   note?: string;
@@ -23,8 +23,8 @@ export interface Supplement {
 export interface CreateSupplementPayload {
   name: string;
   brand?: string;
-  dosage: string;
-  frequency: string;
+  dosage?: string;
+  frequency?: string;
   time: string;
   purpose: string;
   note?: string;

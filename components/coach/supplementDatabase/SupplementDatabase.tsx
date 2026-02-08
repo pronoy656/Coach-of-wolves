@@ -23,9 +23,7 @@ import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteM
 interface ComponentSupplement {
   id?: string;
   name: string;
-  dosage: string;
   time: string;
-  frequency: string;
   purpose: string;
   brand: string;
   comment: string;
@@ -42,9 +40,7 @@ const translations = {
     emptyState: "No supplements found",
     table: {
       name: "Name",
-      dosage: "Dosage",
       time: "Time",
-      frequency: "Frequency",
       purpose: "Purpose",
       brand: "Brand",
       comment: "Comment",
@@ -67,9 +63,7 @@ const translations = {
     emptyState: "Keine Supplements gefunden",
     table: {
       name: "Name",
-      dosage: "Dosierung",
       time: "Zeitpunkt",
-      frequency: "Häufigkeit",
       purpose: "Zweck",
       brand: "Marke",
       comment: "Kommentar",
@@ -89,7 +83,7 @@ const translations = {
 export default function SupplementDatabase() {
   const dispatch = useDispatch<AppDispatch>();
   const { supplements, loading, error, successMessage, total } = useAppSelector(
-    (state) => state.supplement
+    (state) => state.supplement,
   );
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
@@ -107,7 +101,7 @@ export default function SupplementDatabase() {
         search: searchTerm || undefined, // optional param
         page: currentPage,
         limit: ITEMS_PER_PAGE,
-      })
+      }),
     );
   }, [dispatch, currentPage, searchTerm]);
 
@@ -128,8 +122,6 @@ export default function SupplementDatabase() {
       const backendPayload: CreateSupplementPayload = {
         name: data.name,
         brand: data.brand,
-        dosage: data.dosage,
-        frequency: data.frequency,
         time: data.time,
         purpose: data.purpose,
         note: data.comment,
@@ -137,7 +129,7 @@ export default function SupplementDatabase() {
 
       if (editingId) {
         await dispatch(
-          updateSupplement({ id: editingId, data: backendPayload })
+          updateSupplement({ id: editingId, data: backendPayload }),
         ).unwrap();
       } else {
         await dispatch(createSupplement(backendPayload)).unwrap();
@@ -151,7 +143,7 @@ export default function SupplementDatabase() {
           search: searchTerm || undefined,
           page: currentPage,
           limit: ITEMS_PER_PAGE,
-        })
+        }),
       );
     } catch (error: any) {
       toast.error(error.message || t.toastSaveError);
@@ -183,7 +175,7 @@ export default function SupplementDatabase() {
               search: searchTerm || undefined,
               page: currentPage,
               limit: ITEMS_PER_PAGE,
-            })
+            }),
           );
         }
       } catch (error: any) {
@@ -195,15 +187,13 @@ export default function SupplementDatabase() {
   };
 
   const convertToComponentSupplement = (
-    reduxSupplement: ReduxSupplement
+    reduxSupplement: ReduxSupplement,
   ): ComponentSupplement => {
     return {
       id: reduxSupplement._id,
       name: reduxSupplement.name,
       brand: reduxSupplement.brand || "",
-      dosage: reduxSupplement.dosage,
       time: reduxSupplement.time,
-      frequency: reduxSupplement.frequency,
       purpose: reduxSupplement.purpose,
       comment: reduxSupplement.note || "",
     };
@@ -272,13 +262,7 @@ export default function SupplementDatabase() {
                       {t.table.name}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      {t.table.dosage}
-                    </th>
-                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">
                       {t.table.time}
-                    </th>
-                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      {t.table.frequency}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
                       {t.table.purpose}
@@ -309,23 +293,7 @@ export default function SupplementDatabase() {
                           {componentSupplement.name}
                         </td>
                         <td className="py-3 px-4 text-primary font-medium">
-                          {componentSupplement.dosage}
-                        </td>
-                        <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.time}
-                        </td>
-                        <td className="py-3 px-4 text-primary font-medium">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              componentSupplement.frequency === "Once daily"
-                                ? "bg-blue-500/20 text-blue-400"
-                                : componentSupplement.frequency === "2x Daily"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-purple-500/20 text-purple-400"
-                            }`}
-                          >
-                            {componentSupplement.frequency}
-                          </span>
                         </td>
                         <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.purpose}

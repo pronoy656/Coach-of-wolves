@@ -5,44 +5,16 @@ import { useState, useEffect } from "react";
 import { Loader, X } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 
-const frequencyOptions = [
-  "Once daily",
-  "2x Daily",
-  "3x Daily",
-  "4x Daily",
-  "As needed",
-  "Weekly",
-  "Every other day",
-  "Before meals",
-  "After meals",
-  "With meals",
-];
-
 const translations = {
   en: {
     titleAdd: "Add Supplement",
     titleEdit: "Edit Supplement",
     nameLabel: "Supplements Name *",
-    dosageLabel: "Dosage *",
     timeLabel: "Time *",
     purposeLabel: "Purpose *",
     brandLabel: "Brand",
-    frequencyLabel: "Frequency *",
     commentLabel: "Comment",
     placeholderValue: "Insert a value",
-    frequencyPlaceholder: "Select Frequency",
-    frequencyOptions: {
-      "Once daily": "Once daily",
-      "2x Daily": "2x Daily",
-      "3x Daily": "3x Daily",
-      "4x Daily": "4x Daily",
-      "As needed": "As needed",
-      Weekly: "Weekly",
-      "Every other day": "Every other day",
-      "Before meals": "Before meals",
-      "After meals": "After meals",
-      "With meals": "With meals",
-    } as Record<string, string>,
     alertRequired: "Please fill in all required fields",
     alertSaveFailed: "Failed to save supplement. Please try again.",
     saveButton: "Save",
@@ -52,26 +24,11 @@ const translations = {
     titleAdd: "Supplement hinzufügen",
     titleEdit: "Supplement bearbeiten",
     nameLabel: "Supplementname *",
-    dosageLabel: "Dosierung *",
     timeLabel: "Zeitpunkt *",
     purposeLabel: "Zweck *",
     brandLabel: "Marke",
-    frequencyLabel: "Häufigkeit *",
     commentLabel: "Kommentar",
     placeholderValue: "Wert eingeben",
-    frequencyPlaceholder: "Häufigkeit auswählen",
-    frequencyOptions: {
-      "Once daily": "Einmal täglich",
-      "2x Daily": "Zweimal täglich",
-      "3x Daily": "Dreimal täglich",
-      "4x Daily": "Viermal täglich",
-      "As needed": "Nach Bedarf",
-      Weekly: "Wöchentlich",
-      "Every other day": "Jeden zweiten Tag",
-      "Before meals": "Vor den Mahlzeiten",
-      "After meals": "Nach den Mahlzeiten",
-      "With meals": "Zu den Mahlzeiten",
-    } as Record<string, string>,
     alertRequired: "Bitte fülle alle Pflichtfelder aus",
     alertSaveFailed: "Speichern fehlgeschlagen. Bitte versuche es erneut.",
     saveButton: "Speichern",
@@ -84,18 +41,14 @@ interface SupplementModalProps {
   onClose: () => void;
   onSave: (data: {
     name: string;
-    dosage: string;
     time: string;
-    frequency: string;
     purpose: string;
     brand: string;
     comment: string;
   }) => void;
   initialData?: {
     name: string;
-    dosage: string;
     time: string;
-    frequency: string;
     purpose: string;
     brand: string;
     comment: string;
@@ -110,9 +63,7 @@ export default function SupplementModal({
 }: SupplementModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    dosage: "",
     time: "",
-    frequency: "",
     purpose: "",
     brand: "",
     comment: "",
@@ -128,9 +79,7 @@ export default function SupplementModal({
     } else {
       setFormData({
         name: "",
-        dosage: "",
         time: "",
-        frequency: "",
         purpose: "",
         brand: "",
         comment: "",
@@ -141,7 +90,7 @@ export default function SupplementModal({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -152,9 +101,7 @@ export default function SupplementModal({
 
     if (
       !formData.name ||
-      !formData.dosage ||
       !formData.time ||
-      !formData.frequency ||
       !formData.purpose
     ) {
       alert(t.alertRequired);
@@ -190,8 +137,8 @@ export default function SupplementModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Name, Dosage, Time */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Row 1: Name, Time */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
                 {t.nameLabel}
@@ -200,21 +147,6 @@ export default function SupplementModal({
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder={t.placeholderValue}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-                required
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t.dosageLabel}
-              </label>
-              <input
-                type="text"
-                name="dosage"
-                value={formData.dosage}
                 onChange={handleChange}
                 placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
@@ -239,8 +171,8 @@ export default function SupplementModal({
             </div>
           </div>
 
-          {/* Row 2: Purpose, Brand, Frequency */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Row 2: Purpose, Brand */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
                 {t.purposeLabel}
@@ -269,32 +201,6 @@ export default function SupplementModal({
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
                 disabled={loading}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t.frequencyLabel}
-              </label>
-              <select
-                name="frequency"
-                value={formData.frequency}
-                onChange={handleChange}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4A9E4A]"
-                required
-                disabled={loading}
-              >
-                <option value="" className="bg-[#08081A] text-foreground">
-                  {t.frequencyPlaceholder}
-                </option>
-                {frequencyOptions.map((option) => (
-                  <option
-                    key={option}
-                    value={option}
-                    className="bg-[#08081A] text-foreground"
-                  >
-                    {t.frequencyOptions[option] ?? option}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
