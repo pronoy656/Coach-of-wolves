@@ -702,6 +702,9 @@ export default function Dashboard() {
     if (section.title === "Women") {
       return currentAthlete?.gender === "Female";
     }
+    if (section.title === "PEDs") {
+      return currentAthlete?.status === "Enhanced";
+    }
     return true;
   });
 

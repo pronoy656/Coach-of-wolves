@@ -36,12 +36,19 @@ const CATEGORIES = [
   "Legs",
 ];
 const SUBCATEGORIES = [
+  "Chest",
+  "Back",
+  "Neck",
+  "Shoulders",
+  "Triceps",
   "Biceps",
-  "Glutes",
+  "Core",
   "Lower Back",
+  "Glutes",
   "Quadriceps",
   "Hamstrings",
   "Calves",
+  "Other",
 ];
 const DIFFICULTY_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
@@ -86,12 +93,19 @@ const translations = {
       Advanced: "Advanced",
     } as Record<string, string>,
     subcategoryLabels: {
+      Chest: "Chest",
+      Back: "Back",
+      Neck: "Neck",
+      Shoulders: "Shoulders",
+      Triceps: "Triceps",
       Biceps: "Biceps",
-      Glutes: "Glutes",
+      Core: "Core",
       "Lower Back": "Lower Back",
+      Glutes: "Glutes",
       Quadriceps: "Quadriceps",
       Hamstrings: "Hamstrings",
       Calves: "Calves",
+      Other: "Other",
     } as Record<string, string>,
   },
   de: {
@@ -134,12 +148,19 @@ const translations = {
       Advanced: "Fortgeschritten",
     } as Record<string, string>,
     subcategoryLabels: {
+      Chest: "Brust",
+      Back: "Rücken",
+      Neck: "Nacken",
+      Shoulders: "Schultern",
+      Triceps: "Trizeps",
       Biceps: "Bizeps",
-      Glutes: "Gesäß",
+      Core: "Rumpf",
       "Lower Back": "Unterer Rücken",
+      Glutes: "Gesäß",
       Quadriceps: "Quadrizeps",
       Hamstrings: "Beinbeuger",
       Calves: "Waden",
+      Other: "Sonstige",
     } as Record<string, string>,
   },
 };
