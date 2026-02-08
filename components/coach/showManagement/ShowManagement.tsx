@@ -347,6 +347,7 @@ export default function ShowManagement() {
       {/* Modals */}
       {isModalOpen && (
         <ShowManagementModal
+          key={editingShow ? editingShow._id : "new-show"}
           show={editingShow}
           onSave={handleSaveShow}
           onClose={() => {

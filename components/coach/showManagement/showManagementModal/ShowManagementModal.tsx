@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Show } from "@/redux/features/show/showTypes";
 import { useAppSelector } from "@/redux/hooks";
@@ -99,35 +99,26 @@ export default function ShowManagementModal({
   onClose,
   loading = false,
 }: ShowModalProps) {
-  const [formData, setFormData] = useState<ShowFormData>({
-    name: show?.name || "",
-    division: show?.division || "",
-    date: show?.date || "",
-    location: show?.location || "",
+  const [formData, setFormData] = useState<ShowFormData>(() => {
+    if (show) {
+      return {
+        name: show.name,
+        division: show.division,
+        date: show.date.split("T")[0],
+        location: show.location,
+      };
+    }
+    return {
+      name: "",
+      division: "",
+      date: "",
+      location: "",
+    };
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
-
-  useEffect(() => {
-    if (show) {
-      setFormData({
-        name: show.name,
-        division: show.division,
-        date: show.date.split("T")[0], // Format date for input
-        location: show.location,
-      });
-    } else {
-      setFormData({
-        name: "",
-        division: "",
-        date: "",
-        location: "",
-      });
-    }
-    setErrors({});
-  }, [show]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
