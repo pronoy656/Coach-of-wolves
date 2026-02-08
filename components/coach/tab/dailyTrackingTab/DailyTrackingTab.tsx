@@ -125,6 +125,7 @@ export default function Dashboard() {
   const { weekData, averages, loading, error } = useAppSelector(
     (state) => state.dailyTracking,
   );
+  const { currentAthlete } = useAppSelector((state) => state.athlete);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
@@ -252,7 +253,7 @@ export default function Dashboard() {
   };
 
   // Reconstructing dynamic data using the EXACT original design structure
-  const dataSections: SectionData[] = [
+  const rawDataSections: SectionData[] = [
     {
       title: "", // Top section (Weight)
       rows: [
@@ -696,6 +697,13 @@ export default function Dashboard() {
       ],
     },
   ];
+
+  const dataSections = rawDataSections.filter((section) => {
+    if (section.title === "Women") {
+      return currentAthlete?.gender === "Female";
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-[#0B0C15] p-6 font-sans text-white">
