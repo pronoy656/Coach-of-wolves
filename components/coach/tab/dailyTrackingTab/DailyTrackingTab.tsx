@@ -411,15 +411,14 @@ export default function Dashboard() {
             weekData[i] ? (weekData[i].sick ? "YES" : "NO") : "",
           ),
           average: "",
-          cellColors: [
-            "#B45309",
-            "#B45309",
-            "#B45309",
-            "#B45309",
-            "#4d7c0f",
-            "#B45309",
-            "#4d7c0f",
-          ],
+          cellColors: Array.from({ length: 7 }).map((_, i) => {
+            const day = weekData[i];
+            if (!day) {
+              return "#2B2B3D";
+            }
+            const val = day.sick ? "YES" : "NO";
+            return val === "YES" ? "#15803d" : "#B45309";
+          }),
         },
       ],
     },
