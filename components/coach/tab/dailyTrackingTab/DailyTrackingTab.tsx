@@ -621,7 +621,7 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Everyone",
+      title: "Health metrics",
       rows: [
         {
           id: "bp",
