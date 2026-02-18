@@ -252,6 +252,32 @@ export default function Dashboard() {
     return typeof val === "number" ? val.toFixed(1) : val;
   };
 
+  const getScaleColor = (
+    value: string | number,
+    direction: "goodToBad" | "badToGood",
+  ) => {
+    const num = typeof value === "number" ? value : parseInt(String(value), 10);
+    if (Number.isNaN(num)) return "#2B2B3D";
+    const clamped = Math.min(10, Math.max(1, num));
+    const palette = [
+      "#15803d",
+      "#16a34a",
+      "#22c55e",
+      "#4d7c0f",
+      "#eab308",
+      "#f59e0b",
+      "#f97316",
+      "#ea580c",
+      "#dc2626",
+      "#b91c1c",
+    ];
+    const index = clamped - 1;
+    if (direction === "goodToBad") {
+      return palette[index];
+    }
+    return palette[9 - index];
+  };
+
   // Reconstructing dynamic data using the EXACT original design structure
   const rawDataSections: SectionData[] = [
     {
@@ -319,15 +345,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("nutrition.hungerLevel"),
           average: getAverage("nutrition.hungerLevel"),
-          cellColors: [
-            "#D97706",
-            "#D97706",
-            "#B45309",
-            "#EAB308",
-            "#EAB308",
-            "#EAB308",
-            "#EAB308",
-          ],
+          cellColors: getValues("nutrition.hungerLevel").map((v) =>
+            getScaleColor(v, "goodToBad"),
+          ),
         },
         {
           id: "digestion",
@@ -336,15 +356,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("nutrition.digestionLevel"),
           average: getAverage("nutrition.digestionLevel"),
-          cellColors: [
-            "#D97706",
-            "#D97706",
-            "#B45309",
-            "#EAB308",
-            "#EAB308",
-            "#EAB308",
-            "#EAB308",
-          ],
+          cellColors: getValues("nutrition.digestionLevel").map((v) =>
+            getScaleColor(v, "badToGood"),
+          ),
         },
       ],
     },
@@ -417,7 +431,7 @@ export default function Dashboard() {
               return "#2B2B3D";
             }
             const val = day.sick ? "YES" : "NO";
-            return val === "YES" ? "#15803d" : "#B45309";
+            return val === "YES" ? "#b91c1c" : "#15803d";
           }),
         },
       ],
@@ -432,15 +446,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.mood"),
           average: getAverage("energyAndWellBeing.mood"),
-          cellColors: [
-            "#D97706",
-            "#B45309",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#B45309",
-            "#B45309",
-          ],
+          cellColors: getValues("energyAndWellBeing.mood").map((v) =>
+            getScaleColor(v, "badToGood"),
+          ),
         },
         {
           id: "motivation",
@@ -449,15 +457,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.motivation"),
           average: getAverage("energyAndWellBeing.motivation"),
-          cellColors: [
-            "#D97706",
-            "#B45309",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#B45309",
-            "#B45309",
-          ],
+          cellColors: getValues("energyAndWellBeing.motivation").map((v) =>
+            getScaleColor(v, "badToGood"),
+          ),
         },
         {
           id: "energy",
@@ -466,15 +468,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.energyLevel"),
           average: getAverage("energyAndWellBeing.energyLevel"),
-          cellColors: [
-            "#D97706",
-            "#B45309",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#B45309",
-            "#B45309",
-          ],
+          cellColors: getValues("energyAndWellBeing.energyLevel").map((v) =>
+            getScaleColor(v, "badToGood"),
+          ),
         },
         {
           id: "muscle",
@@ -483,15 +479,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.muscelLevel"),
           average: getAverage("energyAndWellBeing.muscelLevel"),
-          cellColors: [
-            "#EAB308",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#EAB308",
-            "#4d7c0f",
-            "#4d7c0f",
-          ],
+          cellColors: getValues("energyAndWellBeing.muscelLevel").map((v) =>
+            getScaleColor(v, "goodToBad"),
+          ),
         },
         {
           id: "stress",
@@ -500,15 +490,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("energyAndWellBeing.stressLevel"),
           average: getAverage("energyAndWellBeing.stressLevel"),
-          cellColors: [
-            "#EAB308",
-            "#15803d",
-            "#15803d",
-            "#EAB308",
-            "#4d7c0f",
-            "#EAB308",
-            "#4d7c0f",
-          ],
+          cellColors: getValues("energyAndWellBeing.stressLevel").map((v) =>
+            getScaleColor(v, "goodToBad"),
+          ),
         },
       ],
     },
@@ -591,15 +575,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("woman.pmsSymptoms"),
           average: getAverage("woman.pmsSymptoms"),
-          cellColors: [
-            "#B45309",
-            "#D97706",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#B45309",
-            "#EAB308",
-          ],
+          cellColors: getValues("woman.pmsSymptoms").map((v) =>
+            getScaleColor(v, "goodToBad"),
+          ),
         },
         {
           id: "cramps",
@@ -608,15 +586,9 @@ export default function Dashboard() {
           type: "dropdown",
           values: getValues("woman.cramps"),
           average: getAverage("woman.cramps"),
-          cellColors: [
-            "#B45309",
-            "#D97706",
-            "#EAB308",
-            "#EAB308",
-            "#B45309",
-            "#B45309",
-            "#EAB308",
-          ],
+          cellColors: getValues("woman.cramps").map((v) =>
+            getScaleColor(v, "goodToBad"),
+          ),
         },
         {
           id: "symptoms",
