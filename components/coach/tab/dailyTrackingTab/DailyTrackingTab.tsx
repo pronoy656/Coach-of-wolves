@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
+import { fetchTimelineByAthlete } from "@/redux/features/timeline/timelineSlice";
 import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -126,6 +127,7 @@ export default function Dashboard() {
     (state) => state.dailyTracking,
   );
   const { currentAthlete } = useAppSelector((state) => state.athlete);
+  const { timeline } = useAppSelector((state) => state.timeline);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
@@ -135,27 +137,41 @@ export default function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Generate a list of previous weeks (last 4 weeks for now)
+  const formatDateDisplay = (dateString: string | undefined) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   const getWeekOptions = () => {
     const options: { label: string; value: string | undefined }[] = [
       { label: "Current Week", value: undefined },
     ];
-    const today = new Date();
 
-    for (let i = 1; i <= 52; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i * 7);
-      // Find the Monday of that week
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(d.setDate(diff));
-
-      const dateStr = monday.toISOString().split("T")[0];
-      options.push({
-        label: `Week of ${dateStr}`,
-        value: dateStr,
-      });
+    if (!timeline || timeline.length === 0) {
+      return options;
     }
+
+    const sorted = [...timeline].sort((a, b) => {
+      const d1 = new Date(a.checkInDate).getTime();
+      const d2 = new Date(b.checkInDate).getTime();
+      return d2 - d1;
+    });
+
+    sorted.forEach((item) => {
+      if (!item.checkInDate) {
+        return;
+      }
+      options.push({
+        label: `Week of ${formatDateDisplay(item.checkInDate)}`,
+        value: item.checkInDate,
+      });
+    });
+
     return options;
   };
 
@@ -166,6 +182,12 @@ export default function Dashboard() {
       dispatch(fetchDailyWeekData({ userId, date: selectedDate }));
     }
   }, [dispatch, userId, selectedDate]);
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchTimelineByAthlete(userId));
+    }
+  }, [dispatch, userId]);
 
   const handleSubmitNote = async () => {
     if (!coachNote.trim()) {
@@ -689,7 +711,9 @@ export default function Dashboard() {
         >
           <CalendarIcon />
           <span className="text-base">
-            {selectedDate ? `Week of ${selectedDate}` : "Current Week"}
+            {selectedDate
+              ? `Week of ${formatDateDisplay(selectedDate)}`
+              : "Current Week"}
           </span>
           <ChevronDown
             className={`w-4 h-4 transition-transform ${
@@ -742,7 +766,9 @@ export default function Dashboard() {
               <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700 px-1">
                 <span className="text-gray-300 text-[10px] text-center">
                   {weekData[i]?.date
-                    ? `${weekData[i].date} ${weekData[i].day || ""}`
+                    ? `${formatDateDisplay(weekData[i].date)} ${
+                        weekData[i].day || ""
+                      }`
                     : `Day ${i + 1}`}
                 </span>
               </div>
