@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import { ChevronRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 interface AthleteCardProps {
@@ -24,6 +23,20 @@ function formatToShortDate(dateString: string): string {
   const year = date.getUTCFullYear(); // year
 
   return `${day} ${month} ${year}`;
+}
+
+function resolveAthleteImageSrc(image: string | undefined): string {
+  if (!image) {
+    return "/placeholder.svg";
+  }
+  if (image.startsWith("http")) {
+    return image;
+  }
+  if (image.startsWith("/")) {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    return `${base}${image}`;
+  }
+  return image;
 }
 
 export default function AthleteCard({
@@ -51,7 +64,7 @@ export default function AthleteCard({
 
   const genderStyle = getGenderStyle(gender);
 
-  console.log(_id, name, status, category, phase, createdAt, image, gender);
+  const imageSrc = resolveAthleteImageSrc(image);
 
   return (
     <Link href={`/coach/details/${_id}`} className="block">
@@ -61,7 +74,7 @@ export default function AthleteCard({
 
           <div className="flex items-start gap-5 flex-1">
             <img
-              src={`${process.env.NEXT_PUBLIC_LOCAL_BASE_URL}${image}`}
+              src={imageSrc}
               alt={name}
               width={64}
               height={64}

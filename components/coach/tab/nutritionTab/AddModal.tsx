@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
 import { useState, useEffect } from "react";
 import { X, Clock, Plus, Trash2 } from "lucide-react";
+import { useAppDispatch } from "@/redux/hooks";
+import {
+  getAllNutritions,
+  Nutrition,
+} from "@/redux/features/nutrition/nutritionSlice";
 import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
 
 interface AddModalProps {
@@ -27,6 +33,8 @@ export default function AddModal({
   currentDay,
   loading = false,
 }: AddModalProps) {
+  const dispatch = useAppDispatch();
+
   const [formData, setFormData] = useState<{
     mealsName: string;
     foodItems: FoodItemInput[];
@@ -39,11 +47,19 @@ export default function AddModal({
     day: currentDay,
   });
 
-  // Reset form when modal opens or editingMeal changes
+  const [foodSuggestions, setFoodSuggestions] = useState<Nutrition[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdownIndex, setShowDropdownIndex] = useState<number | null>(
+    null,
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   useEffect(() => {
-    if (open) {
-      if (editingMeal) {
-        setFormData({
+    if (!open) return;
+
+    const nextFormData = editingMeal
+      ? {
           mealsName: editingMeal.mealName,
           foodItems: editingMeal.food.map((item) => ({
             name: item.foodName,
@@ -51,16 +67,19 @@ export default function AddModal({
           })),
           time: editingMeal.time,
           day: editingMeal.trainingDay,
-        });
-      } else {
-        setFormData({
+        }
+      : {
           mealsName: "",
           foodItems: [{ name: "", quantity: "" }],
           time: "",
           day: currentDay,
-        });
-      }
-    }
+        };
+
+    const id = setTimeout(() => {
+      setFormData(nextFormData);
+    }, 0);
+
+    return () => clearTimeout(id);
   }, [editingMeal, open, currentDay]);
 
   const handleAddFoodItem = () => {
@@ -83,12 +102,65 @@ export default function AddModal({
     const newFoodItems = [...formData.foodItems];
     newFoodItems[index] = { ...newFoodItems[index], name: value };
     setFormData({ ...formData, foodItems: newFoodItems });
+    setActiveIndex(index);
+    setSearchTerm(value);
   };
 
   const handleQuantityChange = (index: number, value: string) => {
     const newFoodItems = [...formData.foodItems];
     newFoodItems[index] = { ...newFoodItems[index], quantity: value };
     setFormData({ ...formData, foodItems: newFoodItems });
+  };
+
+  const handleSelectFoodSuggestion = (index: number, item: Nutrition) => {
+    const newFoodItems = [...formData.foodItems];
+    newFoodItems[index] = { ...newFoodItems[index], name: item.name };
+    setFormData({ ...formData, foodItems: newFoodItems });
+    setShowDropdownIndex(null);
+  };
+
+  useEffect(() => {
+    const query = searchTerm.trim();
+    if (!query || query.length < 2) {
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      setIsSearching(true);
+      dispatch(getAllNutritions({ search: query }))
+        .unwrap()
+        .then((res) => {
+          setFoodSuggestions(res.items);
+        })
+        .catch(() => {
+          setFoodSuggestions([]);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [dispatch, searchTerm]);
+
+  const handleFoodNameFocus = (index: number) => {
+    setShowDropdownIndex(index);
+    setActiveIndex(index);
+
+    if (foodSuggestions.length > 0 || isSearching) return;
+
+    setIsSearching(true);
+    dispatch(getAllNutritions({ search: "" }))
+      .unwrap()
+      .then((res) => {
+        setFoodSuggestions(res.items);
+      })
+      .catch(() => {
+        setFoodSuggestions([]);
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -165,7 +237,7 @@ export default function AddModal({
                 {formData.foodItems.map((foodItem, index) => (
                   <div key={index} className="space-y-2">
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="flex-1">
+                      <div className="flex-1 relative">
                         <input
                           type="text"
                           placeholder="Food name"
@@ -173,9 +245,43 @@ export default function AddModal({
                           onChange={(e) =>
                             handleFoodNameChange(index, e.target.value)
                           }
+                          onFocus={() => handleFoodNameFocus(index)}
                           className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 text-base"
+                          autoComplete="off"
                           disabled={loading}
                         />
+                        {showDropdownIndex === index && (
+                          <div className="absolute z-20 mt-1 w-full bg-[#08081A] border border-[#303245] rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                            {isSearching && (
+                              <div className="px-3 py-2 text-xs text-gray-400">
+                                Searching...
+                              </div>
+                            )}
+                            {!isSearching &&
+                              foodSuggestions.map((food) => (
+                                <button
+                                  key={food._id}
+                                  type="button"
+                                  onClick={() =>
+                                    handleSelectFoodSuggestion(index, food)
+                                  }
+                                  className="w-full text-left px-3 py-2 hover:bg-[#1a1b2b] text-sm"
+                                >
+                                  <div className="text-white">{food.name}</div>
+                                  {food.brand && (
+                                    <div className="text-xs text-gray-400">
+                                      {food.brand}
+                                    </div>
+                                  )}
+                                </button>
+                              ))}
+                            {!isSearching && foodSuggestions.length === 0 && (
+                              <div className="px-3 py-2 text-xs text-gray-500">
+                                No matches found
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <input

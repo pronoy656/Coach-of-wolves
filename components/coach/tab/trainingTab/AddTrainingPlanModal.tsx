@@ -4,12 +4,17 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
+import { useAppDispatch } from "@/redux/hooks";
 import {
   BackendExercise,
   TrainingPlan,
   TrainingPlanFormData,
   ExerciseSet,
 } from "@/redux/features/trainingPlan/trainingPlanType";
+import {
+  getAllExercises,
+  Exercise,
+} from "@/redux/features/exercise/exerciseSlice";
 
 interface ExerciseState extends BackendExercise {
   id: string;
@@ -30,67 +35,77 @@ export default function AddTrainingPlanModal({
   editingPlan,
   loading = false,
 }: AddPlanModalProps) {
-  const initialExercise: ExerciseState = {
-    id: Date.now().toString(),
+  const dispatch = useAppDispatch();
+  const createEmptyExercise = (id: string): ExerciseState => ({
+    id,
     exerciseName: "",
     excerciseNote: "",
     exerciseSets: [{ sets: "1", repRange: "", rir: "" }],
-  };
+  });
 
   const [traingPlanName, setTraingPlanName] = useState("");
   const [dificulty, setDificulty] = useState("Begineer");
   const [comment, setComment] = useState("");
   const [exercises, setExercises] = useState<ExerciseState[]>([
-    initialExercise,
+    createEmptyExercise("0"),
   ]);
+  const [exerciseSuggestions, setExerciseSuggestions] = useState<Exercise[]>(
+    [],
+  );
+  const [isSearching, setIsSearching] = useState(false);
+  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdownForId, setShowDropdownForId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (editingPlan) {
-      setTraingPlanName(editingPlan.traingPlanName);
-      setDificulty(editingPlan.dificulty || "Begineer");
-      setComment(editingPlan.comment || "");
-      setExercises(
-        editingPlan.exercise && editingPlan.exercise.length > 0
-          ? editingPlan.exercise.map((ex) => ({
-              ...ex,
-              id: ex._id || Math.random().toString(),
-              exerciseSets:
-                ex.exerciseSets && ex.exerciseSets.length > 0
-                  ? ex.exerciseSets.map((sd) => ({
-                      ...sd,
-                      sets: sd.sets || "1",
-                      repRange: sd.repRange || "",
-                      rir: sd.rir || "",
-                    }))
-                  : [{ sets: "1", repRange: "", rir: "" }],
-            }))
-          : [initialExercise],
-      );
-    } else {
-      setTraingPlanName("");
-      setDificulty("Begineer");
-      setComment("");
-      setExercises([{ ...initialExercise, id: Date.now().toString() }]);
-    }
+    if (!open) return;
+
+    const hasEditingPlan = !!editingPlan;
+
+    const nextTraingPlanName = hasEditingPlan ? editingPlan.traingPlanName : "";
+    const nextDificulty = hasEditingPlan
+      ? editingPlan.dificulty || "Begineer"
+      : "Begineer";
+    const nextComment = hasEditingPlan ? editingPlan.comment || "" : "";
+    const nextExercises = hasEditingPlan
+      ? editingPlan.exercise && editingPlan.exercise.length > 0
+        ? editingPlan.exercise.map((ex, index) => ({
+            ...ex,
+            id: ex._id || `local-${index}`,
+            exerciseSets:
+              ex.exerciseSets && ex.exerciseSets.length > 0
+                ? ex.exerciseSets.map((sd) => ({
+                    ...sd,
+                    sets: sd.sets || "1",
+                    repRange: sd.repRange || "",
+                    rir: sd.rir || "",
+                  }))
+                : [{ sets: "1", repRange: "", rir: "" }],
+          }))
+        : [createEmptyExercise("0")]
+      : [createEmptyExercise("0")];
+
+    const id = setTimeout(() => {
+      setTraingPlanName(nextTraingPlanName);
+      setDificulty(nextDificulty);
+      setComment(nextComment);
+      setExercises(nextExercises);
+    }, 0);
+
+    return () => clearTimeout(id);
   }, [editingPlan, open]);
 
   const handleAddExercise = () => {
-    setExercises((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString() + Math.random(),
-        exerciseName: "",
-        excerciseNote: "",
-        exerciseSets: [{ sets: "1", repRange: "", rir: "" }],
-      },
-    ]);
+    setExercises((prev) => [...prev, createEmptyExercise(String(prev.length))]);
   };
 
   const handleRemoveExercise = (id: string) => {
     if (exercises.length > 1) {
       setExercises((prev) => prev.filter((ex) => ex.id !== id));
     } else {
-      setExercises([{ ...initialExercise, id: Date.now().toString() }]);
+      setExercises([createEmptyExercise("0")]);
     }
   };
 
@@ -102,6 +117,10 @@ export default function AddTrainingPlanModal({
     setExercises((prev) =>
       prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex)),
     );
+    if (field === "exerciseName") {
+      setActiveExerciseId(id);
+      setSearchTerm(String(value));
+    }
   };
 
   const handleAddSet = (exerciseId: string) => {
@@ -160,6 +179,71 @@ export default function AddTrainingPlanModal({
       comment,
     };
     onSave(planData);
+  };
+
+  useEffect(() => {
+    const query = searchTerm.trim();
+    if (!query || query.length < 2) {
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      setIsSearching(true);
+      dispatch(
+        getAllExercises({
+          page: 1,
+          limit: 10,
+          search: query,
+        }),
+      )
+        .unwrap()
+        .then((res) => {
+          setExerciseSuggestions(res.exercises);
+        })
+        .catch(() => {
+          setExerciseSuggestions([]);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [dispatch, searchTerm]);
+
+  const handleExerciseFocus = (id: string) => {
+    setShowDropdownForId(id);
+    setActiveExerciseId(id);
+
+    if (exerciseSuggestions.length > 0 || isSearching) return;
+
+    setIsSearching(true);
+    dispatch(
+      getAllExercises({
+        page: 1,
+        limit: 50,
+        search: "",
+      }),
+    )
+      .unwrap()
+      .then((res) => {
+        setExerciseSuggestions(res.exercises);
+      })
+      .catch(() => {
+        setExerciseSuggestions([]);
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
+  };
+
+  const handleSelectExerciseSuggestion = (id: string, item: Exercise) => {
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.id === id ? { ...ex, exerciseName: item.name } : ex,
+      ),
+    );
+    setShowDropdownForId(null);
   };
 
   if (!open) return null;
@@ -256,8 +340,45 @@ export default function AddTrainingPlanModal({
                             e.target.value,
                           )
                         }
+                        onFocus={() => handleExerciseFocus(exercise.id)}
                         className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg pl-4 pr-12 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                        autoComplete="off"
                       />
+                      {showDropdownForId === exercise.id && (
+                        <div className="absolute z-20 mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                          {isSearching && (
+                            <div className="px-3 py-2 text-xs text-gray-400">
+                              Searching...
+                            </div>
+                          )}
+                          {!isSearching &&
+                            exerciseSuggestions.map((item) => (
+                              <button
+                                key={item._id}
+                                type="button"
+                                onClick={() =>
+                                  handleSelectExerciseSuggestion(
+                                    exercise.id,
+                                    item,
+                                  )
+                                }
+                                className="w-full text-left px-3 py-2 hover:bg-[#2a2a2a] text-sm"
+                              >
+                                <div className="text-white">{item.name}</div>
+                                {item.musal && (
+                                  <div className="text-xs text-gray-400">
+                                    {item.musal}
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          {!isSearching && exerciseSuggestions.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-gray-500">
+                              No matches found
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <button
                         onClick={handleAddExercise}
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#2a2a2a] hover:bg-[#3a3a3a] p-1.5 rounded-md text-emerald-500 transition-colors"

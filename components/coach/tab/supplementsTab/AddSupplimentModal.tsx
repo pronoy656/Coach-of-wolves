@@ -2,13 +2,17 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  Supplement,
+  Supplement as CoachSupplement,
   CreateSupplementPayload,
 } from "@/redux/features/supplement/coachSupplementSlice";
+import {
+  searchSupplements,
+  Supplement as DbSupplement,
+} from "@/redux/features/supplement/supplementSlice";
 
 const translations = {
   en: {
@@ -41,7 +45,7 @@ const translations = {
 
 interface SupplementFormModalProps {
   isOpen: boolean;
-  supplement: Supplement | null;
+  supplement: CoachSupplement | null;
   onClose: () => void;
   onSave: (data: CreateSupplementPayload) => void;
 }
@@ -52,6 +56,7 @@ export default function AddSupplimentModal({
   onClose,
   onSave,
 }: SupplementFormModalProps) {
+  const dispatch = useAppDispatch();
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
 
@@ -70,6 +75,10 @@ export default function AddSupplimentModal({
     brand: supplement?.brand || "",
   });
 
+  const [suggestions, setSuggestions] = useState<DbSupplement[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -78,6 +87,76 @@ export default function AddSupplimentModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleSelectSuggestion = (supp: DbSupplement) => {
+    setFormData((prev) => ({
+      ...prev,
+      name: supp.name,
+      brand: supp.brand || prev.brand,
+      dosage: supp.dosage || prev.dosage,
+      frequency: supp.frequency || prev.frequency,
+      time: supp.time || prev.time,
+      purpose: supp.purpose || prev.purpose,
+      note: supp.note || prev.note,
+    }));
+    setSuggestions([]);
+    setShowDropdown(false);
+  };
+
+  useEffect(() => {
+    const query = formData.name.trim();
+    if (!query || query.length < 2) {
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      setIsSearching(true);
+      dispatch(
+        searchSupplements({
+          query,
+          page: 1,
+          limit: 10,
+        }),
+      )
+        .unwrap()
+        .then((res) => {
+          setSuggestions(res.items);
+        })
+        .catch(() => {
+          setSuggestions([]);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [dispatch, formData.name]);
+
+  const handleNameFocus = () => {
+    setShowDropdown(true);
+
+    if (suggestions.length > 0 || isSearching) return;
+
+    setIsSearching(true);
+    dispatch(
+      searchSupplements({
+        query: "",
+        page: 1,
+        limit: 50,
+      }),
+    )
+      .unwrap()
+      .then((res) => {
+        setSuggestions(res.items);
+      })
+      .catch(() => {
+        setSuggestions([]);
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -115,7 +194,7 @@ export default function AddSupplimentModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Supplement Name */}
-              <div>
+              <div className="relative">
                 <label className="block text-gray-400 mb-2">
                   {t.supplementName}
                 </label>
@@ -124,10 +203,42 @@ export default function AddSupplimentModal({
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
+                  onFocus={handleNameFocus}
                   placeholder={t.typePlaceholder}
                   className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  autoComplete="off"
                   required
                 />
+                {showDropdown && (
+                  <div className="absolute z-20 mt-1 w-full bg-[#0B0C15] border border-[#303245] rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                    {isSearching && (
+                      <div className="px-3 py-2 text-xs text-gray-400">
+                        Searching...
+                      </div>
+                    )}
+                    {!isSearching &&
+                      suggestions.map((sugg) => (
+                        <button
+                          key={sugg._id}
+                          type="button"
+                          onClick={() => handleSelectSuggestion(sugg)}
+                          className="w-full text-left px-3 py-2 hover:bg-[#1a1b2b] text-sm"
+                        >
+                          <div className="text-white">{sugg.name}</div>
+                          {sugg.brand && (
+                            <div className="text-xs text-gray-400">
+                              {sugg.brand}
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    {!isSearching && suggestions.length === 0 && (
+                      <div className="px-3 py-2 text-xs text-gray-500">
+                        No matches found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Brand */}
