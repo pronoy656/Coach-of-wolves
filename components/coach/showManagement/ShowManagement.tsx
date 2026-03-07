@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Edit2, Trash2, Loader2 } from "lucide-react";
+import { Edit2, Trash2, Loader2, Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Show } from "@/redux/features/show/showTypes";
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/redux/features/show/showSlice";
 import ShowManagementStatCard from "./showManagementStatCard/ShowManagementStatCard";
 import ShowManagementModal from "./showManagementModal/ShowManagementModal";
+import AssignShowModal from "./showManagementModal/AssignShowModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import toast from "react-hot-toast";
 
@@ -81,7 +82,11 @@ export default function ShowManagement() {
   const t = translations[language as keyof typeof translations];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [editingShow, setEditingShow] = useState<Show | null>(null);
+  const [selectedShowForAssign, setSelectedShowForAssign] = useState<Show | null>(
+    null,
+  );
   const [deleteConfirmShow, setDeleteConfirmShow] = useState<Show | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -138,6 +143,11 @@ export default function ShowManagement() {
   const handleEditShow = (show: Show) => {
     setEditingShow(show);
     setIsModalOpen(true);
+  };
+
+  const handleAssignShow = (show: Show) => {
+    setSelectedShowForAssign(show);
+    setIsAssignModalOpen(true);
   };
 
   const handleDeleteShow = (show: Show) => {
@@ -270,9 +280,8 @@ export default function ShowManagement() {
                     return (
                       <tr
                         key={show._id}
-                        className={`border-b border-[#303245] hover:bg-[#1a1a2a] transition-colors ${
-                          index % 2 === 0 ? "bg-[#0f0f1e]" : "bg-[#0a0a14]"
-                        } ${isPast ? "opacity-70" : ""}`}
+                        className={`border-b border-[#303245] hover:bg-[#1a1a2a] transition-colors ${index % 2 === 0 ? "bg-[#0f0f1e]" : "bg-[#0a0a14]"
+                          } ${isPast ? "opacity-70" : ""}`}
                       >
                         <td className="px-6 py-4 text-white font-medium">
                           {show.name}
@@ -288,19 +297,26 @@ export default function ShowManagement() {
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`font-medium ${
-                              show.countdown <= 0
-                                ? "text-gray-400"
-                                : show.countdown <= 7
-                                  ? "text-amber-400"
-                                  : "text-emerald-400"
-                            }`}
+                            className={`font-medium ${show.countdown <= 0
+                              ? "text-gray-400"
+                              : show.countdown <= 7
+                                ? "text-amber-400"
+                                : "text-emerald-400"
+                              }`}
                           >
                             {formatCountdown(show.countdown)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleAssignShow(show)}
+                              disabled={loading || isProcessing}
+                              className="w-8 h-8 bg-emerald-600/20 border border-emerald-600 hover:bg-emerald-600/30 rounded-full flex items-center justify-center text-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Assign Athlete"
+                            >
+                              <Plus size={16} />
+                            </button>
                             <button
                               onClick={() => handleEditShow(show)}
                               disabled={loading || isProcessing}
@@ -355,6 +371,16 @@ export default function ShowManagement() {
             setEditingShow(null);
           }}
           loading={loading || isProcessing}
+        />
+      )}
+
+      {isAssignModalOpen && selectedShowForAssign && (
+        <AssignShowModal
+          show={selectedShowForAssign}
+          onClose={() => {
+            setIsAssignModalOpen(false);
+            setSelectedShowForAssign(null);
+          }}
         />
       )}
 

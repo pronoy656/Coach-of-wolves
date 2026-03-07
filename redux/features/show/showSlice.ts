@@ -65,6 +65,19 @@ export const deleteShow = createAsyncThunk(
     }
 );
 
+// Assign show to athlete
+export const assignShowToAthlete = createAsyncThunk(
+    "show/assign",
+    async ({ showId, athleteId }: { showId: string; athleteId: string }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.post(`/show/assign-athlete`, { showId, athleteId });
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to assign show");
+        }
+    }
+);
+
 const showSlice = createSlice({
     name: "show",
     initialState,
@@ -156,6 +169,19 @@ const showSlice = createSlice({
                 state.successMessage = action.payload.message;
             })
             .addCase(deleteShow.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Assign show
+            .addCase(assignShowToAthlete.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(assignShowToAthlete.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.successMessage = action.payload.message || "Show assigned successfully";
+            })
+            .addCase(assignShowToAthlete.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

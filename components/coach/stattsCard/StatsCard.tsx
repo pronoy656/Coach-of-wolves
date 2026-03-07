@@ -94,78 +94,78 @@ export default function StatsCard() {
   // Format the cards based on API data
   const cards: StatCard[] = data
     ? [
-        {
-          label: t.totalAthletes,
-          value: data.totalAthletes,
-          icon: Users,
-          color: "text-[#8CCA4D]",
-          description: t.descTotal,
-        },
-        {
-          label: t.activeAthletes,
-          value: data.totalActiveUsers,
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-          description: t.descActive,
-        },
-        {
-          label: t.dailyTracking,
-          value: calculateDailyTrackingPercentage(),
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-          description: t.descDaily(
-            data.dailyTracking.submittedToday,
-            data.totalAthletes,
-          ),
-        },
-        {
-          label: t.pendingCheckIn,
-          value: data.checkins.pending,
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-          description: t.descPending,
-        },
-        {
-          label: t.completeCheckIn,
-          value: data.checkins.completed,
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-          description: t.descComplete,
-        },
-      ]
+      {
+        label: t.totalAthletes,
+        value: data.totalAthletes,
+        icon: Users,
+        color: "text-[#8CCA4D]",
+        description: t.descTotal,
+      },
+      {
+        label: t.activeAthletes,
+        value: data.totalActiveUsers,
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+        description: t.descActive,
+      },
+      // {
+      //   label: t.dailyTracking,
+      //   value: calculateDailyTrackingPercentage(),
+      //   icon: TrendingUp,
+      //   color: "text-[#8CCA4D]",
+      //   description: t.descDaily(
+      //     data.dailyTracking.submittedToday,
+      //     data.totalAthletes,
+      //   ),
+      // },
+      {
+        label: t.pendingCheckIn,
+        value: data.checkins.pending,
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+        description: t.descPending,
+      },
+      {
+        label: t.completeCheckIn,
+        value: data.checkins.completed,
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+        description: t.descComplete,
+      },
+    ]
     : [
-        // Fallback data while loading or if no data
-        {
-          label: t.totalAthletes,
-          value: "0",
-          icon: Users,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: t.activeAthletes,
-          value: "0",
-          icon: Activity,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: t.dailyTracking,
-          value: "0",
-          icon: TrendingUp,
-          color: "text-[#8CCA4D]",
-        },
-        {
-          label: t.pendingCheckIn,
-          value: "0",
-          icon: Clock,
-          color: "text-[#FF6B6B]",
-        },
-        {
-          label: t.completeCheckIn,
-          value: "0",
-          icon: CheckCircle,
-          color: "text-[#8CCA4D]",
-        },
-      ];
+      // Fallback data while loading or if no data
+      {
+        label: t.totalAthletes,
+        value: "0",
+        icon: Users,
+        color: "text-[#8CCA4D]",
+      },
+      {
+        label: t.activeAthletes,
+        value: "0",
+        icon: Activity,
+        color: "text-[#8CCA4D]",
+      },
+      // {
+      //   label: t.dailyTracking,
+      //   value: "0",
+      //   icon: TrendingUp,
+      //   color: "text-[#8CCA4D]",
+      // },
+      {
+        label: t.pendingCheckIn,
+        value: "0",
+        icon: Clock,
+        color: "text-[#FF6B6B]",
+      },
+      {
+        label: t.completeCheckIn,
+        value: "0",
+        icon: CheckCircle,
+        color: "text-[#8CCA4D]",
+      },
+    ];
 
   // Add dynamic description to cards if data exists with translation
   if (data) {
@@ -203,7 +203,7 @@ export default function StatsCard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card, i) => (
           <div
             key={i}
