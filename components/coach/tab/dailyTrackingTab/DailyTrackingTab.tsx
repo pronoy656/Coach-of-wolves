@@ -110,7 +110,7 @@ const LabelCell = ({
     <span className="uppercase">{label}</span>
     {unit && <span className="text-xs font-normal">{unit}</span>}
     {subLabel && (
-      <span className="text-[10px] text-gray-400 font-normal uppercase mt-1">
+      <span className="text-[10px] text-gray-300 font-medium uppercase mt-1">
         {subLabel}
       </span>
     )}
@@ -361,6 +361,14 @@ export default function Dashboard() {
           average: getAverage("nutrition.salt"),
         },
         {
+          id: "water",
+          label: "WATER",
+          type: "read-only",
+          values: getValues("water"),
+          average: getAverage("water"),
+          rowColor: "#593C62",
+        },
+        {
           id: "hunger",
           label: "HUNGER",
           subLabel: "SCALE 1-10",
@@ -443,17 +451,18 @@ export default function Dashboard() {
           label: "Sickness",
           subLabel: "YES / NO",
           type: "dropdown",
-          values: Array.from({ length: 7 }).map((_, i) =>
-            weekData[i] ? (weekData[i].sick ? "YES" : "NO") : "",
-          ),
+          values: Array.from({ length: 7 }).map((_, i) => {
+            const val = weekData[i]?.sick;
+            if (val === undefined || val === null) return "";
+            return val ? "YES" : "NO";
+          }),
           average: "",
           cellColors: Array.from({ length: 7 }).map((_, i) => {
-            const day = weekData[i];
-            if (!day) {
+            const val = weekData[i]?.sick;
+            if (val === undefined || val === null) {
               return "#2B2B3D";
             }
-            const val = day.sick ? "YES" : "NO";
-            return val === "YES" ? "#b91c1c" : "#15803d";
+            return val ? "#b91c1c" : "#15803d";
           }),
         },
       ],
@@ -525,13 +534,11 @@ export default function Dashboard() {
           id: "tr_comp",
           label: "Training Completed",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) =>
-            weekData[i]
-              ? weekData[i].training?.trainingCompleted
-                ? "Yes"
-                : "No"
-              : "",
-          ),
+          values: Array.from({ length: 7 }).map((_, i) => {
+            const val = weekData[i]?.training?.trainingCompleted;
+            if (val === undefined || val === null) return "";
+            return val ? "Yes" : "No";
+          }),
           average: "",
         },
         {
@@ -547,13 +554,11 @@ export default function Dashboard() {
           id: "cardio_comp",
           label: "Cardio Completed",
           type: "text",
-          values: Array.from({ length: 7 }).map((_, i) =>
-            weekData[i]
-              ? weekData[i].training?.cardioCompleted
-                ? "Yes"
-                : "No"
-              : "",
-          ),
+          values: Array.from({ length: 7 }).map((_, i) => {
+            const val = weekData[i]?.training?.cardioCompleted;
+            if (val === undefined || val === null) return "";
+            return val ? "Yes" : "No";
+          }),
           average: "",
         },
 
