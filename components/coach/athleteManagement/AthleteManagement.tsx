@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { ChevronDown, Search, Edit2, Trash2, Loader2 } from "lucide-react";
+import { ChevronDown, Search, Edit2, Trash2, Loader2, Trophy } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
+import AssignMultipleShowsModal from "./assignMultipleShowsModal/AssignMultipleShowsModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import Image from "next/image";
 import { getFullImageUrl } from "@/lib/utils";
@@ -84,6 +85,7 @@ const translations = {
     delete: "Delete",
     genderMale: "Male",
     genderFemale: "Female",
+    assignShows: "Assign Shows",
     na: "N/A",
     categoryLabels: {
       Lifestyle: "Lifestyle",
@@ -142,6 +144,7 @@ const translations = {
     delete: "Löschen",
     genderMale: "Männlich",
     genderFemale: "Weiblich",
+    assignShows: "Shows zuweisen",
     na: "N/V",
     categoryLabels: {
       Lifestyle: "Lifestyle",
@@ -187,6 +190,8 @@ export default function AthleteManagement() {
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [athleteToDelete, setAthleteToDelete] = useState<Athlete | null>(null);
+  const [isAssignShowsModalOpen, setIsAssignShowsModalOpen] = useState(false);
+  const [selectedAthleteForShows, setSelectedAthleteForShows] = useState<Athlete | null>(null);
 
   useEffect(() => {
     if (!profile) {
@@ -261,6 +266,11 @@ export default function AthleteManagement() {
   const handleDeleteAthlete = (athlete: Athlete) => {
     setAthleteToDelete(athlete);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleAssignShows = (athlete: Athlete) => {
+    setSelectedAthleteForShows(athlete);
+    setIsAssignShowsModalOpen(true);
   };
 
   const confirmDelete = () => {
@@ -494,6 +504,13 @@ export default function AthleteManagement() {
                     <td className="px-6 py-4">
                       <div className="flex gap-3">
                         <button
+                          onClick={() => handleAssignShows(athlete)}
+                          className="p-2 bg-amber-500/20 text-amber-500 rounded-full hover:bg-amber-500/30 transition-colors"
+                          title={t.assignShows}
+                        >
+                          <Trophy size={16} />
+                        </button>
+                        <button
                           onClick={() => handleEditAthlete(athlete)}
                           className="p-2 bg-blue-500/20 text-blue-400 rounded-full hover:bg-blue-500/30 transition-colors"
                           title={t.edit}
@@ -543,6 +560,15 @@ export default function AthleteManagement() {
           setAthleteToDelete(null);
         }}
       />
+      {isAssignShowsModalOpen && selectedAthleteForShows && (
+        <AssignMultipleShowsModal
+          athlete={selectedAthleteForShows}
+          onClose={() => {
+            setIsAssignShowsModalOpen(false);
+            setSelectedAthleteForShows(null);
+          }}
+        />
+      )}
     </main>
   );
 }

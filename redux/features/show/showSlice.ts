@@ -68,9 +68,9 @@ export const deleteShow = createAsyncThunk(
 // Assign show to athlete
 export const assignShowToAthlete = createAsyncThunk(
     "show/assign",
-    async ({ showId, athleteIds }: { showId: string; athleteIds: string[] }, { rejectWithValue }) => {
+    async ({ showId, userIds }: { showId: string; userIds: string[] }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`/show/assign-athlete`, { showId, athleteIds });
+            const response = await axiosInstance.post(`/show/management/show-assign`, { showId, userIds });
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to assign show");

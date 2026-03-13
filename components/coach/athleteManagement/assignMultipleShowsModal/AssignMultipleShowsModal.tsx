@@ -1,87 +1,113 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Search, Loader2, User } from "lucide-react";
+import { X, Search, Loader2, Trophy } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { Show } from "@/redux/features/show/showTypes";
-import { getAllAthletesByCoach } from "@/redux/features/athlete/athleteSlice";
-import { assignShowToAthlete } from "@/redux/features/show/showSlice";
+import { Athlete } from "@/redux/features/coachAthletes/coachAthletesType";
+import { fetchShows, assignShowToAthlete, clearMessages } from "@/redux/features/show/showSlice";
 import toast from "react-hot-toast";
 
-interface AssignShowModalProps {
-    show: Show;
+interface AssignMultipleShowsModalProps {
+    athlete: Athlete;
     onClose: () => void;
 }
 
 const translations = {
     en: {
-        title: "Assign Show",
-        subtitle: (name: string) => `Assign the show "${name}" to athletes.`,
-        label: "Assign Athletes",
-        placeholder: "Search athlete...",
-        noAthletes: "No athletes found",
+        title: "Assign Shows",
+        subtitle: (name: string) => `Assign competitions to "${name}".`,
+        label: "Select Shows",
+        placeholder: "Search shows...",
+        noShows: "No shows found",
         cancel: "Cancel",
         assign: "Assign",
-        selectAthleteError: "Please select at least one athlete",
+        selectShowError: "Please select at least one show",
+        success: "Shows successfully assigned!",
     },
     de: {
-        title: "Show zuweisen",
-        subtitle: (name: string) => `Weisen Sie die Show "${name}" Athleten zu.`,
-        label: "Athleten zuweisen",
-        placeholder: "Athleten suchen...",
-        noAthletes: "Keine Athleten gefunden",
+        title: "Shows zuweisen",
+        subtitle: (name: string) => `Wettkämpfe an "${name}" zuweisen.`,
+        label: "Shows auswählen",
+        placeholder: "Shows suchen...",
+        noShows: "Keine Shows gefunden",
         cancel: "Abbrechen",
         assign: "Zuweisen",
-        selectAthleteError: "Bitte wählen Sie mindestens einen Athleten aus",
+        selectShowError: "Bitte wählen Sie mindestens eine Show aus",
+        success: "Shows erfolgreich zugewiesen!",
     },
 };
 
-export default function AssignShowModal({ show, onClose }: AssignShowModalProps) {
+export default function AssignMultipleShowsModal({ athlete, onClose }: AssignMultipleShowsModalProps) {
     const dispatch = useAppDispatch();
-    const { athletes, loading: athletesLoading } = useAppSelector((state) => state.athlete);
-    const { loading: assignLoading, successMessage, error } = useAppSelector((state) => state.show);
+    const { shows, loading: showsLoading, successMessage, error } = useAppSelector((state) => state.show);
     const { language } = useAppSelector((state) => state.language);
     const t = translations[language as keyof typeof translations] || translations.en;
 
     const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
-    const [selectedAthletes, setSelectedAthletes] = useState<{ id: string; name: string }[]>([]);
+    const [selectedShows, setSelectedShows] = useState<{ id: string; name: string }[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        dispatch(getAllAthletesByCoach());
+        dispatch(fetchShows());
     }, [dispatch]);
 
     useEffect(() => {
         if (successMessage && successMessage.includes("assigned")) {
-            onClose();
+            // We don't want to close immediately if we are looping
+            if (!isSubmitting) {
+                toast.success(t.success);
+                dispatch(clearMessages());
+                onClose();
+            }
         }
-    }, [successMessage, onClose]);
+        if (error) {
+            toast.error(error);
+            dispatch(clearMessages());
+            setIsSubmitting(false);
+        }
+    }, [successMessage, error, onClose, isSubmitting, dispatch, t.success]);
 
-    const filteredAthletes = athletes.filter((athlete) =>
-        athlete.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !selectedAthletes.some((selected) => selected.id === athlete._id)
+    const filteredShows = shows.filter((show) =>
+        show.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !selectedShows.some((selected) => selected.id === show._id)
     );
 
-    const handleAssign = () => {
-        if (selectedAthletes.length > 0) {
-            dispatch(assignShowToAthlete({ 
-                showId: show._id, 
-                userIds: selectedAthletes.map(a => a.id) 
-            }));
-        } else {
-            toast.error(t.selectAthleteError);
+    const handleAssign = async () => {
+        if (selectedShows.length === 0) {
+            toast.error(t.selectShowError);
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            // Call API for each selected show
+            const promises = selectedShows.map(show => 
+                dispatch(assignShowToAthlete({ 
+                    showId: show.id, 
+                    userIds: [athlete._id] 
+                })).unwrap()
+            );
+
+            await Promise.all(promises);
+            toast.success(t.success);
+            onClose();
+        } catch (err: any) {
+            toast.error(err || "Failed to assign some shows");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const toggleAthlete = (athlete: { id: string; name: string }) => {
-        setSelectedAthletes(prev => [...prev, athlete]);
+    const toggleShow = (show: { id: string; name: string }) => {
+        setSelectedShows(prev => [...prev, show]);
         setSearchQuery("");
         setShowDropdown(false);
     };
 
-    const removeAthlete = (id: string) => {
-        setSelectedAthletes(prev => prev.filter(a => a.id !== id));
+    const removeShow = (id: string) => {
+        setSelectedShows(prev => prev.filter(s => s.id !== id));
     };
 
     // Close dropdown when clicking outside
@@ -107,11 +133,12 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                         <X size={24} />
                     </button>
 
-                    <h2 className="text-2xl font-bold mb-2 text-white">
+                    <h2 className="text-2xl font-bold mb-2 text-white flex items-center gap-2">
+                        <Trophy size={28} className="text-amber-400" />
                         {t.title}
                     </h2>
                     <p className="text-gray-400 mb-6 text-sm">
-                        {t.subtitle(show.name)}
+                        {t.subtitle(athlete.name)}
                     </p>
 
                     <div className="space-y-6">
@@ -120,18 +147,18 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                                 {t.label}
                             </label>
 
-                            {/* Selected Athletes Tags */}
-                            {selectedAthletes.length > 0 && (
+                            {/* Selected Shows Tags */}
+                            {selectedShows.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                    {selectedAthletes.map((athlete) => (
+                                    {selectedShows.map((show) => (
                                         <div 
-                                            key={athlete.id}
-                                            className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1 text-emerald-400 text-xs font-medium animate-in zoom-in-50 duration-200"
+                                            key={show.id}
+                                            className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1 text-amber-500 text-xs font-medium animate-in zoom-in-50 duration-200"
                                         >
-                                            <span>{athlete.name}</span>
+                                            <span>{show.name}</span>
                                             <button 
-                                                onClick={() => removeAthlete(athlete.id)}
-                                                className="hover:text-emerald-300 transition-colors"
+                                                onClick={() => removeShow(show.id)}
+                                                className="hover:text-amber-400 transition-colors"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -157,27 +184,27 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
 
                             {showDropdown && (
                                 <div className="absolute z-50 mt-1 w-full bg-[#111125] border border-[#303245] rounded-lg shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden scrollbar-none animate-in slide-in-from-top-2 duration-150">
-                                    {athletesLoading ? (
+                                    {showsLoading ? (
                                         <div className="p-4 flex justify-center">
                                             <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
                                         </div>
-                                    ) : filteredAthletes.length > 0 ? (
-                                        filteredAthletes.map((athlete) => (
+                                    ) : filteredShows.length > 0 ? (
+                                        filteredShows.map((show) => (
                                             <button
-                                                key={athlete._id}
+                                                key={show._id}
                                                 type="button"
-                                                onClick={() => toggleAthlete({ id: athlete._id, name: athlete.name })}
+                                                onClick={() => toggleShow({ id: show._id, name: show.name })}
                                                 className="w-full text-left px-4 py-3 hover:bg-emerald-500/10 flex items-center gap-3 transition-colors border-b border-[#303245]/50 last:border-0"
                                             >
-                                                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-emerald-400">
-                                                    <User size={16} />
+                                                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-amber-500">
+                                                    <Trophy size={16} />
                                                 </div>
-                                                <span className="text-white text-sm">{athlete.name}</span>
+                                                <span className="text-white text-sm">{show.name}</span>
                                             </button>
                                         ))
                                     ) : (
                                         <div className="p-4 text-center text-gray-500 text-sm">
-                                            {searchQuery ? t.noAthletes : "Type to search..."}
+                                            {searchQuery ? t.noShows : "Type to search..."}
                                         </div>
                                     )}
                                 </div>
@@ -194,10 +221,10 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                             </button>
                             <button
                                 onClick={handleAssign}
-                                disabled={assignLoading || selectedAthletes.length === 0}
+                                disabled={isSubmitting || selectedShows.length === 0}
                                 className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                                {assignLoading ? (
+                                {isSubmitting ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     t.assign
