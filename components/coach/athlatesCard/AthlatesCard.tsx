@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { getFullImageUrl } from "@/lib/utils";
 
 interface AthleteCardProps {
   _id: string;
@@ -25,19 +26,7 @@ function formatToShortDate(dateString: string): string {
   return `${day} ${month} ${year}`;
 }
 
-function resolveAthleteImageSrc(image: string | undefined): string {
-  if (!image) {
-    return "/placeholder.svg";
-  }
-  if (image.startsWith("http")) {
-    return image;
-  }
-  if (image.startsWith("/")) {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    return `${base}${image}`;
-  }
-  return image;
-}
+
 
 export default function AthleteCard({
   _id,
@@ -64,7 +53,7 @@ export default function AthleteCard({
 
   const genderStyle = getGenderStyle(gender);
 
-  const imageSrc = resolveAthleteImageSrc(image);
+  const imageSrc = getFullImageUrl(image);
 
   return (
     <Link href={`/coach/details/${_id}`} className="block">

@@ -42,8 +42,8 @@ export const getFullImageUrl = (imagePath?: string): string => {
     return "/placeholder.svg";
   }
 
-  // Already absolute URL
-  if (/^https?:\/\//.test(imagePath)) {
+  // Already absolute URL or base64 data URI
+  if (/^https?:\/\//.test(imagePath) || imagePath.startsWith("data:")) {
     return imagePath;
   }
 

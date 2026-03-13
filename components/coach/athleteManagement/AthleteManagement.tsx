@@ -5,6 +5,7 @@ import { ChevronDown, Search, Edit2, Trash2, Loader2 } from "lucide-react";
 import AddAthleteModal from "./addAthleteModal/AddAthleteModal";
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import Image from "next/image";
+import { getFullImageUrl } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchCoachAthletes,
@@ -427,7 +428,7 @@ export default function AthleteManagement() {
                     <td className="px-6 py-4">
                       {athlete.image ? (
                         <Image
-                          src={athlete.image || "/placeholder.svg"}
+                          src={getFullImageUrl(athlete.image as string)}
                           alt={athlete.name}
                           width={40}
                           height={40}

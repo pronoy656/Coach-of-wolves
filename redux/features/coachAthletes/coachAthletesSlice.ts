@@ -30,7 +30,20 @@ export const addAthlete = createAsyncThunk(
     "coachAthletes/add",
     async (athleteData: Partial<Athlete>, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post("/athlete?userModel=User", athleteData);
+            const formData = new FormData();
+            Object.entries(athleteData).forEach(([key, value]) => {
+                if (key === "image" && value instanceof File) {
+                    formData.append(key, value);
+                } else if (value !== undefined && value !== null) {
+                    formData.append(key, String(value));
+                }
+            });
+
+            const response = await axiosInstance.post("/athlete?userModel=User", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             return response.data;
         } catch (error: any) {
             return rejectWithValue(
@@ -44,7 +57,20 @@ export const updateAthlete = createAsyncThunk(
     "coachAthletes/update",
     async ({ id, data }: { id: string; data: Partial<Athlete> }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.put(`/athlete/${id}`, data);
+            const formData = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                if (key === "image" && value instanceof File) {
+                    formData.append(key, value);
+                } else if (value !== undefined && value !== null) {
+                    formData.append(key, String(value));
+                }
+            });
+
+            const response = await axiosInstance.put(`/athlete/${id}`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             return response.data;
         } catch (error: any) {
             return rejectWithValue(

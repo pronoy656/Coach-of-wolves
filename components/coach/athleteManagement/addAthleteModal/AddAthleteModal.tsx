@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { X, Upload } from "lucide-react";
+import { getFullImageUrl } from "@/lib/utils";
 import { Athlete } from "@/redux/features/coachAthletes/coachAthletesType";
 import { useAppSelector } from "@/redux/hooks";
 
@@ -197,7 +198,7 @@ export default function AddAthleteModal({
   useEffect(() => {
     if (athlete) {
       setFormData(athlete);
-      if (athlete.image) {
+      if (athlete.image && typeof athlete.image === "string") {
         setImagePreview(athlete.image);
       } else {
         setImagePreview("");
@@ -254,7 +255,7 @@ export default function AddAthleteModal({
         setImagePreview(result);
         setFormData((prev) => ({
           ...prev,
-          image: result,
+          image: file as any,
         }));
       };
       reader.readAsDataURL(file);
@@ -541,7 +542,7 @@ export default function AddAthleteModal({
             {imagePreview && (
               <div className="mt-4 relative">
                 <img
-                  src={imagePreview || "/placeholder.svg"}
+                  src={getFullImageUrl(imagePreview as string)}
                   alt="Preview"
                   className="w-full h-48 object-cover rounded-lg border border-emerald-500/40"
                 />

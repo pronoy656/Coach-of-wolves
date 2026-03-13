@@ -16,23 +16,23 @@ interface AssignShowModalProps {
 const translations = {
     en: {
         title: "Assign Show",
-        subtitle: (name: string) => `Assign the show "${name}" to an athlete.`,
-        label: "Assign Athlete",
+        subtitle: (name: string) => `Assign the show "${name}" to athletes.`,
+        label: "Assign Athletes",
         placeholder: "Search athlete...",
         noAthletes: "No athletes found",
         cancel: "Cancel",
         assign: "Assign",
-        selectAthleteError: "Please select an athlete",
+        selectAthleteError: "Please select at least one athlete",
     },
     de: {
         title: "Show zuweisen",
-        subtitle: (name: string) => `Weisen Sie die Show "${name}" einem Athleten zu.`,
-        label: "Athlet zuweisen",
+        subtitle: (name: string) => `Weisen Sie die Show "${name}" Athleten zu.`,
+        label: "Athleten zuweisen",
         placeholder: "Athleten suchen...",
         noAthletes: "Keine Athleten gefunden",
         cancel: "Abbrechen",
         assign: "Zuweisen",
-        selectAthleteError: "Bitte wählen Sie einen Athleten aus",
+        selectAthleteError: "Bitte wählen Sie mindestens einen Athleten aus",
     },
 };
 
@@ -45,7 +45,7 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
 
     const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
-    const [selectedAthlete, setSelectedAthlete] = useState<{ id: string; name: string } | null>(null);
+    const [selectedAthletes, setSelectedAthletes] = useState<{ id: string; name: string }[]>([]);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -54,23 +54,34 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
 
     useEffect(() => {
         if (successMessage && successMessage.includes("assigned")) {
-            // We only want to close if it's an assignment success
-            // though clearMessages is usually called in the parent or by another effect.
-            // But here we rely on the thunk's success.
             onClose();
         }
     }, [successMessage, onClose]);
 
     const filteredAthletes = athletes.filter((athlete) =>
-        athlete.name.toLowerCase().includes(searchQuery.toLowerCase())
+        athlete.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !selectedAthletes.some((selected) => selected.id === athlete._id)
     );
 
     const handleAssign = () => {
-        if (selectedAthlete) {
-            dispatch(assignShowToAthlete({ showId: show._id, athleteId: selectedAthlete.id }));
+        if (selectedAthletes.length > 0) {
+            dispatch(assignShowToAthlete({ 
+                showId: show._id, 
+                athleteIds: selectedAthletes.map(a => a.id) 
+            }));
         } else {
             toast.error(t.selectAthleteError);
         }
+    };
+
+    const toggleAthlete = (athlete: { id: string; name: string }) => {
+        setSelectedAthletes(prev => [...prev, athlete]);
+        setSearchQuery("");
+        setShowDropdown(false);
+    };
+
+    const removeAthlete = (id: string) => {
+        setSelectedAthletes(prev => prev.filter(a => a.id !== id));
     };
 
     // Close dropdown when clicking outside
@@ -108,14 +119,34 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                             <label className="block text-sm font-semibold mb-2 text-emerald-300">
                                 {t.label}
                             </label>
+
+                            {/* Selected Athletes Tags */}
+                            {selectedAthletes.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {selectedAthletes.map((athlete) => (
+                                        <div 
+                                            key={athlete.id}
+                                            className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1 text-emerald-400 text-xs font-medium animate-in zoom-in-50 duration-200"
+                                        >
+                                            <span>{athlete.name}</span>
+                                            <button 
+                                                onClick={() => removeAthlete(athlete.id)}
+                                                className="hover:text-emerald-300 transition-colors"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder={t.placeholder}
-                                    value={selectedAthlete ? selectedAthlete.name : searchQuery}
+                                    value={searchQuery}
                                     onChange={(e) => {
                                         setSearchQuery(e.target.value);
-                                        if (selectedAthlete) setSelectedAthlete(null);
                                         setShowDropdown(true);
                                     }}
                                     onFocus={() => setShowDropdown(true)}
@@ -135,11 +166,7 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                                             <button
                                                 key={athlete._id}
                                                 type="button"
-                                                onClick={() => {
-                                                    setSelectedAthlete({ id: athlete._id, name: athlete.name });
-                                                    setSearchQuery("");
-                                                    setShowDropdown(false);
-                                                }}
+                                                onClick={() => toggleAthlete({ id: athlete._id, name: athlete.name })}
                                                 className="w-full text-left px-4 py-3 hover:bg-emerald-500/10 flex items-center gap-3 transition-colors border-b border-[#303245]/50 last:border-0"
                                             >
                                                 <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-emerald-400">
@@ -150,7 +177,7 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                                         ))
                                     ) : (
                                         <div className="p-4 text-center text-gray-500 text-sm">
-                                            {t.noAthletes}
+                                            {searchQuery ? t.noAthletes : "Type to search..."}
                                         </div>
                                     )}
                                 </div>
@@ -167,7 +194,7 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
                             </button>
                             <button
                                 onClick={handleAssign}
-                                disabled={assignLoading || !selectedAthlete}
+                                disabled={assignLoading || selectedAthletes.length === 0}
                                 className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {assignLoading ? (

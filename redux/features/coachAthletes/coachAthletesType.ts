@@ -10,7 +10,7 @@ export interface Athlete {
     phase: string;
     weight: number;
     height: number;
-    image?: string;
+    image?: string | File;
     notifiedThisWeek?: boolean;
     age: number;
     waterQuantity: number;
