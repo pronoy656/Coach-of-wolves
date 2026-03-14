@@ -6,6 +6,10 @@ import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
 import { fetchTimelineByAthlete } from "@/redux/features/timeline/timelineSlice";
+import { 
+  createCoachNote, 
+  clearNoteMessages 
+} from "@/redux/features/coachNote/coachNoteSlice";
 import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -128,13 +132,17 @@ export default function Dashboard() {
   );
   const { currentAthlete } = useAppSelector((state) => state.athlete);
   const { timeline } = useAppSelector((state) => state.timeline);
+  const { 
+    loading: noteLoading, 
+    error: noteError, 
+    successMessage: noteSuccess 
+  } = useAppSelector((state) => state.coachNote);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     undefined,
   );
   const [coachNote, setCoachNote] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const formatDateDisplay = (dateString: string | undefined) => {
@@ -195,19 +203,21 @@ export default function Dashboard() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      // Mocking submission logic - This should be replaced with a real API call or Redux thunk
-      // For now we'll just show a success message as the backend endpoint is not yet defined
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Coach note submitted successfully!");
-      setCoachNote("");
-    } catch (err) {
-      toast.error("Failed to submit coach note");
-    } finally {
-      setIsSubmitting(false);
-    }
+    dispatch(createCoachNote({ athleteId: userId, note: coachNote }));
   };
+
+  // Handle note success/error messages
+  useEffect(() => {
+    if (noteSuccess) {
+      toast.success(noteSuccess);
+      setCoachNote("");
+      dispatch(clearNoteMessages());
+    }
+    if (noteError) {
+      toast.error(noteError);
+      dispatch(clearNoteMessages());
+    }
+  }, [noteSuccess, noteError, dispatch]);
 
   // Click outside listener
   useEffect(() => {
@@ -661,8 +671,8 @@ export default function Dashboard() {
           }),
           average: averages?.bloodPressure
             ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(
-                averages.bloodPressure.diastolic,
-              ).toFixed(0)}`
+              averages.bloodPressure.diastolic,
+            ).toFixed(0)}`
             : "",
         },
         {
@@ -721,9 +731,8 @@ export default function Dashboard() {
               : "Current Week"}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
-              isCalendarOpen ? "rotate-180" : ""
-            }`}
+            className={`w-4 h-4 transition-transform ${isCalendarOpen ? "rotate-180" : ""
+              }`}
           />
         </button>
 
@@ -737,11 +746,10 @@ export default function Dashboard() {
                     setSelectedDate(option.value);
                     setIsCalendarOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
-                    selectedDate === option.value
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value
                       ? "bg-[#2B2B3D] text-emerald-500"
                       : "text-gray-300"
-                  }`}
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -771,9 +779,8 @@ export default function Dashboard() {
               <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700 px-1">
                 <span className="text-gray-300 text-[10px] text-center">
                   {weekData[i]?.date
-                    ? `${formatDateDisplay(weekData[i].date)} ${
-                        weekData[i].day || ""
-                      }`
+                    ? `${formatDateDisplay(weekData[i].date)} ${weekData[i].day || ""
+                    }`
                     : `Day ${i + 1}`}
                 </span>
               </div>
@@ -864,10 +871,10 @@ export default function Dashboard() {
           <div className="flex justify-end">
             <button
               onClick={handleSubmitNote}
-              disabled={isSubmitting}
+              disabled={noteLoading}
               className="flex items-center gap-2 px-4 py-2 border border-green-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-green-500 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/10"
             >
-              {isSubmitting ? (
+              {noteLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Submitting...</span>

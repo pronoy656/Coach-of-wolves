@@ -240,11 +240,10 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
               setIsEditing(true);
             }
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded border transition-colors ${
-            isEditing
+          className={`flex items-center gap-2 px-4 py-2 rounded border transition-colors ${isEditing
               ? "bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-700"
               : "bg-transparent border-[#4b3c5e] text-gray-300 hover:bg-[#1f1a2e]"
-          }`}
+            }`}
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -298,9 +297,8 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                 (day, i) => (
                   <th
                     key={day}
-                    className={`bg-[#f0f0f0] text-[#1a1625] ${
-                      i !== 6 ? "border-r border-[#ccc]" : ""
-                    }`}
+                    className={`bg-[#f0f0f0] text-[#1a1625] ${i !== 6 ? "border-r border-[#ccc]" : ""
+                      }`}
                   >
                     {day}
                   </th>
@@ -327,7 +325,7 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                         >
                           <span className="block text-[10px] leading-tight">
                             {cat.category ===
-                            "ESTROGEN & FERTILITY MANAGEMENT" ? (
+                              "ESTROGEN & FERTILITY MANAGEMENT" ? (
                               <>
                                 ESTROGEN &<br />
                                 FERTILITY
@@ -360,11 +358,10 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                               e.target.value,
                             )
                           }
-                          className={`w-full h-full text-center bg-transparent outline-none text-white placeholder-gray-600 ${
-                            isEditing
+                          className={`w-full h-full text-center bg-transparent outline-none text-white placeholder-gray-600 ${isEditing
                               ? "bg-[#352c41] focus:bg-[#453a54] cursor-text"
                               : "cursor-default"
-                          }`}
+                            }`}
                         />
                       </td>
 
@@ -382,11 +379,10 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                               e.target.value,
                             )
                           }
-                          className={`w-full h-full text-center bg-transparent outline-none text-white placeholder-gray-600 ${
-                            isEditing
+                          className={`w-full h-full text-center bg-transparent outline-none text-white placeholder-gray-600 ${isEditing
                               ? "bg-[#352c41] focus:bg-[#453a54] cursor-text"
                               : "cursor-default"
-                          }`}
+                            }`}
                         />
                       </td>
 
@@ -408,11 +404,10 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                                 e.target.value,
                               )
                             }
-                            className={`w-full h-full text-center bg-transparent outline-none text-white font-medium ${
-                              isEditing
+                            className={`w-full h-full text-center bg-transparent outline-none text-white font-medium ${isEditing
                                 ? "bg-[#4b3c5e]/50 focus:bg-[#5e4b75] cursor-text"
                                 : "cursor-default"
-                            }`}
+                              }`}
                           />
                         </td>
                       ))}

@@ -24,6 +24,7 @@ import coachAthletesReducer from "./features/coachAthletes/coachAthletesSlice";
 import pedReducer from "./features/ped/pedSlice";
 
 import languageReducer from "./features/language/languageSlice";
+import coachNoteReducer from "./features/coachNote/coachNoteSlice";
 
 export const store = configureStore({
   reducer: {
@@ -50,6 +51,7 @@ export const store = configureStore({
     coachAthletes: coachAthletesReducer,
     ped: pedReducer,
     language: languageReducer,
+    coachNote: coachNoteReducer,
   },
 });
 
