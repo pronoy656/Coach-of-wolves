@@ -14,6 +14,7 @@ import {
   deleteNutritionPlan,
   clearMessages,
 } from "@/redux/features/tab/oneNutritionPlanSlice";
+import { createNutrition } from "@/redux/features/nutrition/nutritionSlice";
 import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
 
 interface NutritionTabProps {
@@ -118,8 +119,34 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
         toast.success("Meal updated successfully");
         setEditingMeal(null);
       } else {
-        await dispatch(addNutritionPlan({ athleteId, data: mealData })).unwrap();
+        const result = await dispatch(addNutritionPlan({ athleteId, data: mealData })).unwrap();
         toast.success("Meal added successfully");
+
+        // Automatically add the meal as an entry to the central Nutrition Database
+        if (result && result.data) {
+          const meal = result.data;
+          try {
+            await dispatch(
+              createNutrition({
+                name: meal.mealName || mealData.mealName,
+                brand: "",
+                category: "Other",
+                defaultQuantity: "",
+                caloriesQuantity: meal.totalCalories || 0,
+                proteinQuantity: meal.totalProtein || 0,
+                fatsQuantity: meal.totalFats || 0,
+                carbsQuantity: meal.totalCarbs || 0,
+                sugarQuantity: 0,
+                fiberQuantity: 0,
+                saturatedFats: 0,
+                unsaturatedFats: 0,
+              })
+            ).unwrap();
+            console.log("Meal successfully synced to Nutrition Database.");
+          } catch (syncError) {
+            console.error("Failed to sync meal to Nutrition Database:", syncError);
+          }
+        }
       }
       setShowMealModal(false);
     } catch (error) {

@@ -117,11 +117,13 @@ export default function NutritionCard({
               {t.categoryLabels[nutrition.category] || nutrition.category}
             </span>
           </div>
+          {nutrition.defaultQuantity && (
           <span className="font-semibold text-muted-foreground mt-2">
             <p>
               {t.defaultQuantity} {nutrition.defaultQuantity}
             </p>
           </span>
+          )}
         </div>
         <div className="flex gap-2">
           <button
