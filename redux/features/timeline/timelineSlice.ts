@@ -23,6 +23,25 @@ export const fetchTimelineByAthlete = createAsyncThunk(
     }
 );
 
+// Bulk update phase
+export const updateTimelinePhases = createAsyncThunk(
+    "timeline/updatePhases",
+    async (
+        { athleteId, timelineIds, newPhase }: { athleteId: string; timelineIds: string[]; newPhase: string },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await axiosInstance.patch(`/timeline/bulk-update-phase/${athleteId}`, {
+                timelineIds,
+                newPhase,
+            });
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to update timeline phases");
+        }
+    }
+);
+
 const timelineSlice = createSlice({
     name: "timeline",
     initialState,
@@ -45,6 +64,19 @@ const timelineSlice = createSlice({
                 state.successMessage = action.payload.message || null;
             })
             .addCase(fetchTimelineByAthlete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Update Phases
+            .addCase(updateTimelinePhases.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateTimelinePhases.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.successMessage = action.payload.message || "Timeline phases updated successfully";
+            })
+            .addCase(updateTimelinePhases.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

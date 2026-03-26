@@ -3,9 +3,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Pencil, Save, ChevronDown, Loader2 } from "lucide-react";
+import { Pencil, Save, ChevronDown, Loader2, CheckSquare } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchTimelineByAthlete, clearMessages } from "@/redux/features/timeline/timelineSlice";
+import { fetchTimelineByAthlete, updateTimelinePhases, clearMessages } from "@/redux/features/timeline/timelineSlice";
 import { TimelineItem } from "@/redux/features/timeline/timelineType";
 import toast from "react-hot-toast";
 
@@ -44,6 +44,19 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
   const dispatch = useAppDispatch();
   const { timeline, loading, error, successMessage } = useAppSelector((state) => state.timeline);
   const [data, setData] = useState<TrackingRow[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+  const [selectedPhase, setSelectedPhase] = useState("");
+
+  const phasesList = [
+    "Offseason",
+    "Offseasons",
+    "Reverse-Diet-Phase",
+    "korpegewich-gold",
+    "korpegewich-brown",
+    "korpegewich-green",
+    "Prep",
+  ];
 
   useEffect(() => {
     if (athleteId) {
@@ -64,11 +77,12 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
 
   useEffect(() => {
     const allWeeks: TrackingRow[] = Array.from({ length: 52 }, (_, index) => {
-      const item = timeline[index];
+      // Find item if timeline has a week property, else assume positional
+      const item = timeline.find((t: any) => t.week === index + 1) || timeline[index];
 
       if (item) {
         return {
-          id: item._id || String(index),
+          id: item._id || (item as any).id || `empty-${index + 1}`,
           week: index + 1,
           date: item.checkInDate || "",
           phase: item.phase || "",
@@ -137,16 +151,109 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
       case "korpegewich-green":
         return "bg-[#357a38] text-white";
       case "Offseason":
+      case "Offseasons":
         return "bg-[#3e562e] text-white";
       default:
         return "bg-gray-700";
     }
   };
 
+  const handleSelectRow = (id: string, index: number, e: React.MouseEvent) => {
+    if (e.shiftKey && lastSelectedIndex !== null) {
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+
+      const newSelected = new Set(selectedIds);
+      for (let i = start; i <= end; i++) {
+        newSelected.add(data[i].id);
+      }
+      setSelectedIds(Array.from(newSelected));
+    } else {
+      setSelectedIds((prev) =>
+        prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      );
+      setLastSelectedIndex(index);
+    }
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(data.map((r) => r.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handlePhaseChange = (newPhase: string, rowId: string) => {
+    if (!newPhase) return;
+
+    const idsToUpdate =
+      selectedIds.includes(rowId) && selectedIds.length > 1
+        ? selectedIds
+        : [rowId];
+
+    // Update locally so UI reflects change immediately
+    setData((prev) =>
+      prev.map((r) => (idsToUpdate.includes(r.id) ? { ...r, phase: newPhase } : r))
+    );
+
+    const validApiIds = idsToUpdate.filter((id) => !id.startsWith("empty"));
+
+    if (validApiIds.length === 0) {
+      toast.error("Cannot assign phase to an empty week. Wait for timeline data.");
+      setSelectedIds([]);
+      setSelectedPhase("");
+      return;
+    }
+
+    // Always fire API unconditionally 
+    dispatch(
+      updateTimelinePhases({ athleteId, timelineIds: validApiIds, newPhase })
+    ).then((res) => {
+      if (res.meta.requestStatus === "fulfilled") {
+        setSelectedIds([]);
+        setSelectedPhase("");
+        // Refetch to sync from backend
+        dispatch(fetchTimelineByAthlete(athleteId)); 
+      }
+    });
+  };
+
+  const handleUpdatePhase = () => {
+    if (selectedIds.length === 0 || !selectedPhase) return;
+    handlePhaseChange(selectedPhase, selectedIds[0]);
+  };
+
   return (
     <div className="w-full bg-[#03030b] p-4 font-sans text-xs sm:text-sm text-white">
       {/* --- Toolbar --- */}
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          {selectedIds.length > 0 && (
+            <>
+              <span className="text-gray-400 text-sm">{selectedIds.length} selected</span>
+              <select
+                value={selectedPhase}
+                onChange={(e) => setSelectedPhase(e.target.value)}
+                className="bg-[#1e2029] border border-gray-600 rounded px-3 py-1.5 focus:outline-none"
+              >
+                <option value="">Select new phase...</option>
+                {phasesList.map((p) => (
+                  <option key={p} value={p}>
+                    {p.replace(/-/g, " ")}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleUpdatePhase}
+                disabled={!selectedPhase || loading}
+                className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 text-white rounded px-4 py-1.5 font-medium transition"
+              >
+                {loading ? "Updating..." : "Update Phase"}
+              </button>
+            </>
+          )}
+        </div>
         {loading && <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />}
       </div>
 
@@ -156,6 +263,20 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
           {/* --- Table Header --- */}
           <thead>
             <tr className="bg-[#a8a8af] text-gray-900 font-bold">
+              <th
+                rowSpan={2}
+                className="border border-gray-600 px-2 py-1 w-12"
+              >
+                <input
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  checked={
+                    selectedIds.length > 0 &&
+                    selectedIds.length === data.length
+                  }
+                  className="rounded bg-black border-gray-500"
+                />
+              </th>
               <th
                 rowSpan={2}
                 className="border border-gray-600 px-2 py-1 min-w-10"
@@ -233,11 +354,24 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
 
           {/* --- Table Body --- */}
           <tbody>
-            {data.map((row) => (
-              <tr key={row.id} className="hover:bg-white/5 transition-colors">
-                <td className="border border-gray-700 bg-[#0d0d14] px-2 py-3">
-                  {row.week}
-                </td>
+            {data.map((row, index) => {
+              const isEmpty = row.id.startsWith("empty");
+              const isSelected = selectedIds.includes(row.id);
+
+              return (
+                <tr key={row.id} className="hover:bg-white/5 transition-colors">
+                  <td className="border border-gray-700 bg-[#0d0d14] p-0 align-middle text-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {}}
+                      onClick={(e) => handleSelectRow(row.id, index, e)}
+                      className="rounded bg-black border-gray-500 cursor-pointer w-4 h-4 mx-auto"
+                    />
+                  </td>
+                  <td className="border border-gray-700 bg-[#0d0d14] px-2 py-3">
+                    {row.week}
+                  </td>
 
                 {/* --- DATE COLUMN --- */}
                 <td className="border border-gray-700 bg-[#1e2029] px-2 py-3 text-xs">
@@ -246,13 +380,27 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
 
                 {/* Phase */}
                 <td
-                  className={`border border-gray-700 px-2 py-3 relative ${getPhaseColor(
+                  className={`border border-gray-700 px-0 relative ${getPhaseColor(
                     row.phase
                   )}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>{row.phase.replace(/-/g, ' ')}</span>
-                    <ChevronDown className="w-3 h-3 opacity-50" />
+                  <div className="flex items-center justify-between w-full h-full relative">
+                    <select
+                      value={row.phase}
+                      onChange={(e) => handlePhaseChange(e.target.value, row.id)}
+                      className="w-full h-full bg-transparent text-white appearance-none cursor-pointer focus:outline-none px-2 py-3"
+                      disabled={loading}
+                    >
+                      <option value="" className="bg-gray-800 text-gray-400">
+                         Select phase
+                      </option>
+                      {phasesList.map((p) => (
+                        <option key={p} value={p} className="bg-gray-800 text-white">
+                          {p.replace(/-/g, " ")}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3 h-3 opacity-50 absolute right-2 pointer-events-none" />
                   </div>
                 </td>
 
@@ -311,7 +459,8 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
                   <span>{row.restActivity.cardio}</span>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
