@@ -363,15 +363,6 @@ export default function Header() {
               </button>
             </div>
 
-            {/* Debug info - remove in production */}
-            {process.env.NODE_ENV === "development" && profile && (
-              <div className="mt-6 p-3 bg-gray-800/50 rounded text-xs">
-                <p className="text-yellow-400 mb-2">Debug Info:</p>
-                <p>Profile ID: {profile._id}</p>
-                <p>Current Image: {profile.image}</p>
-                <p>Update Loading: {updateLoading.toString()}</p>
-              </div>
-            )}
           </div>
         </div>
       )}

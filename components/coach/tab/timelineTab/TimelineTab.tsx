@@ -231,11 +231,7 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
                   )}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span>
-                      {row.phase
-                        .split("-")[0]
-                        .replace("Offseason", "Offseason")}
-                    </span>
+                    <span>{row.phase.replace(/-/g, ' ')}</span>
                     <ChevronDown className="w-3 h-3 opacity-50" />
                   </div>
                 </td>
