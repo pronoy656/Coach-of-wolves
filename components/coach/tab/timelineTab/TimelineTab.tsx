@@ -63,38 +63,58 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
   }, [successMessage, error, dispatch]);
 
   useEffect(() => {
-    if (timeline.length > 0) {
-      const mappedData: TrackingRow[] = timeline.map((item: TimelineItem, index: number) => ({
-        id: item._id || String(index),
+    const allWeeks: TrackingRow[] = Array.from({ length: 52 }, (_, index) => {
+      const item = timeline[index];
+
+      if (item) {
+        return {
+          id: item._id || String(index),
+          week: index + 1,
+          date: item.checkInDate || "",
+          phase: item.phase || "",
+          bodyweight: item.averages?.restDay?.avgWeight || item.averages?.trainingDay?.avgWeight || 0,
+          bwDelta1: null,
+          bwDelta2: null,
+          trainingNutrition: {
+            protein: item.averages?.trainingDay?.avgProtein || 0,
+            carbs: item.averages?.trainingDay?.avgCarbs || 0,
+            fats: item.averages?.trainingDay?.avgFats || 0,
+            calories: item.averages?.trainingDay?.avgCalories || 0,
+          },
+          restNutrition: {
+            protein: item.averages?.restDay?.avgProtein || 0,
+            carbs: item.averages?.restDay?.avgCarbs || 0,
+            fats: item.averages?.restDay?.avgFats || 0,
+            calories: item.averages?.restDay?.avgCalories || 0,
+          },
+          trainingActivity: {
+            steps: item.averages?.trainingDay?.avgActivityStep || 0,
+            cardio: item.averages?.trainingDay?.avgCardioPerMin || 0,
+          },
+          restActivity: {
+            steps: item.averages?.restDay?.avgActivityStep || 0,
+            cardio: item.averages?.restDay?.avgCardioPerMin || 0,
+          },
+        };
+      }
+
+      // Empty placeholder for week
+      return {
+        id: `empty-${index + 1}`,
         week: index + 1,
-        date: item.checkInDate,
-        phase: item.phase,
-        bodyweight: item.averages.restDay?.avgWeight || item.averages.trainingDay?.avgWeight || 0,
+        date: "",
+        phase: "",
+        bodyweight: 0,
         bwDelta1: null,
         bwDelta2: null,
-        trainingNutrition: {
-          protein: item.averages.trainingDay?.avgProtein || 0,
-          carbs: item.averages.trainingDay?.avgCarbs || 0,
-          fats: item.averages.trainingDay?.avgFats || 0,
-          calories: item.averages.trainingDay?.avgCalories || 0,
-        },
-        restNutrition: {
-          protein: item.averages.restDay?.avgProtein || 0,
-          carbs: item.averages.restDay?.avgCarbs || 0,
-          fats: item.averages.restDay?.avgFats || 0,
-          calories: item.averages.restDay?.avgCalories || 0,
-        },
-        trainingActivity: {
-          steps: item.averages.trainingDay?.avgActivityStep || 0,
-          cardio: item.averages.trainingDay?.avgCardioPerMin || 0,
-        },
-        restActivity: {
-          steps: item.averages.restDay?.avgActivityStep || 0,
-          cardio: item.averages.restDay?.avgCardioPerMin || 0,
-        },
-      }));
-      setData(mappedData);
-    }
+        trainingNutrition: { protein: 0, carbs: 0, fats: 0, calories: 0 },
+        restNutrition: { protein: 0, carbs: 0, fats: 0, calories: 0 },
+        trainingActivity: { steps: 0, cardio: 0 },
+        restActivity: { steps: 0, cardio: 0 },
+      };
+    });
+
+    setData(allWeeks);
   }, [timeline]);
 
   // Helper to format YYYY-MM-DD to "30 Dec, 24"
