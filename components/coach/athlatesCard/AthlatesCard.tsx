@@ -67,7 +67,7 @@ export default function AthleteCard({
               alt={name}
               width={64}
               height={64}
-              className="rounded-full object-cover border-2 border-[#4A9E4A]/30"
+              className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full object-cover border-2 border-[#4A9E4A]/30"
             />
 
             <div className="flex-1">
