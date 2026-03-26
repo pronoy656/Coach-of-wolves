@@ -115,8 +115,8 @@ export default function NutritionModal({
   onSave,
   onClose,
 }: NutritionModalProps) {
-  const [formData, setFormData] = useState<Nutrition>(
-    nutrition || {
+  const [formData, setFormData] = useState<Nutrition>(() => {
+    const base = nutrition || {
       name: "",
       brand: "",
       category: "",
@@ -129,8 +129,9 @@ export default function NutritionModal({
       fiberQuantity: 0,
       saturatedFats: 0,
       unsaturatedFats: 0,
-    }
-  );
+    };
+    return base.brand === "athlete-sync-hidden" ? { ...base, brand: "" } : base;
+  });
 
   const [loading, setLoading] = useState(false);
   const { language } = useAppSelector((state) => state.language);

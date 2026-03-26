@@ -104,7 +104,7 @@ export default function NutritionCard({
           <h3 className="text-lg font-bold text-foreground">
             {nutrition.name}
           </h3>
-          {nutrition.brand && (
+          {nutrition.brand && nutrition.brand !== "athlete-sync-hidden" && (
             <p className="text-sm text-muted-foreground">
               {t.brandName}{" "}
               <span className="text-red-500">{nutrition.brand}</span>
@@ -117,7 +117,7 @@ export default function NutritionCard({
               {t.categoryLabels[nutrition.category] || nutrition.category}
             </span>
           </div>
-          {nutrition.defaultQuantity && (
+          {nutrition.defaultQuantity && nutrition.brand !== "athlete-sync-hidden" && (
           <span className="font-semibold text-muted-foreground mt-2">
             <p>
               {t.defaultQuantity} {nutrition.defaultQuantity}

@@ -129,9 +129,9 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
             await dispatch(
               createNutrition({
                 name: meal.mealName || mealData.mealName,
-                brand: "",
+                brand: "athlete-sync-hidden",
                 category: "Other",
-                defaultQuantity: "",
+                defaultQuantity: "1 serving",
                 caloriesQuantity: meal.totalCalories || 0,
                 proteinQuantity: meal.totalProtein || 0,
                 fatsQuantity: meal.totalFats || 0,
