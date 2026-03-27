@@ -234,7 +234,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
         </div>
 
         {/* Training History Section */}
-        <TrainingHistory />
+        <TrainingHistory athleteId={athleteId} />
       </div>
       {/* Modals */}
       <AddTrainingPlanModal

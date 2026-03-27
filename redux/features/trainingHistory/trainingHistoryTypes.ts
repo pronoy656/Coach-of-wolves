@@ -1,38 +1,35 @@
 // redux/features/trainingHistory/trainingHistoryTypes.ts
 
-export interface ExerciseSet {
+export interface PushSet {
     weight: number;
-    reps: number;
-    rpe?: number;
+    repRange: string;
+    rir: string;
+    set: number;
+    exerciseName: string;
+    oneRM?: number;
 }
 
-export interface Exercise {
-    name: string;
-    sets: ExerciseSet[];
-    bestSet?: {
-        weight: number;
-        reps: number;
-        rpe?: number;
-    };
+export interface TrainingTime {
+    hour: string;
+    minite: string;
 }
 
-export interface Workout {
-    _id?: string;
-    id: string;
-    month: string;
-    workoutCount: number;
-    workoutType: string;
-    date: string;
-    notes?: string;
-    duration: string;
-    totalVolume: number;
-    prCount: number;
-    exercises: Exercise[];
+export interface TrainingHistoryItem {
+    _id: string;
+    userId: string;
+    trainingName: string;
+    time: TrainingTime;
+    pushData: PushSet[];
+    note: string;
+    createdAt: string;
+    updatedAt: string;
+    totalWeight?: number;
+    __v?: number;
 }
 
 export interface TrainingHistoryData {
-    histories: Workout[];
-    pr: {
+    histories: TrainingHistoryItem[];
+    pr?: {
         volumePR: boolean;
     };
 }
@@ -47,5 +44,5 @@ export interface TrainingHistoryState {
 export interface ApiResponse {
     success: boolean;
     message: string;
-    data: TrainingHistoryData;
+    data: TrainingHistoryItem[] | TrainingHistoryData;
 }

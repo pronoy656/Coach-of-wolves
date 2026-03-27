@@ -162,12 +162,20 @@ const weeklyCheckinSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateCheckinStatus.fulfilled, (state, action: PayloadAction<any>) => {
+            .addCase(updateCheckinStatus.fulfilled, (state, action) => {
                 state.loading = false;
                 const updatedCheckin = action.payload.data;
-                if (updatedCheckin) {
+                const targetUserId = action.meta.arg;
+                
+                if (updatedCheckin && updatedCheckin._id) {
                     state.checkins = state.checkins.map(c =>
                         c._id === updatedCheckin._id ? updatedCheckin : c
+                    );
+                } else {
+                    // Fallback if backend does not return the updated record, 
+                    // we manually assume the check-in is now "Completed" for this user's current session
+                    state.checkins = state.checkins.map(c => 
+                        c.userId === targetUserId ? { ...c, checkinCompleted: "Completed" } : c
                     );
                 }
                 state.stats = calculateStats(state.checkins);
