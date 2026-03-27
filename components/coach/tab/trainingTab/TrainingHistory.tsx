@@ -135,7 +135,7 @@ const TrainingHistory = ({ athleteId }: TrainingHistoryProps) => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold">Training History</h2>
-                    <p className="text-gray-400 mt-1">Track athlete training history and personal records</p>
+                    <p className="text-base text-gray-400 mt-1">Track athlete training history and personal records</p>
                 </div>
 
                 {pr?.volumePR && (

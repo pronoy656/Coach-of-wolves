@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchTrainingPlans,
@@ -121,15 +121,16 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-end">
           <button
             onClick={() => {
               setEditingPlan(null);
               setShowAddPlanModal(true);
             }}
-            className="bg-transparent border border-emerald-500 text-emerald-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 transition-colors"
+            className="group flex items-center gap-2 bg-transparent border-2 border-emerald-500 text-emerald-500 text-base font-bold hover:bg-emerald-500/10 rounded-full px-8 h-11 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95"
           >
-            + Add Plan
+            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+            <span>Add Plan</span>
           </button>
         </div>
 
@@ -188,13 +189,12 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                     {/* Footer with Difficulty Badge Only */}
                     <div className="flex items-end mt-auto">
                       <span
-                        className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                          plan.dificulty === "Advanced"
-                            ? "border-red-500/30 text-red-400 bg-red-500/10"
-                            : plan.dificulty === "Intermediate"
-                              ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
-                              : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-                        }`}
+                        className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${plan.dificulty === "Advanced"
+                          ? "border-red-500/30 text-red-400 bg-red-500/10"
+                          : plan.dificulty === "Intermediate"
+                            ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
+                            : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                          }`}
                       >
                         {plan.dificulty}
                       </span>

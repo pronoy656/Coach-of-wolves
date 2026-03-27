@@ -131,7 +131,7 @@ export default function TrainingSplitManager({
             <Users className="w-5 h-5 text-emerald-400" />
             <h2 className="text-2xl font-bold">Training Splits</h2>
           </div>
-          <p className="text-gray-400">
+          <p className="text-base text-gray-400">
             {`${athleteName}'s workout schedules`}
           </p>
         </div>
