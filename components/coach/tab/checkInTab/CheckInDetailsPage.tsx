@@ -3,7 +3,9 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Loader2 } from "lucide-react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import axiosInstance from "@/lib/axiosInstance";
+import { getFullImageUrl } from "@/lib/utils";
 import { updateWeeklyCheckin, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin, QuestionAndAnswer } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import toast from "react-hot-toast";
@@ -42,6 +44,8 @@ export default function CheckInDetailsPage({
   onDelete,
 }: CheckInDetailProps) {
   const dispatch = useAppDispatch();
+  const { timeline } = useAppSelector((state) => state.timeline) || { timeline: [] };
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<WeeklyCheckin>(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
@@ -49,10 +53,48 @@ export default function CheckInDetailsPage({
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  
+  const [pastCheckIn, setPastCheckIn] = useState<WeeklyCheckin | null>(null);
+  const [loadingPastCheckIn, setLoadingPastCheckIn] = useState(false);
 
   useEffect(() => {
     setEditData(checkIn);
   }, [checkIn]);
+
+  useEffect(() => {
+    if (checkIn && timeline && timeline.length > 0) {
+      setLoadingPastCheckIn(true);
+      const sorted = [...timeline].sort((a, b) => new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime());
+      
+      const currentIndex = sorted.findIndex(t => {
+        // Find the matching timeline entry for this checkIn based on date
+        return new Date(t.checkInDate).getTime() <= new Date(checkIn.createdAt).getTime();
+      });
+
+      // The previous week is the next item in the sorted list (since it's descending)
+      const pastIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
+      
+      if (pastIndex < sorted.length) {
+        const pastDate = sorted[pastIndex].checkInDate;
+        axiosInstance.get(`/check-in/${checkIn.userId}?date=${pastDate}`)
+          .then(res => {
+            const data = res.data?.data?.[0] || res.data?.data;
+            setPastCheckIn(data || null);
+          })
+          .catch(err => {
+            console.error("Failed to fetch past check-in", err);
+            setPastCheckIn(null);
+          })
+          .finally(() => setLoadingPastCheckIn(false));
+      } else {
+        setPastCheckIn(null);
+        setLoadingPastCheckIn(false);
+      }
+    } else {
+      setPastCheckIn(null);
+      setLoadingPastCheckIn(false);
+    }
+  }, [checkIn, timeline]);
 
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
@@ -432,7 +474,7 @@ export default function CheckInDetailsPage({
                     >
                       <img
                         src={
-                          img ||
+                          img ? getFullImageUrl(img) :
                           "/placeholder.svg?height=200&width=200&query=workout"
                         }
                         alt={`Workout photo ${idx + 1}`}
@@ -458,7 +500,7 @@ export default function CheckInDetailsPage({
                       className="relative aspect-video rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900"
                     >
                       <div className="w-full h-full flex items-center justify-center bg-black/20">
-                        <video src={vid} controls className="w-full h-full" />
+                        <video src={vid ? getFullImageUrl(vid) : ""} controls className="w-full h-full" />
                       </div>
                     </div>
                   ))}
@@ -475,6 +517,97 @@ export default function CheckInDetailsPage({
             </div>
             <p className="text-slate-400 font-medium tracking-tight">No imagesuploaded</p>
             <p className="text-slate-500 text-sm">Athletes haven't provided any photos or videos yet.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Comparison Section */}
+      <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+          <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
+          Comparison Check-In
+        </h3>
+        
+        {loadingPastCheckIn ? (
+          <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-emerald-500" /></div>
+        ) : pastCheckIn ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+            {/* Divider in desktop */}
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700/50 -translate-x-1/2"></div>
+            
+            {/* Left Side - Past Week */}
+            <div className="space-y-4 pr-0 md:pr-4">
+              <h4 className="text-gray-400 font-semibold mb-4 text-center">
+                Past Week {pastCheckIn.weekNumber ? `(Week ${pastCheckIn.weekNumber})` : ""}
+              </h4>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Weight</span>
+                 <span className="text-white font-bold">{pastCheckIn.currentWeight || "N/A"} kg</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Average Weight</span>
+                 <span className="text-white font-bold">{pastCheckIn.averageWeight || "N/A"} kg</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Sleep Quality</span>
+                 <span className="text-white font-bold">{pastCheckIn.wellBeing?.sleepQuality || "0"}/10</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Energy Level</span>
+                 <span className="text-white font-bold">{pastCheckIn.wellBeing?.energyLevel || "0"}/10</span>
+              </div>
+              {/* Media Comparison */}
+              {pastCheckIn.image && pastCheckIn.image.length > 0 ? (
+                 <div className="grid grid-cols-2 gap-2 mt-4">
+                   {pastCheckIn.image.map((img, idx) => (
+                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-700/50">
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg?height=200&width=200"} alt="Past week media" className="w-full h-full object-cover" />
+                      </div>
+                   ))}
+                 </div>
+              ) : (
+                <div className="p-4 bg-[#0B0B22] rounded-lg text-center text-gray-500 text-sm border border-slate-800 mt-4">No images</div>
+              )}
+            </div>
+
+            {/* Right Side - Present Week */}
+            <div className="space-y-4 pl-0 md:pl-4">
+              <h4 className="text-emerald-400 font-semibold mb-4 text-center">
+                Present Week {checkIn.weekNumber ? `(Week ${checkIn.weekNumber})` : ""}
+              </h4>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Weight</span>
+                 <span className="text-emerald-500 font-bold">{checkIn.currentWeight || "N/A"} kg</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Average Weight</span>
+                 <span className="text-emerald-500 font-bold">{checkIn.averageWeight || "N/A"} kg</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Sleep Quality</span>
+                 <span className="text-emerald-500 font-bold">{checkIn.wellBeing?.sleepQuality || "0"}/10</span>
+              </div>
+              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
+                 <span className="text-gray-400 text-sm">Energy Level</span>
+                 <span className="text-emerald-500 font-bold">{checkIn.wellBeing?.energyLevel || "0"}/10</span>
+              </div>
+              {/* Media Comparison */}
+              {checkIn.image && checkIn.image.length > 0 ? (
+                 <div className="grid grid-cols-2 gap-2 mt-4">
+                   {checkIn.image.map((img, idx) => (
+                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-700/50">
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg?height=200&width=200"} alt="Present week media" className="w-full h-full object-cover" />
+                      </div>
+                   ))}
+                 </div>
+              ) : (
+                <div className="p-4 bg-[#0B0B22] rounded-lg text-center text-gray-500 text-sm border border-slate-800 mt-4">No images</div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-6 bg-[#0B0B22] rounded-lg border border-slate-700/50 text-gray-500">
+            No past check-in available for comparison.
           </div>
         )}
       </div>

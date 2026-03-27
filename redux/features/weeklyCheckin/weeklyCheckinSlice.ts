@@ -43,9 +43,12 @@ export const fetchWeeklyCheckins = createAsyncThunk(
 // Get latest check-in for specific athlete
 export const fetchLatestCheckinByAthlete = createAsyncThunk(
     "weeklyCheckin/fetchLatest",
-    async (athleteId: string, { rejectWithValue }) => {
+    async ({ athleteId, date }: { athleteId: string; date?: string }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/check-in/latest/${athleteId}`);
+            const url = date 
+                ? `/check-in/${athleteId}?date=${date}`
+                : `/check-in/latest/${athleteId}`;
+            const response = await axiosInstance.get(url);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch latest check-in");

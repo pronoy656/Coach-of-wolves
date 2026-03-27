@@ -1,13 +1,8 @@
-// import React from "react";
-
-// export default function CheckInTab() {
-//   return <div>CheckInTab</div>;
-// }
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2, Calendar, Weight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Loader2, Calendar, Weight, ChevronDown } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchLatestCheckinByAthlete,
@@ -15,6 +10,7 @@ import {
   updateCheckinStatus,
 } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+import { fetchTimelineByAthlete } from "@/redux/features/timeline/timelineSlice";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import CheckInDetailsPage from "./CheckInDetailsPage";
 import toast from "react-hot-toast";
@@ -28,16 +24,78 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
   const { checkins, loading, error, successMessage } = useAppSelector(
     (state) => state.weeklyCheckin,
   );
-  const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(
-    null,
-  );
+  const { timeline } = useAppSelector((state) => state.timeline) || { timeline: [] };
+
+  const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const formatDateDisplay = (dateString: string | undefined) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
+  const getWeekOptions = () => {
+    const options: { label: string; value: string | undefined }[] = [
+      { label: "Current Week", value: undefined },
+    ];
+
+    if (!timeline || timeline.length === 0) {
+      return options;
+    }
+
+    const sorted = [...timeline].sort((a, b) => {
+      const d1 = new Date(a.checkInDate).getTime();
+      const d2 = new Date(b.checkInDate).getTime();
+      return d2 - d1;
+    });
+
+    sorted.forEach((item) => {
+      if (!item.checkInDate) {
+        return;
+      }
+      options.push({
+        label: `Week of ${formatDateDisplay(item.checkInDate)}`,
+        value: item.checkInDate,
+      });
+    });
+
+    return options;
+  };
+
+  const weekOptions = getWeekOptions();
 
   useEffect(() => {
     if (athleteId) {
-      dispatch(fetchLatestCheckinByAthlete(athleteId));
+      dispatch(fetchLatestCheckinByAthlete({ athleteId, date: selectedDate }));
+    }
+  }, [dispatch, athleteId, selectedDate]);
+
+  useEffect(() => {
+    if (athleteId) {
+      dispatch(fetchTimelineByAthlete(athleteId));
     }
   }, [dispatch, athleteId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (successMessage) {
@@ -50,10 +108,14 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
     }
   }, [successMessage, error, dispatch]);
 
-  // Set first check-in as selected by default if none selected
+  // Set first check-in as selected by default if none selected or if selected is no longer in the list
   useEffect(() => {
-    if (checkins.length > 0 && !selectedCheckInId) {
-      setSelectedCheckInId(checkins[0]._id);
+    if (checkins.length > 0) {
+      if (!selectedCheckInId || !checkins.find(c => c._id === selectedCheckInId)) {
+        setSelectedCheckInId(checkins[0]._id);
+      }
+    } else {
+      setSelectedCheckInId(null);
     }
   }, [checkins, selectedCheckInId]);
 
@@ -76,8 +138,50 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
   return (
     <div className="min-h-screen p-2 md:p-6 bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
           <h1 className="text-4xl font-bold text-white">Check-Ins</h1>
+          
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+              className="flex items-center gap-2 px-6 py-3 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium"
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-base">
+                {selectedDate
+                  ? `Week of ${formatDateDisplay(selectedDate)}`
+                  : "Current Week"}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  isCalendarOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isCalendarOpen && (
+              <div className="absolute top-full right-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                  {weekOptions.map((option) => (
+                    <button
+                      key={option.value || "current"}
+                      onClick={() => {
+                        setSelectedDate(option.value);
+                        setIsCalendarOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                        selectedDate === option.value
+                          ? "bg-[#2B2B3D] text-emerald-500"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {loading && checkins.length === 0 ? (
@@ -141,11 +245,10 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
 
                       <div className="flex flex-col items-center md:items-end gap-4">
                         <span
-                          className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${
-                            currentCheckIn.checkinCompleted === "Completed"
+                          className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${currentCheckIn.checkinCompleted === "Completed"
                               ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
                               : "bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
-                          }`}
+                            }`}
                         >
                           {currentCheckIn.checkinCompleted === "Completed"
                             ? "Completed"
