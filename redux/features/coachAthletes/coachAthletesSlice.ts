@@ -34,6 +34,12 @@ export const addAthlete = createAsyncThunk(
             Object.entries(athleteData).forEach(([key, value]) => {
                 if (key === "image" && value instanceof File) {
                     formData.append(key, value);
+                } else if (Array.isArray(value)) {
+                    value.forEach(item => {
+                        if (item !== "" && item !== null && item !== undefined) {
+                            formData.append(key, item);
+                        }
+                    });
                 } else if (value !== undefined && value !== null) {
                     formData.append(key, String(value));
                 }
@@ -59,8 +65,17 @@ export const updateAthlete = createAsyncThunk(
         try {
             const formData = new FormData();
             Object.entries(data).forEach(([key, value]) => {
+                // Skip internal metadata fields and the 'shows' field which can cause cast errors
+                if (["createdAt", "updatedAt", "__v", "shows", "_id", "coachId"].includes(key)) return;
+
                 if (key === "image" && value instanceof File) {
                     formData.append(key, value);
+                } else if (Array.isArray(value)) {
+                    value.forEach(item => {
+                        if (item !== "" && item !== null && item !== undefined) {
+                            formData.append(key, item);
+                        }
+                    });
                 } else if (value !== undefined && value !== null) {
                     formData.append(key, String(value));
                 }
