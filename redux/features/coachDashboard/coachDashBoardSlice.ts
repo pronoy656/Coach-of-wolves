@@ -26,8 +26,19 @@ export interface CoachDashboardResponse {
   data: CoachDashboardData;
 }
 
+export interface WeeklyCheckinsData {
+  weeklyCheckins: CoachCheckins;
+}
+
+export interface WeeklyCheckinsResponse {
+  success: boolean;
+  message: string;
+  data: WeeklyCheckinsData;
+}
+
 export interface CoachDashboardState {
   data: CoachDashboardData | null;
+  weeklyCheckins: CoachCheckins | null;
   loading: boolean;
   error: string | null;
 }
@@ -36,6 +47,7 @@ export interface CoachDashboardState {
 
 const initialState: CoachDashboardState = {
   data: null,
+  weeklyCheckins: null,
   loading: false,
   error: null,
 };
@@ -66,6 +78,21 @@ export const getCoachDashboardData = createAsyncThunk<
   }
 });
 
+/* ---------- GET WEEKLY CHECKINS STATS ---------- */
+export const getWeeklyCheckinsStats = createAsyncThunk<
+  CoachCheckins,
+  void,
+  { rejectValue: string }
+>("coachDashboard/getWeeklyCheckins", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get<WeeklyCheckinsResponse>("/dashboard/weekly-checkins");
+    return response.data.data.weeklyCheckins;
+  } catch (error: any) {
+    console.error("Failed to fetch weekly checkins data:", error);
+    return rejectWithValue(error.response?.data?.message || "Failed to fetch weekly checkins");
+  }
+});
+
 /* ================= SLICE ================= */
 
 const coachDashboardSlice = createSlice({
@@ -93,6 +120,23 @@ const coachDashboardSlice = createSlice({
       .addCase(getCoachDashboardData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch dashboard data";
+      })
+      /* GET WEEKLY CHECKINS STATS */
+      .addCase(getWeeklyCheckinsStats.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getWeeklyCheckinsStats.fulfilled, (state, action) => {
+        state.loading = false;
+        state.weeklyCheckins = action.payload;
+        // Optionally update the checkins in the main data object if it exists
+        if (state.data) {
+          state.data.checkins = action.payload;
+        }
+      })
+      .addCase(getWeeklyCheckinsStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch weekly checkins";
       });
   },
 });

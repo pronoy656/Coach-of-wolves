@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import {
   getCoachDashboardData,
+  getWeeklyCheckinsStats,
   clearCoachDashboardError,
 } from "@/redux/features/coachDashboard/coachDashBoardSlice";
 import toast from "react-hot-toast";
@@ -61,7 +62,7 @@ interface StatCard {
 
 export default function StatsCard() {
   const dispatch = useDispatch<AppDispatch>();
-  const { data, loading, error } = useSelector(
+  const { data, weeklyCheckins, loading, error } = useSelector(
     (state: RootState) => state.coachDashboard,
   );
   const { language } = useSelector((state: RootState) => state.language);
@@ -70,6 +71,7 @@ export default function StatsCard() {
   // Fetch dashboard data on component mount
   useEffect(() => {
     dispatch(getCoachDashboardData());
+    dispatch(getWeeklyCheckinsStats());
   }, [dispatch]);
 
   // Show error toast if any
@@ -120,14 +122,14 @@ export default function StatsCard() {
       // },
       {
         label: t.pendingCheckIn,
-        value: data.checkins.pending,
+        value: weeklyCheckins ? weeklyCheckins.pending : (data?.checkins?.pending ?? 0),
         icon: Clock,
         color: "text-[#FF6B6B]",
         description: t.descPending,
       },
       {
         label: t.completeCheckIn,
-        value: data.checkins.completed,
+        value: weeklyCheckins ? weeklyCheckins.completed : (data?.checkins?.completed ?? 0),
         icon: CheckCircle,
         color: "text-[#8CCA4D]",
         description: t.descComplete,
@@ -184,10 +186,10 @@ export default function StatsCard() {
           );
           break;
         case 3: // Pending Check-In
-          card.description = t.dynamicPending(data.checkins.pending);
+          card.description = t.dynamicPending(weeklyCheckins?.pending ?? data?.checkins?.pending ?? 0);
           break;
         case 4: // Complete Check-In
-          card.description = t.dynamicComplete(data.checkins.completed);
+          card.description = t.dynamicComplete(weeklyCheckins?.completed ?? data?.checkins?.completed ?? 0);
           break;
       }
     });

@@ -55,7 +55,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col">
+    <aside className="w-60 bg-[#101021] border-r border-[#2F312F] flex flex-col h-full flex-shrink-0">
       {/* Logo */}
       <div className="px-2 pt-6 pb-4">
         {/* Image height increase */}
@@ -71,7 +71,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-8">
+      <nav className="flex-1 p-4 space-y-8 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
         <NavItem
           icon={<LayoutDashboard size={20} />}
           label={t.dashboard}

@@ -1,7 +1,9 @@
 "use client";
 
 import { CheckCircle, Clock } from "lucide-react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { getWeeklyCheckinsStats } from "@/redux/features/coachDashboard/coachDashBoardSlice";
+import { useEffect } from "react";
 
 const icons = {
   CheckCircle,
@@ -29,12 +31,19 @@ const translations = {
   },
 };
 
-export default function WeeklyStatCard({
-  completedCount,
-  pendingCount,
-  completionRate,
-}: CheckInStatsProps) {
+export default function WeeklyStatCard() {
+  const dispatch = useAppDispatch();
+  const { weeklyCheckins, loading } = useAppSelector((state) => state.coachDashboard);
   const { language } = useAppSelector((state) => state.language);
+  
+  const completedCount = weeklyCheckins?.completed ?? 0;
+  const pendingCount = weeklyCheckins?.pending ?? 0;
+  const total = completedCount + pendingCount;
+  const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+  useEffect(() => {
+    dispatch(getWeeklyCheckinsStats());
+  }, [dispatch]);
   const t = translations[language as keyof typeof translations];
 
   const statCards = [

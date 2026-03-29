@@ -188,11 +188,7 @@ export default function WeeklyCheckIns() {
             </div>
 
             {/* Stats Cards Component */}
-            <WeeklyStatCard
-              completedCount={stats.completedCount}
-              pendingCount={stats.pendingCount}
-              completionRate={stats.completionRate}
-            />
+            <WeeklyStatCard />
 
             {/* Filters */}
             <div className="flex flex-col gap-4">
