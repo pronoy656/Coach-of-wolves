@@ -26,6 +26,7 @@ export interface Athlete {
   goal: string;
   verified: boolean;
   isActive: "Active" | "In-Active";
+  dateOfBirth?: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -48,6 +49,7 @@ export interface AthleteFormData {
   restDaySteps: number;
   checkInDay: string;
   goal: string;
+  dateOfBirth: string;
   image?: File | null;
   password?: string; // For create only
 }
@@ -283,6 +285,7 @@ export const createAthlete = createAsyncThunk<
     formData.append("restDaySteps", data.restDaySteps.toString());
     formData.append("checkInDay", data.checkInDay);
     formData.append("goal", data.goal);
+    formData.append("dateOfBirth", data.dateOfBirth);
     
     // Append password if provided (for create)
     if (data.password) {
@@ -341,6 +344,7 @@ export const updateAthlete = createAsyncThunk<
     if (data.restDaySteps !== undefined) formData.append("restDaySteps", data.restDaySteps.toString());
     if (data.checkInDay !== undefined) formData.append("checkInDay", data.checkInDay);
     if (data.goal !== undefined) formData.append("goal", data.goal);
+    if (data.dateOfBirth !== undefined) formData.append("dateOfBirth", data.dateOfBirth);
     
     // Append image file if it exists
     if (data.image) {

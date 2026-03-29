@@ -22,6 +22,7 @@ export interface Athlete {
     verified?: boolean;
     isActive: "Active" | "In-Active";
     lastActive?: string;
+    dateOfBirth?: string;
     createdAt?: string;
     updatedAt?: string;
 }

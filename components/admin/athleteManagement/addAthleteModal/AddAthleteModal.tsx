@@ -95,6 +95,8 @@ const translations = {
     } as Record<string, string>,
     ageLabel: "Age",
     agePlaceholder: "Enter age",
+    dobLabel: "Date of Birth *",
+    dobPlaceholder: "Select date of birth",
     checkinLabel: "Check-in Day",
     checkinDays: {
       Monday: "Monday",
@@ -165,6 +167,8 @@ const translations = {
     } as Record<string, string>,
     ageLabel: "Alter",
     agePlaceholder: "Alter eingeben",
+    dobLabel: "Geburtsdatum *",
+    dobPlaceholder: "Geburtsdatum auswählen",
     checkinLabel: "Check-in-Tag",
     checkinDays: {
       Monday: "Montag",
@@ -228,6 +232,7 @@ export default function AddAthleteModal({
     checkInDay: string;
     goal: string;
     password: string;
+    dateOfBirth: string;
   }>({
     name: "",
     email: "",
@@ -244,6 +249,7 @@ export default function AddAthleteModal({
     checkInDay: "Monday",
     goal: "",
     password: "",
+    dateOfBirth: "",
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -267,6 +273,7 @@ export default function AddAthleteModal({
         checkInDay: athlete.checkInDay,
         goal: athlete.goal,
         password: "",
+        dateOfBirth: athlete.dateOfBirth || "",
       });
 
       if (athlete.image) {
@@ -302,6 +309,7 @@ export default function AddAthleteModal({
         checkInDay: "Monday",
         goal: "",
         password: "",
+        dateOfBirth: "",
       });
       setImageFile(null);
       setImagePreview("");
@@ -314,18 +322,34 @@ export default function AddAthleteModal({
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "weight" ||
-        name === "height" ||
-        name === "age" ||
-        name === "trainingDaySteps" ||
-        name === "restDaySteps" ||
-        name === "waterQuantity"
-          ? Number(value) || 0
-          : value,
-    }));
+    setFormData((prev) => {
+      const nextData = {
+        ...prev,
+        [name]:
+          name === "weight" ||
+          name === "height" ||
+          name === "age" ||
+          name === "trainingDaySteps" ||
+          name === "restDaySteps" ||
+          name === "waterQuantity"
+            ? Number(value) || 0
+            : value,
+      };
+
+      // Auto-calculate age if dateOfBirth changes
+      if (name === "dateOfBirth" && value) {
+        const birthDate = new Date(value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        nextData.age = Math.max(0, age);
+      }
+
+      return nextData;
+    });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -397,6 +421,7 @@ export default function AddAthleteModal({
         restDaySteps: formData.restDaySteps,
         checkInDay: formData.checkInDay,
         goal: formData.goal.trim(),
+        dateOfBirth: formData.dateOfBirth,
         image: imageFile || undefined,
       };
 
@@ -612,7 +637,7 @@ export default function AddAthleteModal({
             </div>
           </div>
 
-          {/* Row 4: Phase, Age, Check-in Day */}
+          {/* Row 4: Phase, DOB, Age */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -624,13 +649,29 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-            >
-              {PHASE_OPTIONS.map((phase) => (
-                <option key={phase} value={phase}>
-                  {t.phaseLabels[phase] ?? phase}
-                </option>
-              ))}
+              >
+                {PHASE_OPTIONS.map((phase) => (
+                  <option key={phase} value={phase}>
+                    {t.phaseLabels[phase] ?? phase}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.dobLabel}
+              </label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                placeholder={t.dobPlaceholder}
+                required
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
+              />
             </div>
 
             <div>
@@ -642,12 +683,15 @@ export default function AddAthleteModal({
                 name="age"
                 value={formData.age}
                 onChange={handleChange}
+                readOnly
                 placeholder={t.agePlaceholder}
-                disabled={isSubmitting}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors opacity-70 cursor-not-allowed"
               />
             </div>
+          </div>
 
+          {/* Row 5: Check-in Day, Water Quantity */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 {t.checkinLabel}
@@ -658,30 +702,28 @@ export default function AddAthleteModal({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
-            >
-              {CHECK_IN_DAYS.map((day) => (
-                <option key={day} value={day}>
-                  {t.checkinDays[day] ?? day}
-                </option>
-              ))}
+              >
+                {CHECK_IN_DAYS.map((day) => (
+                  <option key={day} value={day}>
+                    {t.checkinDays[day] ?? day}
+                  </option>
+                ))}
               </select>
             </div>
-          </div>
-
-          {/* Row 5: Water Quantity */}
-          <div>
-            <label className="block text-sm font-semibold text-emerald-300 mb-2">
-              {t.waterLabel}
-            </label>
-            <input
-              type="number"
-              name="waterQuantity"
-              value={formData.waterQuantity}
-              onChange={handleChange}
-              placeholder={t.waterPlaceholder}
-              disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
-            />
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.waterLabel}
+              </label>
+              <input
+                type="number"
+                name="waterQuantity"
+                value={formData.waterQuantity}
+                onChange={handleChange}
+                placeholder={t.waterPlaceholder}
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-50"
+              />
+            </div>
           </div>
 
           {/* Password (only for new athletes) */}

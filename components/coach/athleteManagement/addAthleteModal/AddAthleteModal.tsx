@@ -88,6 +88,8 @@ const translations = {
     } as Record<string, string>,
     ageLabel: "Age",
     agePlaceholder: "Enter age",
+    dobLabel: "Date of Birth *",
+    dobPlaceholder: "Select date of birth",
     checkinLabel: "Check in Day",
     checkinDays: {
       Monday: "Monday",
@@ -143,6 +145,8 @@ const translations = {
     } as Record<string, string>,
     ageLabel: "Alter",
     agePlaceholder: "Alter eingeben",
+    dobLabel: "Geburtsdatum *",
+    dobPlaceholder: "Geburtsdatum auswählen",
     checkinLabel: "Check-in-Tag",
     checkinDays: {
       Monday: "Montag",
@@ -191,6 +195,7 @@ export default function AddAthleteModal({
     image: "",
     isActive: "Active",
     role: "ATHLETE",
+    dateOfBirth: "",
   });
 
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -220,6 +225,7 @@ export default function AddAthleteModal({
         waterQuantity: 0, // ✅ NEW
         goal: "",
         image: "",
+        dateOfBirth: "",
       });
       setImagePreview("");
     }
@@ -231,19 +237,35 @@ export default function AddAthleteModal({
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: [
-        "weight",
-        "height",
-        "age",
-        "trainingDaySteps",
-        "restDaySteps",
-        "waterQuantity",
-      ].includes(name)
-        ? Number(value) || 0
-        : value,
-    }));
+    setFormData((prev) => {
+      const nextData = {
+        ...prev,
+        [name]: [
+          "weight",
+          "height",
+          "age",
+          "trainingDaySteps",
+          "restDaySteps",
+          "waterQuantity",
+        ].includes(name)
+          ? Number(value) || 0
+          : value,
+      };
+
+      // Auto-calculate age if dateOfBirth changes
+      if (name === "dateOfBirth" && value) {
+        const birthDate = new Date(value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        nextData.age = Math.max(0, age);
+      }
+
+      return nextData;
+    });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -438,6 +460,38 @@ export default function AddAthleteModal({
           </div>
 
           {/* Row 4 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.dobLabel}
+              </label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                placeholder={t.dobPlaceholder}
+                required
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.ageLabel}
+              </label>
+              <input
+                type="number"
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                readOnly
+                placeholder={t.agePlaceholder}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors opacity-70 cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          {/* Row 5 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
@@ -458,19 +512,6 @@ export default function AddAthleteModal({
             </div>
             <div>
               <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                {t.ageLabel}
-              </label>
-              <input
-                type="number"
-                name="age"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder={t.agePlaceholder}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-emerald-300 mb-2">
                 {t.checkinLabel}
               </label>
               <select
@@ -486,19 +527,19 @@ export default function AddAthleteModal({
                 ))}
               </select>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-emerald-300 mb-2">
-              {t.waterLabel}
-            </label>
-            <input
-              type="number"
-              name="waterQuantity"
-              value={formData.waterQuantity}
-              onChange={handleChange}
-              placeholder={t.waterPlaceholder}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
-            />
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.waterLabel}
+              </label>
+              <input
+                type="number"
+                name="waterQuantity"
+                value={formData.waterQuantity}
+                onChange={handleChange}
+                placeholder={t.waterPlaceholder}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
+              />
+            </div>
           </div>
 
           {/* Goal */}

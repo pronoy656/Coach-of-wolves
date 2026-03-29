@@ -68,4 +68,5 @@ export interface WeeklyCheckinState {
         pendingCount: number;
         completionRate: number;
     };
+    oldCheckin: WeeklyCheckin | null;
 }

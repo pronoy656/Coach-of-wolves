@@ -14,6 +14,7 @@ const initialState: WeeklyCheckinState = {
         pendingCount: 0,
         completionRate: 0,
     },
+    oldCheckin: null,
 };
 
 // Calculate statistics
@@ -45,13 +46,26 @@ export const fetchLatestCheckinByAthlete = createAsyncThunk(
     "weeklyCheckin/fetchLatest",
     async ({ athleteId, date }: { athleteId: string; date?: string }, { rejectWithValue }) => {
         try {
-            const url = date 
+            const url = date
                 ? `/check-in/${athleteId}?date=${date}`
                 : `/check-in/latest/${athleteId}`;
             const response = await axiosInstance.get(url);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch latest check-in");
+        }
+    }
+);
+
+// Get old check-in data for comparison
+export const fetchOldCheckinData = createAsyncThunk(
+    "weeklyCheckin/fetchOldData",
+    async (userId: string, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/check-in/old-data/coach/${userId}`);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch old check-in data");
         }
     }
 );
@@ -74,7 +88,7 @@ export const updateCheckinStatus = createAsyncThunk(
     "weeklyCheckin/updateStatus",
     async (userId: string, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.patch(`/check-in/status/${userId}`);
+            const response = await axiosInstance.patch(`/check-in/${userId}`);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to update check-in status");
@@ -138,6 +152,19 @@ const weeklyCheckinSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            // Fetch old check-in data
+            .addCase(fetchOldCheckinData.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOldCheckinData.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.oldCheckin = action.payload.data || null;
+            })
+            .addCase(fetchOldCheckinData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
             // Update check-in
             .addCase(updateWeeklyCheckin.pending, (state) => {
                 state.loading = true;
@@ -166,7 +193,7 @@ const weeklyCheckinSlice = createSlice({
                 state.loading = false;
                 const updatedCheckin = action.payload.data;
                 const targetUserId = action.meta.arg;
-                
+
                 if (updatedCheckin && updatedCheckin._id) {
                     state.checkins = state.checkins.map(c =>
                         c._id === updatedCheckin._id ? updatedCheckin : c
@@ -174,7 +201,7 @@ const weeklyCheckinSlice = createSlice({
                 } else {
                     // Fallback if backend does not return the updated record, 
                     // we manually assume the check-in is now "Completed" for this user's current session
-                    state.checkins = state.checkins.map(c => 
+                    state.checkins = state.checkins.map(c =>
                         c.userId === targetUserId ? { ...c, checkinCompleted: "Completed" } : c
                     );
                 }

@@ -6,7 +6,7 @@ import { Plus, Trash2, Edit2, Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axiosInstance from "@/lib/axiosInstance";
 import { getFullImageUrl } from "@/lib/utils";
-import { updateWeeklyCheckin, updateCheckinStatus } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import { updateWeeklyCheckin, updateCheckinStatus, fetchOldCheckinData } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin, QuestionAndAnswer } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import toast from "react-hot-toast";
 
@@ -45,6 +45,7 @@ export default function CheckInDetailsPage({
 }: CheckInDetailProps) {
   const dispatch = useAppDispatch();
   const { timeline } = useAppSelector((state) => state.timeline) || { timeline: [] };
+  const { oldCheckin, loading: loadingOldData } = useAppSelector((state) => state.weeklyCheckin);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<WeeklyCheckin>(checkIn);
@@ -53,48 +54,16 @@ export default function CheckInDetailsPage({
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  
-  const [pastCheckIn, setPastCheckIn] = useState<WeeklyCheckin | null>(null);
-  const [loadingPastCheckIn, setLoadingPastCheckIn] = useState(false);
 
   useEffect(() => {
     setEditData(checkIn);
   }, [checkIn]);
 
   useEffect(() => {
-    if (checkIn && timeline && timeline.length > 0) {
-      setLoadingPastCheckIn(true);
-      const sorted = [...timeline].sort((a, b) => new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime());
-      
-      const currentIndex = sorted.findIndex(t => {
-        // Find the matching timeline entry for this checkIn based on date
-        return new Date(t.checkInDate).getTime() <= new Date(checkIn.createdAt).getTime();
-      });
-
-      // The previous week is the next item in the sorted list (since it's descending)
-      const pastIndex = currentIndex >= 0 ? currentIndex + 1 : 1;
-      
-      if (pastIndex < sorted.length) {
-        const pastDate = sorted[pastIndex].checkInDate;
-        axiosInstance.get(`/check-in/${checkIn.userId}?date=${pastDate}`)
-          .then(res => {
-            const data = res.data?.data?.[0] || res.data?.data;
-            setPastCheckIn(data || null);
-          })
-          .catch(err => {
-            console.error("Failed to fetch past check-in", err);
-            setPastCheckIn(null);
-          })
-          .finally(() => setLoadingPastCheckIn(false));
-      } else {
-        setPastCheckIn(null);
-        setLoadingPastCheckIn(false);
-      }
-    } else {
-      setPastCheckIn(null);
-      setLoadingPastCheckIn(false);
+    if (checkIn && checkIn.userId) {
+      dispatch(fetchOldCheckinData(checkIn.userId));
     }
-  }, [checkIn, timeline]);
+  }, [checkIn?.userId, dispatch]);
 
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
@@ -528,86 +497,226 @@ export default function CheckInDetailsPage({
           Comparison Check-In
         </h3>
         
-        {loadingPastCheckIn ? (
-          <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-emerald-500" /></div>
-        ) : pastCheckIn ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-            {/* Divider in desktop */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700/50 -translate-x-1/2"></div>
+        {loadingOldData ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+        ) : oldCheckin ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+            {/* Vertical Divider for Desktop */}
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-800/50 -translate-x-1/2"></div>
             
-            {/* Left Side - Past Week */}
-            <div className="space-y-4 pr-0 md:pr-4">
-              <h4 className="text-gray-400 font-semibold mb-4 text-center">
-                Past Week {pastCheckIn.weekNumber ? `(Week ${pastCheckIn.weekNumber})` : ""}
+            {/* Left Side - Old Data */}
+            <div className="space-y-6 pr-0 md:pr-6">
+              <h4 className="text-gray-400 font-bold mb-4 text-center uppercase tracking-widest text-xs">
+                Old Check-in {oldCheckin.createdAt ? `(${new Date(oldCheckin.createdAt).toLocaleDateString()})` : ""}
               </h4>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Weight</span>
-                 <span className="text-white font-bold">{pastCheckIn.currentWeight || "N/A"} kg</span>
+              
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Metrics</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
+                    <span className="text-gray-400 text-xs">Weight</span>
+                    <span className="text-white font-bold text-sm">{oldCheckin.currentWeight || "N/A"} kg</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
+                    <span className="text-gray-400 text-xs">Avg Weight</span>
+                    <span className="text-white font-bold text-sm">{oldCheckin.averageWeight || "N/A"} kg</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Average Weight</span>
-                 <span className="text-white font-bold">{pastCheckIn.averageWeight || "N/A"} kg</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Energy</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.energyLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Stress</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.stressLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Mood</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.moodLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.sleepQuality || "0"}/10</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Sleep Quality</span>
-                 <span className="text-white font-bold">{pastCheckIn.wellBeing?.sleepQuality || "0"}/10</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.dietLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.digestionLevel || "0"}/10</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Energy Level</span>
-                 <span className="text-white font-bold">{pastCheckIn.wellBeing?.energyLevel || "0"}/10</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.training?.feelStrength || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.training?.pumps || "0"}/10</p>
+                  </div>
+                  <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.trainingCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                    <p className="text-[10px] opacity-70 mb-1">Training</p>
+                    <p className="font-bold text-xs">{oldCheckin.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                  </div>
+                  <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.cardioCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                    <p className="text-[10px] opacity-70 mb-1">Cardio</p>
+                    <p className="font-bold text-xs">{oldCheckin.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                  </div>
+                </div>
               </div>
-              {/* Media Comparison */}
-              {pastCheckIn.image && pastCheckIn.image.length > 0 ? (
-                 <div className="grid grid-cols-2 gap-2 mt-4">
-                   {pastCheckIn.image.map((img, idx) => (
-                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-700/50">
-                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg?height=200&width=200"} alt="Past week media" className="w-full h-full object-cover" />
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>
+                <div className="space-y-2">
+                  {oldCheckin.questionAndAnswer?.map((qa, idx) => (
+                    <div key={idx} className="bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
+                      <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">{qa.question}</p>
+                      <p className="text-white text-xs italic">"{qa.answer || "No answer"}"</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Media */}
+              {oldCheckin.image && oldCheckin.image.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {oldCheckin.image.map((img, idx) => (
+                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-800">
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover" alt="Old check-in" />
                       </div>
-                   ))}
-                 </div>
-              ) : (
-                <div className="p-4 bg-[#0B0B22] rounded-lg text-center text-gray-500 text-sm border border-slate-800 mt-4">No images</div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* Right Side - Present Week */}
-            <div className="space-y-4 pl-0 md:pl-4">
-              <h4 className="text-emerald-400 font-semibold mb-4 text-center">
-                Present Week {checkIn.weekNumber ? `(Week ${checkIn.weekNumber})` : ""}
+            {/* Right Side - Present Data */}
+            <div className="space-y-6 pl-0 md:pl-6">
+              <h4 className="text-emerald-500 font-bold mb-4 text-center uppercase tracking-widest text-xs">
+                Present Check-in (Current)
               </h4>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Weight</span>
-                 <span className="text-emerald-500 font-bold">{checkIn.currentWeight || "N/A"} kg</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Metrics</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
+                    <span className="text-gray-400 text-xs">Weight</span>
+                    <span className="text-emerald-500 font-bold text-sm">{checkIn.currentWeight || "N/A"} kg</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
+                    <span className="text-gray-400 text-xs">Avg Weight</span>
+                    <span className="text-emerald-500 font-bold text-sm">{checkIn.averageWeight || "N/A"} kg</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Average Weight</span>
-                 <span className="text-emerald-500 font-bold">{checkIn.averageWeight || "N/A"} kg</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Energy</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.energyLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Stress</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.stressLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Mood</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.moodLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.sleepQuality || "0"}/10</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Sleep Quality</span>
-                 <span className="text-emerald-500 font-bold">{checkIn.wellBeing?.sleepQuality || "0"}/10</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.dietLevel || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.digestionLevel || "0"}/10</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800">
-                 <span className="text-gray-400 text-sm">Energy Level</span>
-                 <span className="text-emerald-500 font-bold">{checkIn.wellBeing?.energyLevel || "0"}/10</span>
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.feelStrength || "0"}/10</p>
+                  </div>
+                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.pumps || "0"}/10</p>
+                  </div>
+                  <div className={`p-2 rounded-lg border text-center ${checkIn.training?.trainingCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                    <p className="text-[10px] opacity-70 mb-1">Training</p>
+                    <p className="font-bold text-xs">{checkIn.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                  </div>
+                  <div className={`p-2 rounded-lg border text-center ${checkIn.training?.cardioCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                    <p className="text-[10px] opacity-70 mb-1">Cardio</p>
+                    <p className="font-bold text-xs">{checkIn.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                  </div>
+                </div>
               </div>
-              {/* Media Comparison */}
-              {checkIn.image && checkIn.image.length > 0 ? (
-                 <div className="grid grid-cols-2 gap-2 mt-4">
-                   {checkIn.image.map((img, idx) => (
-                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-700/50">
-                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg?height=200&width=200"} alt="Present week media" className="w-full h-full object-cover" />
+
+              <div className="space-y-3">
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>
+                <div className="space-y-2">
+                  {checkIn.questionAndAnswer?.map((qa, idx) => (
+                    <div key={idx} className="bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
+                      <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">{qa.question}</p>
+                      <p className="text-emerald-400 text-xs italic">"{qa.answer || "No answer"}"</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Media */}
+              {checkIn.image && checkIn.image.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {checkIn.image.map((img, idx) => (
+                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-emerald-500/20">
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover" alt="Present check-in" />
                       </div>
-                   ))}
-                 </div>
-              ) : (
-                <div className="p-4 bg-[#0B0B22] rounded-lg text-center text-gray-500 text-sm border border-slate-800 mt-4">No images</div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 bg-[#0B0B22] rounded-lg border border-slate-700/50 text-gray-500">
-            No past check-in available for comparison.
+          <div className="text-center py-12 bg-[#0B0B22] rounded-lg border border-slate-700/50 text-gray-500">
+            No old check-in data available for comparison.
           </div>
         )}
       </div>
