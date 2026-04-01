@@ -70,12 +70,13 @@ export const fetchOldCheckinData = createAsyncThunk(
     }
 );
 
-// Update check-in (Coach updates question and coachNote)
+// Update check-in (Coach updates questions, coachNote, checkinCompleted)
+// New endpoint: PATCH /check-in/old-data/coach/{checkinId}
 export const updateWeeklyCheckin = createAsyncThunk(
     "weeklyCheckin/update",
     async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.patch(`/check-in/${id}`, data);
+            const response = await axiosInstance.patch(`/check-in/old-data/coach/${id}`, data);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to update check-in");
@@ -83,12 +84,12 @@ export const updateWeeklyCheckin = createAsyncThunk(
     }
 );
 
-// Update check-in status
+// Update check-in status (uses same new endpoint)
 export const updateCheckinStatus = createAsyncThunk(
     "weeklyCheckin/updateStatus",
-    async (userId: string, { rejectWithValue }) => {
+    async (id: string, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.patch(`/check-in/${userId}`);
+            const response = await axiosInstance.patch(`/check-in/old-data/coach/${id}`, { checkinCompleted: "Completed" });
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to update check-in status");
@@ -131,7 +132,8 @@ const weeklyCheckinSlice = createSlice({
             })
             .addCase(fetchWeeklyCheckins.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.checkins = action.payload.data?.data || action.payload.data || [];
+                const data = action.payload.data?.data || action.payload.data;
+                state.checkins = Array.isArray(data) ? data : (data ? [data] : []);
                 state.stats = calculateStats(state.checkins);
             })
             .addCase(fetchWeeklyCheckins.rejected, (state, action) => {
@@ -145,7 +147,8 @@ const weeklyCheckinSlice = createSlice({
             })
             .addCase(fetchLatestCheckinByAthlete.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.checkins = action.payload.data?.data || action.payload.data || [];
+                const data = action.payload.data?.data || action.payload.data;
+                state.checkins = Array.isArray(data) ? data : (data ? [data] : []);
                 state.stats = calculateStats(state.checkins);
             })
             .addCase(fetchLatestCheckinByAthlete.rejected, (state, action) => {
@@ -172,12 +175,14 @@ const weeklyCheckinSlice = createSlice({
             })
             .addCase(updateWeeklyCheckin.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
+                // Backend returns: { success, message, data: { ...checkinObject } }
                 const updatedCheckin = action.payload.data;
-                if (updatedCheckin) {
+                if (updatedCheckin && updatedCheckin._id) {
                     state.checkins = state.checkins.map(c =>
                         c._id === updatedCheckin._id ? updatedCheckin : c
                     );
                 }
+                state.stats = calculateStats(state.checkins);
                 state.successMessage = action.payload.message;
             })
             .addCase(updateWeeklyCheckin.rejected, (state, action) => {
@@ -192,7 +197,7 @@ const weeklyCheckinSlice = createSlice({
             .addCase(updateCheckinStatus.fulfilled, (state, action) => {
                 state.loading = false;
                 const updatedCheckin = action.payload.data;
-                const targetUserId = action.meta.arg;
+                const targetCheckInId = action.meta.arg;
 
                 if (updatedCheckin && updatedCheckin._id) {
                     state.checkins = state.checkins.map(c =>
@@ -200,9 +205,9 @@ const weeklyCheckinSlice = createSlice({
                     );
                 } else {
                     // Fallback if backend does not return the updated record, 
-                    // we manually assume the check-in is now "Completed" for this user's current session
+                    // we manually assume the check-in is now "Completed" for this session
                     state.checkins = state.checkins.map(c =>
-                        c.userId === targetUserId ? { ...c, checkinCompleted: "Completed" } : c
+                        c._id === targetCheckInId ? { ...c, checkinCompleted: "Completed" } : c
                     );
                 }
                 state.stats = calculateStats(state.checkins);

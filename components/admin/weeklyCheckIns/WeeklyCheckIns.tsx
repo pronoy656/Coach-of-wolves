@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import {
   fetchWeeklyCheckins,
   deleteWeeklyCheckin,
@@ -39,7 +38,7 @@ const translations = {
     activeFiltersPrefix: "Zeige",
     activeFiltersFor: "Check-ins für",
     activeFiltersOnlySuffix: (status: string) => ` (${status} nur)`,
-    activeFiltersSearchSuffix: (term: string) => ` passend zu „${term}“`,
+    activeFiltersSearchSuffix: (term: string) => ` passend zu „${term}"`,
   },
 };
 
@@ -57,7 +56,7 @@ export default function WeeklyCheckIns() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Format date function - MOVED BEFORE useMemo
+  // Format date function
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     try {
@@ -96,8 +95,8 @@ export default function WeeklyCheckIns() {
     return checkins.filter((checkIn) => {
       const matchesSearch =
         searchTerm === "" ||
-        checkIn.athleteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        checkIn.coachName.toLowerCase().includes(searchTerm.toLowerCase());
+        (checkIn.athleteName ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (checkIn.coachName ?? "").toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
         selectedStatus === "All" || checkIn.checkinCompleted === selectedStatus;
@@ -108,21 +107,19 @@ export default function WeeklyCheckIns() {
     });
   }, [searchTerm, selectedStatus, selectedWeek, checkins]);
 
-  // Transform data for table - NOW formatDate IS AVAILABLE
+  // Transform data for table
   const tableData = useMemo(() => {
     return filteredCheckIns.map((checkIn, index) => ({
       id: index + 1,
-      athlete: checkIn.athleteName,
+      athlete: checkIn.athleteName ?? "",
       week: `Week ${checkIn.weekNumber}`,
-      checkInDate: formatDate(checkIn.nextCheckInDate),
-      coach: checkIn.coachName,
-      weightChange: `${checkIn.weight > 0 ? "+" : ""}${checkIn.weight.toFixed(
-        1
-      )}(kg)`,
+      checkInDate: formatDate(checkIn.nextCheckInDate ?? ""),
+      coach: checkIn.coachName ?? "",
+      weightChange: `${(checkIn.weight ?? 0) > 0 ? "+" : ""}${(checkIn.weight ?? 0).toFixed(1)}(kg)`,
       status: checkIn.checkinCompleted,
-      originalData: checkIn, // Keep original for operations
+      originalData: checkIn,
     }));
-  }, [filteredCheckIns]); // formatDate is stable, no need to include in dependencies
+  }, [filteredCheckIns]);
 
   const totalPages = Math.ceil(tableData.length / itemsPerPage);
   const paginatedCheckIns = tableData.slice(
@@ -136,7 +133,6 @@ export default function WeeklyCheckIns() {
     athleteName: string,
     weekNumber: number
   ) => {
-    // We need to find the correct _id for the thunk
     const checkinToDelete = filteredCheckIns.find(
       (c) => c.athleteName === athleteName && c.weekNumber === weekNumber
     );
@@ -148,8 +144,8 @@ export default function WeeklyCheckIns() {
     try {
       await dispatch(deleteWeeklyCheckin(checkinToDelete._id)).unwrap();
       toast.success("Check-in deleted successfully");
-    } catch (error: any) {
-      toast.error(error || "Failed to delete check-in");
+    } catch (error: unknown) {
+      toast.error((error as string) || "Failed to delete check-in");
     }
   };
 

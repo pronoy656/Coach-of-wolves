@@ -130,8 +130,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
   const currentCheckIn = checkins.find((c) => c._id === selectedCheckInId);
 
   const handleUpdateStatus = () => {
-    if (currentCheckIn && currentCheckIn.userId) {
-      dispatch(updateCheckinStatus(currentCheckIn.userId));
+    if (currentCheckIn && currentCheckIn._id) {
+      dispatch(updateCheckinStatus(currentCheckIn._id));
     }
   };
 

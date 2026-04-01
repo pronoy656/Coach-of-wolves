@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Edit2, Loader2, X, SlidersHorizontal } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import axiosInstance from "@/lib/axiosInstance";
 import { getFullImageUrl } from "@/lib/utils";
-import { updateWeeklyCheckin, updateCheckinStatus, fetchOldCheckinData } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
-import { WeeklyCheckin, QuestionAndAnswer } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+import { updateWeeklyCheckin, fetchOldCheckinData } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
+import { WeeklyCheckin, QuestionAndAnswer, CoachSlider } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
 import toast from "react-hot-toast";
 
 interface CheckInDetailProps {
@@ -38,15 +37,31 @@ const YesNoDisplay = ({ value }: { value: boolean }) => (
   </div>
 );
 
+// Standard wellBeing keys filled by the athlete – anything else is a coach slider
+const STANDARD_WELLBEING_KEYS = new Set(["energyLevel", "stressLevel", "moodLevel", "sleepQuality", "hungerLevel", "_id"]);
+
+/** "My Custom Metric" → "myCustomMetric" */
+function toCamelCase(str: string) {
+  return str
+    .trim()
+    .split(/\s+/)
+    .map((w, i) => (i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()))
+    .join("");
+}
+
+/** "myCustomMetric" → "My Custom Metric" */
+function fromCamelCase(key: string) {
+  return key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+}
+
 export default function CheckInDetailsPage({
   checkIn,
   onUpdate,
   onDelete,
 }: CheckInDetailProps) {
   const dispatch = useAppDispatch();
-  const { timeline } = useAppSelector((state) => state.timeline) || { timeline: [] };
   const { oldCheckin, loading: loadingOldData } = useAppSelector((state) => state.weeklyCheckin);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<WeeklyCheckin>(checkIn);
   const [newQuestionInput, setNewQuestionInput] = useState("");
@@ -55,8 +70,27 @@ export default function CheckInDetailsPage({
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  // Coach sliders – stored locally; derived from extra wellBeing keys
+  const [coachSliders, setCoachSliders] = useState<CoachSlider[]>(() => {
+    const wb = checkIn.wellBeing || {};
+    return Object.entries(wb)
+      .filter(([k]) => !STANDARD_WELLBEING_KEYS.has(k))
+      .map(([k, v]) => ({ key: k, title: fromCamelCase(k), value: Number(v) || 0 }));
+  });
+
+  // Modal state for adding a slider
+  const [showSliderModal, setShowSliderModal] = useState(false);
+  const [newSliderTitle, setNewSliderTitle] = useState("");
+  const modalInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     setEditData(checkIn);
+    const wb = checkIn.wellBeing || {};
+    setCoachSliders(
+      Object.entries(wb)
+        .filter(([k]) => !STANDARD_WELLBEING_KEYS.has(k))
+        .map(([k, v]) => ({ key: k, title: fromCamelCase(k), value: Number(v) || 0 }))
+    );
   }, [checkIn]);
 
   useEffect(() => {
@@ -65,6 +99,14 @@ export default function CheckInDetailsPage({
     }
   }, [checkIn?.userId, dispatch]);
 
+  // Focus modal input when it opens
+  useEffect(() => {
+    if (showSliderModal) {
+      setTimeout(() => modalInputRef.current?.focus(), 50);
+    }
+  }, [showSliderModal]);
+
+  // ── Question handlers ────────────────────────────────────────────────────────
   const handleAddQuestion = () => {
     if (newQuestionInput.trim()) {
       const newQuestion: QuestionAndAnswer = {
@@ -99,6 +141,48 @@ export default function CheckInDetailsPage({
     }));
   };
 
+  // ── Slider handlers ──────────────────────────────────────────────────────────
+  const handleOpenSliderModal = () => {
+    setNewSliderTitle("");
+    setShowSliderModal(true);
+  };
+
+  const handleAddSlider = () => {
+    const title = newSliderTitle.trim();
+    if (!title) return;
+    const key = toCamelCase(title);
+    if (coachSliders.some((s) => s.key === key)) {
+      toast.error("A slider with this title already exists.");
+      return;
+    }
+    setCoachSliders((prev) => [...prev, { key, title, value: 0 }]);
+    setShowSliderModal(false);
+    setNewSliderTitle("");
+  };
+
+  const handleDeleteSlider = (key: string) => {
+    setCoachSliders((prev) => prev.filter((s) => s.key !== key));
+  };
+
+  const handleSliderValueChange = (key: string, value: number) => {
+    setCoachSliders((prev) => prev.map((s) => (s.key === key ? { ...s, value } : s)));
+  };
+
+  /** Merge coach sliders into wellBeing for the PATCH payload */
+  const buildWellBeingPayload = () => {
+    const base = {
+      energyLevel: editData.wellBeing?.energyLevel,
+      stressLevel: editData.wellBeing?.stressLevel,
+      moodLevel: editData.wellBeing?.moodLevel,
+      sleepQuality: editData.wellBeing?.sleepQuality,
+      hungerLevel: editData.wellBeing?.hungerLevel,
+    };
+    const extras: Record<string, number> = {};
+    coachSliders.forEach((s) => { extras[s.key] = s.value; });
+    return { ...base, ...extras };
+  };
+
+  // ── Save / Complete ───────────────────────────────────────────────────────────
   const handleUpdateQuestionsAndNotes = async () => {
     setIsSaving(true);
     try {
@@ -106,13 +190,15 @@ export default function CheckInDetailsPage({
         questionAndAnswer: editData.questionAndAnswer.map(q => ({
           question: q.question,
           answer: q.answer,
-          status: q.status
+          status: q.status,
         })),
-        coachNote: editData.coachNote
+        coachNote: editData.coachNote,
+        wellBeing: buildWellBeingPayload(),
       };
       await dispatch(updateWeeklyCheckin({ id: checkIn._id, data: updatePayload })).unwrap();
-      toast.success("question updated successfully");
+      toast.success("Check-in updated successfully");
       setIsEditing(false);
+      setShowAddQuestion(false);
     } catch (err: any) {
       toast.error(err || "Failed to update check-in");
     } finally {
@@ -121,18 +207,26 @@ export default function CheckInDetailsPage({
   };
 
   const handleCompleteCheckIn = async () => {
-    if (!checkIn.userId) return;
+    if (!checkIn._id) return;
     setIsSaving(true);
     try {
-      await dispatch(updateCheckinStatus(checkIn.userId)).unwrap();
-      toast.success("check in completed");
+      const completePayload = {
+        questionAndAnswer: editData.questionAndAnswer.map(q => ({
+          question: q.question,
+          answer: q.answer,
+          status: q.status,
+        })),
+        coachNote: editData.coachNote,
+        wellBeing: buildWellBeingPayload(),
+        checkinCompleted: "Completed",
+      };
+      await dispatch(updateWeeklyCheckin({ id: checkIn._id, data: completePayload })).unwrap();
+      toast.success("Check-in completed successfully!");
       setIsSaved(true);
-      setTimeout(() => {
-        setIsSaved(false);
-        setIsEditing(false);
-      }, 1500);
+      setIsEditing(false);
+      setTimeout(() => setIsSaved(false), 2000);
     } catch (err: any) {
-      toast.error(err || "Failed to update status");
+      toast.error(err || "Failed to complete check-in");
     } finally {
       setIsSaving(false);
     }
@@ -175,42 +269,173 @@ export default function CheckInDetailsPage({
 
   return (
     <div className="space-y-8">
-      {/* Header with Edit Button - Now only for editing questions and notes */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
-        <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
 
-      </div>
+      {/* ── Add Slider Modal ─────────────────────────────────────────────────── */}
+      {showSliderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowSliderModal(false)}
+          />
+          {/* Modal card */}
+          <div className="relative z-10 w-full max-w-md mx-4 bg-[#0d0d24] border border-violet-500/30 rounded-2xl p-6 shadow-2xl shadow-violet-900/20">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                  <SlidersHorizontal className="w-4 h-4 text-violet-400" />
+                </div>
+                <h3 className="text-white font-bold text-lg">Add Slider</h3>
+              </div>
+              <button
+                onClick={() => setShowSliderModal(false)}
+                className="text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Well-Being and Nutrition in one row - VIEW ONLY */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Well-Being Section - VIEW ONLY */}
-        <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-            <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-            Well-Being
-          </h3>
-          <div className="space-y-4">
-            {[
-              { label: "Energy Level", value: checkIn.wellBeing.energyLevel },
-              { label: "Stress Level", value: checkIn.wellBeing.stressLevel },
-              { label: "Mood Level", value: checkIn.wellBeing.moodLevel },
-              { label: "Sleep Quality", value: checkIn.wellBeing.sleepQuality },
-            ].map(({ label, value }) => (
-              <SliderWithIndicator key={label} label={label} value={value} />
-            ))}
+            <p className="text-gray-400 text-sm mb-5">
+              Enter a title for the new slider. It will appear in the
+              <span className="text-violet-400 font-semibold"> New Slider</span> section
+              inside Well-Being and will default to <span className="text-white font-semibold">0</span>.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                  Slider Title
+                </label>
+                <input
+                  ref={modalInputRef}
+                  type="text"
+                  value={newSliderTitle}
+                  onChange={(e) => setNewSliderTitle(e.target.value)}
+                  placeholder="e.g. Nutrition Plan Adherence"
+                  className="w-full bg-slate-900 border border-slate-700 text-gray-200 rounded-lg px-4 py-3 focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 transition-colors placeholder:text-slate-600"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAddSlider(); }}
+                />
+                {newSliderTitle.trim() && (
+                  <p className="text-xs text-slate-500 mt-1.5">
+                    Backend key: <code className="text-violet-400">{toCamelCase(newSliderTitle)}</code>
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => setShowSliderModal(false)}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-gray-400 hover:bg-slate-800 transition-colors font-semibold text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddSlider}
+                  disabled={!newSliderTitle.trim()}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Add Slider
+                </button>
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Nutrition Section - VIEW ONLY */}
+      {/* ── Check-In Details Header ───────────────────────────────────────────── */}
+      <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
+        <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
+        <button
+          onClick={handleOpenSliderModal}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400/50"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Add Slider
+        </button>
+      </div>
+
+      {/* Well-Being Card */}
+      <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+          <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
+          Well-Being
+        </h3>
+
+        {/* Standard sliders filled by athlete */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            { label: "Energy Level", value: checkIn.wellBeing?.energyLevel || 0 },
+            { label: "Stress Level", value: checkIn.wellBeing?.stressLevel || 0 },
+            { label: "Mood Level", value: checkIn.wellBeing?.moodLevel || 0 },
+            { label: "Sleep Quality", value: checkIn.wellBeing?.sleepQuality || 0 },
+            { label: "Hunger Level", value: checkIn.wellBeing?.hungerLevel || 0 },
+          ].map(({ label, value }) => (
+            <SliderWithIndicator key={label} label={label} value={value} />
+          ))}
+        </div>
+
+        {/* New Slider subsection — coach-added sliders */}
+        {coachSliders.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-slate-700/40">
+            <p className="text-[10px] text-violet-400/80 font-bold uppercase tracking-widest mb-4">
+              New Slider
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {coachSliders.map((slider) => (
+                <div
+                  key={slider.key}
+                  className="bg-[#0b0b22] rounded-lg p-4 border border-violet-700/25 hover:border-violet-600/40 transition-colors"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-gray-300 text-sm font-semibold flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block"></span>
+                      {slider.title}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-400 font-medium text-lg">{slider.value}/10</span>
+                      <button
+                        onClick={() => handleDeleteSlider(slider.key)}
+                        className="text-red-500/70 hover:text-red-400 transition-colors"
+                        title="Remove slider"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value={slider.value}
+                    onChange={(e) => handleSliderValueChange(slider.key, Number(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, rgb(139,92,246) 0%, rgb(139,92,246) ${(slider.value / 10) * 100}%, rgb(30,41,59) ${(slider.value / 10) * 100}%, rgb(30,41,59) 100%)`,
+                    }}
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-xs text-slate-600">0</span>
+                    <span className="text-xs text-slate-600">10</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Nutrition Card - Only show if data exists */}
+      {checkIn.nutrition && (
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
             Nutrition
           </h3>
-          <div className="space-y-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {[
-              { label: "Diet Level", value: checkIn.nutrition.dietLevel },
-              { label: "Digestion", value: checkIn.nutrition.digestionLevel },
+              { label: "Diet Level", value: checkIn.nutrition?.dietLevel || 0 },
+              { label: "Digestion", value: checkIn.nutrition?.digestionLevel || 0 },
             ].map(({ label, value }) => (
               <SliderWithIndicator key={label} label={label} value={value} />
             ))}
@@ -220,65 +445,84 @@ export default function CheckInDetailsPage({
               Challenge Diet
             </label>
             <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
-              {checkIn.nutrition.challengeDiet}
+              {checkIn.nutrition?.challengeDiet || "N/A"}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Training Section - VIEW ONLY */}
-      <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-          <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-          Training
-        </h3>
+      {/* Training Section - VIEW ONLY - Only show if data exists */}
+      {checkIn.training && (
+        <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+            <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
+            Training
+          </h3>
 
-        <div className="space-y-6">
-          {/* Sliders */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: "Feel Strength", value: checkIn.training.feelStrength },
-              { label: "Pumps", value: checkIn.training.pumps },
-            ].map(({ label, value }) => (
-              <SliderWithIndicator key={label} label={label} value={value} />
-            ))}
-          </div>
-
-          {/* Yes/No Displays */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
-              <label className="block text-white font-medium mb-4">
-                Training Completed?
-              </label>
-              <YesNoDisplay value={checkIn.training.trainingCompleted} />
+          <div className="space-y-6">
+            {/* Sliders */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: "Feel Strength", value: checkIn.training?.feelStrength || 0 },
+                { label: "Pumps", value: checkIn.training?.pumps || 0 },
+              ].map(({ label, value }) => (
+                <SliderWithIndicator key={label} label={label} value={value} />
+              ))}
             </div>
-            <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
-              <label className="block text-white font-medium mb-4">
-                Cardio Completed?
-              </label>
-              <YesNoDisplay value={checkIn.training.cardioCompleted} />
-            </div>
-          </div>
 
-          {/* Feedback Training - VIEW ONLY */}
-          <div>
-            <label className="block text-gray-300 text-sm font-bold mb-2">
-              Feedback Training
-            </label>
-            <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
-              {checkIn.trainingFeedback}
+            {/* Yes/No Displays */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
+                <label className="block text-white font-medium mb-4">
+                  Training Completed?
+                </label>
+                <YesNoDisplay value={!!checkIn.training?.trainingCompleted} />
+              </div>
+              <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
+                <label className="block text-white font-medium mb-4">
+                  Cardio Completed?
+                </label>
+                <YesNoDisplay value={!!checkIn.training?.cardioCompleted} />
+              </div>
             </div>
+
+            {/* Feedback Training - VIEW ONLY */}
+            {checkIn.trainingFeedback && (
+              <div>
+                <label className="block text-gray-300 text-sm font-bold mb-2">
+                  Feedback Training
+                </label>
+                <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
+                  {checkIn.trainingFeedback}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-      {!isEditing && (
+      )}
+      {!isEditing ? (
         <div className="flex justify-end text-base">
           <button
             onClick={() => setIsEditing(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
           >
             <Edit2 className="w-4 h-4" />
-            Edit question and notes
+            Edit questions &amp; notes
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-end gap-3 text-base">
+          <button
+            onClick={() => {
+              setEditData(checkIn);
+              setIsEditing(false);
+              setShowAddQuestion(false);
+              setNewSliderTitle("");
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-slate-600 text-gray-400 hover:bg-slate-700/30 text-base"
+          >
+            <X className="w-4 h-4" />
+            Cancel
           </button>
         </div>
       )}
@@ -339,6 +583,8 @@ export default function CheckInDetailsPage({
             </div>
           </div>
         )}
+
+
 
         <div className="space-y-4">
           {editData.questionAndAnswer.length === 0 ? (
@@ -410,18 +656,10 @@ export default function CheckInDetailsPage({
           )}
         </div>
 
-        {isEditing && (
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleUpdateQuestionsAndNotes}
-              className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all bg-green-500/20 hover:bg-green-700 text-green-500 hover:text-white border border-green-500/30"
-            >
-              <Edit2 className="w-4 h-4" />
-              Update check-in question and notes
-            </button>
-          </div>
-        )}
+
       </div>
+
+
 
       {/* Media Section - VIEW ONLY */}
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
@@ -444,7 +682,7 @@ export default function CheckInDetailsPage({
                       <img
                         src={
                           img ? getFullImageUrl(img) :
-                          "/placeholder.svg?height=200&width=200&query=workout"
+                            "/placeholder.svg?height=200&width=200&query=workout"
                         }
                         alt={`Workout photo ${idx + 1}`}
                         className="w-full h-full object-cover"
@@ -496,20 +734,20 @@ export default function CheckInDetailsPage({
           <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
           Comparison Check-In
         </h3>
-        
+
         {loadingOldData ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
         ) : oldCheckin ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
             {/* Vertical Divider for Desktop */}
             <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-800/50 -translate-x-1/2"></div>
-            
+
             {/* Left Side - Old Data */}
             <div className="space-y-6 pr-0 md:pr-6">
               <h4 className="text-gray-400 font-bold mb-4 text-center uppercase tracking-widest text-xs">
                 Old Check-in {oldCheckin.createdAt ? `(${new Date(oldCheckin.createdAt).toLocaleDateString()})` : ""}
               </h4>
-              
+
               <div className="space-y-3">
                 <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Metrics</p>
                 <div className="grid grid-cols-1 gap-2">
@@ -526,7 +764,7 @@ export default function CheckInDetailsPage({
 
               <div className="space-y-3">
                 <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
                     <p className="text-[10px] text-gray-500 mb-1">Energy</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.energyLevel || "0"}/10</p>
@@ -543,44 +781,54 @@ export default function CheckInDetailsPage({
                     <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.sleepQuality || "0"}/10</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
-                <div className="grid grid-cols-2 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Diet</p>
-                    <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.dietLevel || "0"}/10</p>
-                  </div>
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
-                    <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.digestionLevel || "0"}/10</p>
+                    <p className="text-[10px] text-gray-500 mb-1">Hunger</p>
+                    <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.hungerLevel || "0"}/10</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Strength</p>
-                    <p className="text-white font-bold text-sm">{oldCheckin.training?.feelStrength || "0"}/10</p>
-                  </div>
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
-                    <p className="text-white font-bold text-sm">{oldCheckin.training?.pumps || "0"}/10</p>
-                  </div>
-                  <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.trainingCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                    <p className="text-[10px] opacity-70 mb-1">Training</p>
-                    <p className="font-bold text-xs">{oldCheckin.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
-                  </div>
-                  <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.cardioCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                    <p className="text-[10px] opacity-70 mb-1">Cardio</p>
-                    <p className="font-bold text-xs">{oldCheckin.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+              {/* Nutrition - Only if exists */}
+              {oldCheckin.nutrition && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                      <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.dietLevel || "0"}/10</p>
+                    </div>
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                      <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.digestionLevel || "0"}/10</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Training - Only if exists */}
+              {oldCheckin.training && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                      <p className="text-white font-bold text-sm">{oldCheckin.training?.feelStrength || "0"}/10</p>
+                    </div>
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                      <p className="text-white font-bold text-sm">{oldCheckin.training?.pumps || "0"}/10</p>
+                    </div>
+                    <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.trainingCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                      <p className="text-[10px] opacity-70 mb-1">Training</p>
+                      <p className="font-bold text-xs">{oldCheckin.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                    </div>
+                    <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.cardioCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                      <p className="text-[10px] opacity-70 mb-1">Cardio</p>
+                      <p className="font-bold text-xs">{oldCheckin.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>
@@ -631,7 +879,7 @@ export default function CheckInDetailsPage({
 
               <div className="space-y-3">
                 <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
                     <p className="text-[10px] text-gray-500 mb-1">Energy</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.energyLevel || "0"}/10</p>
@@ -648,44 +896,54 @@ export default function CheckInDetailsPage({
                     <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.sleepQuality || "0"}/10</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
-                <div className="grid grid-cols-2 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Diet</p>
-                    <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.dietLevel || "0"}/10</p>
-                  </div>
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
-                    <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.digestionLevel || "0"}/10</p>
+                    <p className="text-[10px] text-gray-500 mb-1">Hunger</p>
+                    <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.hungerLevel || "0"}/10</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Strength</p>
-                    <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.feelStrength || "0"}/10</p>
-                  </div>
-                  <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
-                    <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.pumps || "0"}/10</p>
-                  </div>
-                  <div className={`p-2 rounded-lg border text-center ${checkIn.training?.trainingCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                    <p className="text-[10px] opacity-70 mb-1">Training</p>
-                    <p className="font-bold text-xs">{checkIn.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
-                  </div>
-                  <div className={`p-2 rounded-lg border text-center ${checkIn.training?.cardioCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                    <p className="text-[10px] opacity-70 mb-1">Cardio</p>
-                    <p className="font-bold text-xs">{checkIn.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+              {/* Nutrition - Only if exists */}
+              {checkIn.nutrition && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                      <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.dietLevel || "0"}/10</p>
+                    </div>
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                      <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.digestionLevel || "0"}/10</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Training - Only if exists */}
+              {checkIn.training && (
+                <div className="space-y-3">
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                      <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.feelStrength || "0"}/10</p>
+                    </div>
+                    <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
+                      <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                      <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.pumps || "0"}/10</p>
+                    </div>
+                    <div className={`p-2 rounded-lg border text-center ${checkIn.training?.trainingCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                      <p className="text-[10px] opacity-70 mb-1">Training</p>
+                      <p className="font-bold text-xs">{checkIn.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                    </div>
+                    <div className={`p-2 rounded-lg border text-center ${checkIn.training?.cardioCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                      <p className="text-[10px] opacity-70 mb-1">Cardio</p>
+                      <p className="font-bold text-xs">{checkIn.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>

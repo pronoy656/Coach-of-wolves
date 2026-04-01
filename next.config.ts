@@ -17,23 +17,23 @@ const nextConfig: NextConfig = {
         hostname: "i.ibb.co",
         pathname: "/**",
       },
-          {
+      {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
-          {
+      {
         protocol: 'http',
         hostname: '10.10.7.101',
         pathname: '/**',
       },
     ],
-  //     remotePatterns: [
-  //   {
-  //     protocol: "https",
-  //     hostname: "**",
-  //   },
-  // ],
+    //     remotePatterns: [
+    //   {
+    //     protocol: "https",
+    //     hostname: "**",
+    //   },
+    // ],
   },
 };
 

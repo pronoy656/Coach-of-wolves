@@ -2,7 +2,7 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Bell, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 
 import { useSelector } from "react-redux";
@@ -206,10 +206,7 @@ export default function Header() {
               </button>
             </div>
 
-            <button className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 transition relative">
-              <Bell size={20} className="text-primary" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+
             <div
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={handleProfileClick}

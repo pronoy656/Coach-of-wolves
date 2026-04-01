@@ -6,6 +6,8 @@ import { Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useAppSelector } from "@/redux/hooks";
 
+import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+
 interface CheckIn {
   id: number;
   athlete: string;
@@ -14,10 +16,7 @@ interface CheckIn {
   coach: string;
   weightChange: string;
   status: string;
-  originalData?: {
-    athleteName: string;
-    weekNumber: number;
-  };
+  originalData?: WeeklyCheckin;
 }
 
 interface CheckInTableProps {

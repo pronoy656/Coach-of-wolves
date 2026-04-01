@@ -7,12 +7,22 @@ export interface QuestionAndAnswer {
     _id: string;
 }
 
+// Coach-created slider stored as a dynamic key inside wellBeing
+export interface CoachSlider {
+    key: string;   // camelCase field name sent to backend
+    title: string; // human-readable display title
+    value: number; // 0-10, default 0
+}
+
 export interface WellBeing {
     energyLevel: number;
     stressLevel: number;
     moodLevel: number;
     sleepQuality: number;
+    hungerLevel: number;
     _id: string;
+    // Any additional fields added by coaches are stored here
+    [key: string]: number | string | undefined;
 }
 
 export interface Nutrition {
@@ -38,9 +48,9 @@ export interface WeeklyCheckin {
     averageWeight: number;
     questionAndAnswer: QuestionAndAnswer[];
     wellBeing: WellBeing;
-    nutrition: Nutrition;
-    training: Training;
-    trainingFeedback: string;
+    nutrition?: Nutrition;
+    training?: Training;
+    trainingFeedback?: string;
     athleteNote: string;
     coachNote: string;
     image: string[];
@@ -51,11 +61,11 @@ export interface WeeklyCheckin {
     updatedAt: string;
     __v?: number;
     dailyNote?: string;
-    athleteName: string;
-    coachName: string;
-    weekNumber: number;
-    nextCheckInDate: string;
-    weight: number; // weight change
+    athleteName?: string;
+    coachName?: string;
+    weekNumber?: number;
+    nextCheckInDate?: string;
+    weight?: number; // weight change
 }
 
 export interface WeeklyCheckinState {

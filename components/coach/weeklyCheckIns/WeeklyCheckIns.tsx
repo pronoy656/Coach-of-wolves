@@ -94,10 +94,13 @@ export default function WeeklyCheckIns() {
     const weekNumber = parseInt(selectedWeek.replace("Week ", ""));
 
     return checkins.filter((checkIn) => {
+      const athleteName = checkIn.athleteName || "";
+      const coachName = checkIn.coachName || "";
+      
       const matchesSearch =
         searchTerm === "" ||
-        checkIn.athleteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        checkIn.coachName.toLowerCase().includes(searchTerm.toLowerCase());
+        athleteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coachName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
         selectedStatus === "All" || checkIn.checkinCompleted === selectedStatus;
@@ -112,11 +115,11 @@ export default function WeeklyCheckIns() {
   const tableData = useMemo(() => {
     return filteredCheckIns.map((checkIn, index) => ({
       id: index + 1,
-      athlete: checkIn.athleteName,
-      week: `Week ${checkIn.weekNumber}`,
-      checkInDate: formatDate(checkIn.nextCheckInDate),
-      coach: checkIn.coachName,
-      weightChange: `${checkIn.weight > 0 ? "+" : ""}${checkIn.weight.toFixed(
+      athlete: checkIn.athleteName || "N/A",
+      week: `Week ${checkIn.weekNumber || 1}`,
+      checkInDate: formatDate(checkIn.nextCheckInDate || ""),
+      coach: checkIn.coachName || "N/A",
+      weightChange: `${(checkIn.weight || 0) > 0 ? "+" : ""}${(checkIn.weight || 0).toFixed(
         1
       )}(kg)`,
       status: checkIn.checkinCompleted,

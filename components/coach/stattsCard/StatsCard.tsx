@@ -160,6 +160,7 @@ export default function StatsCard() {
         value: "0",
         icon: Clock,
         color: "text-[#FF6B6B]",
+        description: t.descPending,
       },
       {
         label: t.completeCheckIn,
@@ -228,9 +229,9 @@ export default function StatsCard() {
                 card.value
               )}
             </p>
-            {card.description && !loading && (
+            {/* {card.description && !loading && (
               <p className="text-xs text-gray-400 mt-2">{card.description}</p>
-            )}
+            )} */}
           </div>
         ))}
       </div>
