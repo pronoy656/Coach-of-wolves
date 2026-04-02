@@ -31,13 +31,16 @@ const CATEGORY_FEMALE = [
 ];
 
 const PHASE_OPTIONS = [
-  "Pre-Prep",
+  "Pre Prep Phase",
+  "Health Phase",
+  "Diet Phase",
   "Offseason",
-  "Peak Week",
   "Prep",
+  "Peak Week",
   "Diet-Break",
-  "Fat-Reduction Phase",
-  "Reverse-Diet-Phase",
+  "Reverse Diet Phase",
+  "Other",
+  "No Phase"
 ];
 
 const CATEGORY_MALE = [
@@ -102,13 +105,16 @@ const translations = {
       Other: "Other",
     } as Record<string, string>,
     phaseLabels: {
-      "Pre-Prep": "Pre-Prep",
-      Offseason: "Offseason",
+      "Pre Prep Phase": "Pre Prep Phase",
+      "Health Phase": "Health Phase",
+      "Diet Phase": "Diet Phase",
+      "Offseason": "Offseason",
+      "Prep": "Prep",
       "Peak Week": "Peak Week",
-      Prep: "Prep",
       "Diet-Break": "Diet-Break",
-      "Fat-Reduction Phase": "Fat-Reduction Phase",
-      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+      "Reverse Diet Phase": "Reverse Diet Phase",
+      "Other": "Other",
+      "No Phase": "No Phase",
     } as Record<string, string>,
   },
   de: {
@@ -161,13 +167,16 @@ const translations = {
       Other: "Andere",
     } as Record<string, string>,
     phaseLabels: {
-      "Pre-Prep": "Pre-Prep",
-      Offseason: "Offseason",
+      "Pre Prep Phase": "Vor-Vorbereitungsphase",
+      "Health Phase": "Gesundheitsphase",
+      "Diet Phase": "Fettreduktionsphase",
+      "Offseason": "Offseason",
+      "Prep": "Wettkampfvorbereitung",
       "Peak Week": "Peak Week",
-      Prep: "Prep",
-      "Diet-Break": "Diet-Break",
-      "Fat-Reduction Phase": "Fat-Reduction Phase",
-      "Reverse-Diet-Phase": "Reverse-Diet-Phase",
+      "Diet-Break": "Diätpause",
+      "Reverse Diet Phase": "Reverse-Diät-Phase",
+      "Other": "Andere Phase",
+      "No Phase": "Keine Phase",
     } as Record<string, string>,
   },
 };

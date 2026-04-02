@@ -43,20 +43,53 @@ interface TimelineTabProps {
 export default function TimelineTable({ athleteId }: TimelineTabProps) {
   const dispatch = useAppDispatch();
   const { timeline, loading, error, successMessage } = useAppSelector((state) => state.timeline);
+  const { language } = useAppSelector((state) => state.language);
   const [data, setData] = useState<TrackingRow[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [selectedPhase, setSelectedPhase] = useState("");
 
   const phasesList = [
+    "Pre Prep Phase",
+    "Health Phase",
+    "Diet Phase",
     "Offseason",
-    "Offseasons",
-    "Reverse-Diet-Phase",
-    "korpegewich-gold",
-    "korpegewich-brown",
-    "korpegewich-green",
     "Prep",
+    "Peak Week",
+    "Diet-Break",
+    "Reverse Diet Phase",
+    "Other",
+    "No Phase"
   ];
+
+  const phaseTranslations: Record<string, Record<string, string>> = {
+    en: {
+      "Pre Prep Phase": "Pre Prep Phase",
+      "Health Phase": "Health Phase",
+      "Diet Phase": "Diet Phase",
+      "Offseason": "Offseason",
+      "Prep": "Prep",
+      "Peak Week": "Peak Week",
+      "Diet-Break": "Diet-Break",
+      "Reverse Diet Phase": "Reverse Diet Phase",
+      "Other": "Other",
+      "No Phase": "No Phase",
+    },
+    de: {
+      "Pre Prep Phase": "Vor-Vorbereitungsphase",
+      "Health Phase": "Gesundheitsphase",
+      "Diet Phase": "Fettreduktionsphase",
+      "Offseason": "Offseason",
+      "Prep": "Wettkampfvorbereitung",
+      "Peak Week": "Peak Week",
+      "Diet-Break": "Diätpause",
+      "Reverse Diet Phase": "Reverse-Diät-Phase",
+      "Other": "Andere Phase",
+      "No Phase": "Keine Phase",
+    }
+  };
+
+  const tPhase = phaseTranslations[language as keyof typeof phaseTranslations] || phaseTranslations.en;
 
   useEffect(() => {
     if (athleteId) {
@@ -144,15 +177,20 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case "korpegewich-gold":
-        return "bg-[#D4A017] text-white";
-      case "korpegewich-brown":
-        return "bg-[#653616] text-white";
-      case "korpegewich-green":
-        return "bg-[#357a38] text-white";
+      case "Prep":
+      case "Peak Week":
+        return "bg-amber-600 text-white";
       case "Offseason":
-      case "Offseasons":
-        return "bg-[#3e562e] text-white";
+      case "Health Phase":
+        return "bg-emerald-700 text-white";
+      case "Diet Phase":
+      case "Pre Prep Phase":
+        return "bg-blue-600 text-white";
+      case "Diet-Break":
+      case "Reverse Diet Phase":
+        return "bg-purple-600 text-white";
+      case "No Phase":
+        return "bg-gray-800 text-gray-400";
       default:
         return "bg-gray-700";
     }
@@ -240,7 +278,7 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
                 <option value="">Select new phase...</option>
                 {phasesList.map((p) => (
                   <option key={p} value={p}>
-                    {p.replace(/-/g, " ")}
+                    {tPhase[p] || p}
                   </option>
                 ))}
               </select>
@@ -396,7 +434,7 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
                       </option>
                       {phasesList.map((p) => (
                         <option key={p} value={p} className="bg-gray-800 text-white">
-                          {p.replace(/-/g, " ")}
+                          {tPhase[p] || p}
                         </option>
                       ))}
                     </select>
