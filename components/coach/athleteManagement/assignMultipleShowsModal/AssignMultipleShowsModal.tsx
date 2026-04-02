@@ -71,7 +71,9 @@ export default function AssignMultipleShowsModal({ athlete, onClose }: AssignMul
 
     const filteredShows = shows.filter((show) =>
         show.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !selectedShows.some((selected) => selected.id === show._id)
+        !selectedShows.some((selected) => selected.id === show._id) &&
+        show.countdown > 0 && // Prevent assigning to finished shows
+        !(athlete as any).shows?.some((s: any) => (typeof s === 'string' ? s === show._id : s._id === show._id)) // Prevent duplicate assignments
     );
 
     const handleAssign = async () => {
