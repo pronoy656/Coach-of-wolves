@@ -27,13 +27,14 @@ export const fetchTimelineByAthlete = createAsyncThunk(
 export const updateTimelinePhases = createAsyncThunk(
     "timeline/updatePhases",
     async (
-        { athleteId, timelineIds, newPhase }: { athleteId: string; timelineIds: string[]; newPhase: string },
+        { athleteId, timelineIds, weeks, newPhase }: { athleteId: string; timelineIds: string[]; weeks?: number[]; newPhase: string },
         { rejectWithValue }
     ) => {
         try {
             const response = await axiosInstance.patch(`/timeline/bulk-update-phase/${athleteId}`, {
                 timelineIds,
                 newPhase,
+                weeks, // Handle empty weeks by passing their week numbers
             });
             return response.data;
         } catch (error: any) {

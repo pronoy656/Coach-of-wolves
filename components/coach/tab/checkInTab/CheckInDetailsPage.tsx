@@ -673,16 +673,16 @@ export default function CheckInDetailsPage({
             {checkIn.image && checkIn.image.length > 0 ? (
               <div className="mb-8">
                 <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {checkIn.image.map((img, idx) => (
                     <div
                       key={idx}
-                      className="aspect-square rounded-lg overflow-hidden border border-slate-700/50"
+                      className="aspect-square rounded-xl overflow-hidden border border-slate-700/50 hover:border-emerald-500/50 transition-all group"
                     >
                       <img
                         src={
                           img ? getFullImageUrl(img) :
-                            "/placeholder.svg?height=200&width=200&query=workout"
+                            "/placeholder.svg?height=600&width=600&query=workout"
                         }
                         alt={`Workout photo ${idx + 1}`}
                         className="w-full h-full object-cover"
