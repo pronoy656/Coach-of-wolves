@@ -69,6 +69,7 @@ export default function CheckInDetailsPage({
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Coach sliders – stored locally; derived from extra wellBeing keys
   const [coachSliders, setCoachSliders] = useState<CoachSlider[]>(() => {
@@ -673,16 +674,17 @@ export default function CheckInDetailsPage({
             {checkIn.image && checkIn.image.length > 0 ? (
               <div className="mb-8">
                 <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {checkIn.image.map((img, idx) => (
                     <div
                       key={idx}
-                      className="aspect-square rounded-xl overflow-hidden border border-slate-700/50 hover:border-emerald-500/50 transition-all group"
+                      className="aspect-square rounded-lg overflow-hidden border border-slate-700/50 hover:border-emerald-500/50 transition-all cursor-pointer group"
+                      onClick={() => setSelectedImage(img)}
                     >
                       <img
                         src={
                           img ? getFullImageUrl(img) :
-                            "/placeholder.svg?height=600&width=600&query=workout"
+                            "/placeholder.svg?height=200&width=200&query=workout"
                         }
                         alt={`Workout photo ${idx + 1}`}
                         className="w-full h-full object-cover"
@@ -1018,6 +1020,31 @@ export default function CheckInDetailsPage({
             "Complete check-in"
           )}
         </button>
+      )}
+
+      {/* Enlarged Image Popup */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-full"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X size={28} />
+          </button>
+          <div 
+            className="relative max-w-5xl w-full max-h-[90vh] flex items-center justify-center animate-in zoom-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={getFullImageUrl(selectedImage)} 
+              alt="Enlarged workout" 
+              className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
