@@ -192,9 +192,11 @@ export const fetchNutritionPlans = createAsyncThunk(
 
 export const addNutritionPlan = createAsyncThunk(
     "oneNutritionPlan/add",
-    async ({ athleteId, data }: { athleteId: string; data: any }, { rejectWithValue }) => {
+    async ({ athleteId, data }: { athleteId: string; data: any }, { rejectWithValue, dispatch }) => {
         try {
             const response = await axiosInstance.post(`/coach/nutrition/${athleteId}`, data);
+            // Refetch plans after successful add to get calculated macros and update totals
+            dispatch(fetchNutritionPlans(athleteId));
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to add nutrition plan");
