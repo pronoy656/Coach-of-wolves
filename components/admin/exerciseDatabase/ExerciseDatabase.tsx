@@ -623,8 +623,8 @@ export default function AdminExerciseDatabase() {
                                   <span
                                     key={sub}
                                     className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${isEven
-                                        ? "bg-linear-to-r from-green-400/20 to-emerald-500/20 text-green-600 dark:text-green-400 border-green-400/40 hover:border-green-400/60"
-                                        : "bg-linear-to-r from-blue-400/20 to-blue-400/20 text-blue-600 dark:text-blue-400 border-blue-400/40 hover:border-blue-400/60"
+                                      ? "bg-linear-to-r from-green-400/20 to-emerald-500/20 text-green-600 dark:text-green-400 border-green-400/40 hover:border-green-400/60"
+                                      : "bg-linear-to-r from-blue-400/20 to-blue-400/20 text-blue-600 dark:text-blue-400 border-blue-400/40 hover:border-blue-400/60"
                                       }`}
                                   >
                                     {t.subcategoryLabels[sub] ?? sub}

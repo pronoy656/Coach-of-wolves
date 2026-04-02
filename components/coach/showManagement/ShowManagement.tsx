@@ -41,8 +41,7 @@ const translations = {
       `Are you sure you want to delete "${name}"? This action cannot be undone.`,
     editTooltip: "Edit",
     deleteTooltip: "Delete",
-    countdownCompleted: "Completed",
-    countdownToday: "Today",
+    countdownFinished: "Finished",
     countdownDays: (count: number) => `${count} Day${count !== 1 ? "s" : ""}`,
   },
   de: {
@@ -67,8 +66,7 @@ const translations = {
       `Möchtest du die Show „${name}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
     editTooltip: "Bearbeiten",
     deleteTooltip: "Löschen",
-    countdownCompleted: "Abgeschlossen",
-    countdownToday: "Heute",
+    countdownFinished: "Abgeschlossen",
     countdownDays: (count: number) => `${count} Tag${count !== 1 ? "e" : ""}`,
   },
 };
@@ -200,8 +198,7 @@ export default function ShowManagement() {
 
   // Format countdown
   const formatCountdown = (countdown: number) => {
-    if (countdown < 0) return t.countdownCompleted;
-    if (countdown === 0) return t.countdownToday;
+    if (countdown <= 0) return t.countdownFinished;
     return t.countdownDays(countdown);
   };
 
@@ -296,16 +293,21 @@ export default function ShowManagement() {
                           {show.location}
                         </td>
                         <td className="px-6 py-4">
-                          <span
-                            className={`font-medium ${show.countdown <= 0
-                              ? "text-gray-400"
-                              : show.countdown <= 7
-                                ? "text-amber-400"
-                                : "text-emerald-400"
+                          {show.countdown <= 0 ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/40">
+                              {formatCountdown(show.countdown)}
+                            </span>
+                          ) : (
+                            <span
+                              className={`font-medium ${
+                                show.countdown <= 7
+                                  ? "text-amber-400"
+                                  : "text-emerald-400"
                               }`}
-                          >
-                            {formatCountdown(show.countdown)}
-                          </span>
+                            >
+                              {formatCountdown(show.countdown)}
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">

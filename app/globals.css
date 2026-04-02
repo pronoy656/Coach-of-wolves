@@ -19,8 +19,8 @@
   }
 }
 
-body {
-  background: var(--background);
+html {
+  background: #0a0a0a;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -34,5 +34,6 @@ body {
 /* Hide scrollbar for Firefox */
 .scrollbar-none {
   scrollbar-width: none;
-  -ms-overflow-style: none; /* IE 10+ */
+  -ms-overflow-style: none;
+  /* IE 10+ */
 }
