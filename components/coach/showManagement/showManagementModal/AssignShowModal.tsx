@@ -58,9 +58,10 @@ export default function AssignShowModal({ show, onClose }: AssignShowModalProps)
         }
     }, [successMessage, onClose]);
 
-    const filteredAthletes = athletes.filter((athlete) =>
+    const filteredAthletes = athletes.filter((athlete: any) =>
         athlete.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !selectedAthletes.some((selected) => selected.id === athlete._id)
+        !selectedAthletes.some((selected) => selected.id === athlete._id) &&
+        !athlete.shows?.some((s: any) => (typeof s === 'string' ? s === show._id : s._id === show._id))
     );
 
     const handleAssign = () => {
