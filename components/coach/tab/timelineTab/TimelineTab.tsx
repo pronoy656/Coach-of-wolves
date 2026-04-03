@@ -230,19 +230,14 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
         ? selectedIds
         : [rowId];
 
-    const validApiIds = idsToUpdate.filter((id) => !id.startsWith("empty"));
-    const weeksToUpdate = idsToUpdate
-      .filter((id) => id.startsWith("empty"))
-      .map((id) => parseInt(id.split("-")[1]));
-
-    if (validApiIds.length === 0 && weeksToUpdate.length === 0) {
+    if (idsToUpdate.length === 0) {
       toast.error("Please select at least one week.");
       return;
     }
 
-    // Always fire API unconditionally 
+    // Pass all selected IDs (including empty ones) directly to the backend
     dispatch(
-      updateTimelinePhases({ athleteId, timelineIds: validApiIds, weeks: weeksToUpdate, newPhase })
+      updateTimelinePhases({ athleteId, timelineIds: idsToUpdate, newPhase })
     ).then((res: any) => {
       if (res.meta.requestStatus === "fulfilled") {
         setSelectedIds([]);

@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Edit2, Trash2, Loader2, Plus } from "lucide-react";
+import { Edit2, Trash2, Loader2, Plus, Search } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Show } from "@/redux/features/show/showTypes";
 import {
@@ -49,6 +49,7 @@ const translations = {
     athleteName: "Athlete Name",
     assignedShows: "Assigned Shows",
     noAthletes: "No athletes found.",
+    searchPlaceholder: "Search athletes...",
   },
   de: {
     title: "Show-Verwaltung",
@@ -79,6 +80,7 @@ const translations = {
     athleteName: "Name des Athleten",
     assignedShows: "Zugeordnete Shows",
     noAthletes: "Keine Athleten gefunden.",
+    searchPlaceholder: "Athleten suchen...",
   },
 };
 
@@ -100,6 +102,7 @@ export default function ShowManagement() {
   const [deleteConfirmShow, setDeleteConfirmShow] = useState<Show | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "assign">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch shows and athletes on component mount
   useEffect(() => {
@@ -146,6 +149,14 @@ export default function ShowManagement() {
 
     return { upcomingCount, peakWeekCount, completedCount };
   }, [shows]);
+
+  // Filter athletes based on search query
+  const filteredAthletes = useMemo(() => {
+    return athletes.filter((athlete: any) =>
+      athlete.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      athlete.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [athletes, searchQuery]);
 
   const handleAddShow = () => {
     setEditingShow(null);
@@ -380,57 +391,75 @@ export default function ShowManagement() {
 
             {/* Assign Athlete Tab */}
             {activeTab === "assign" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {athletes.length === 0 && !loading && (
-                  <div className="col-span-full text-center py-12 text-gray-400">{t.noAthletes}</div>
-                )}
-                {athletes.map((athlete: any) => (
-                  <div
-                    key={athlete._id}
-                    className="bg-[#0f0f1e] border border-[#24273f] rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group"
-                  >
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-lg">
-                        {athlete.name?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold text-lg truncate group-hover:text-emerald-400 transition-colors">
-                          {athlete.name}
-                        </p>
-                        <p className="text-gray-400 text-xs truncate">
-                          {athlete.email}
-                        </p>
+              <div className="space-y-6">
+                <div className="relative max-w-md group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-emerald-500" />
+                  <input
+                    type="text"
+                    placeholder={t.searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#0f0f1e] border border-[#24273f] rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm placeholder:text-gray-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAthletes.length === 0 && !loading && (
+                    <div className="col-span-full text-center py-12 text-gray-400 bg-[#0f0f1e] border border-[#24273f] rounded-xl">
+                      <div className="flex flex-col items-center gap-2">
+                        <Search className="w-8 h-8 text-gray-600 mb-2" />
+                        <p>{t.noAthletes}</p>
                       </div>
                     </div>
-                    
-                    <div className="border-t border-[#303245] pt-4 mt-2">
-                       <p className="text-gray-400 text-xs uppercase tracking-wider mb-3 leading-none">{t.assignedShows} ({athlete.shows?.length || 0})</p>
-                       <div className="flex flex-wrap gap-2">
-                         {athlete.shows?.length > 0 ? (
-                            athlete.shows.map((showItem: any, i: number) => {
-                              // Handle both populated objects and ID strings
-                              const showId = typeof showItem === 'string' ? showItem : showItem._id;
-                              const showName = typeof showItem === 'object' && showItem.name 
-                                ? showItem.name 
-                                : sortedShows.find(s => s._id === showId)?.name || "Show";
-                              
-                              return (
-                                <span 
-                                  key={i} 
-                                  className="px-3 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400 font-medium whitespace-nowrap animate-in fade-in zoom-in-95 duration-200"
-                                  style={{ animationDelay: `${i * 50}ms` }}
-                                >
-                                  {showName}
-                                </span>
-                              );
-                            })
-                         ) : (
-                           <span className="text-gray-500 text-xs italic">No shows assigned</span>
-                         )}
-                       </div>
+                  )}
+                  {filteredAthletes.map((athlete: any) => (
+                    <div
+                      key={athlete._id}
+                      className="bg-[#0f0f1e] border border-[#24273f] rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group"
+                    >
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-lg">
+                          {athlete.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-semibold text-lg truncate group-hover:text-emerald-400 transition-colors">
+                            {athlete.name}
+                          </p>
+                          <p className="text-gray-400 text-xs truncate">
+                            {athlete.email}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t border-[#303245] pt-4 mt-2">
+                         <p className="text-gray-400 text-xs uppercase tracking-wider mb-3 leading-none">{t.assignedShows} ({athlete.shows?.length || 0})</p>
+                         <div className="flex flex-wrap gap-2">
+                           {athlete.shows?.length > 0 ? (
+                              athlete.shows.map((showItem: any, i: number) => {
+                                // Handle both populated objects and ID strings
+                                const showId = typeof showItem === 'string' ? showItem : showItem._id;
+                                const showName = typeof showItem === 'object' && showItem.name 
+                                  ? showItem.name 
+                                  : sortedShows.find(s => s._id === showId)?.name || "Show";
+                                
+                                return (
+                                  <span 
+                                    key={i} 
+                                    className="px-3 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400 font-medium whitespace-nowrap animate-in fade-in zoom-in-95 duration-200"
+                                    style={{ animationDelay: `${i * 50}ms` }}
+                                  >
+                                    {showName}
+                                  </span>
+                                );
+                              })
+                           ) : (
+                             <span className="text-gray-500 text-xs italic">No shows assigned</span>
+                           )}
+                         </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -850,8 +850,12 @@ export default function CheckInDetailsPage({
                   <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
                   <div className="grid grid-cols-2 gap-2">
                     {oldCheckin.image.map((img, idx) => (
-                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-800">
-                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover" alt="Old check-in" />
+                      <div 
+                        key={idx} 
+                        className="aspect-square rounded-lg overflow-hidden border border-slate-800 cursor-pointer hover:border-emerald-500/50 transition-all group"
+                        onClick={() => setSelectedImage(img)}
+                      >
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="Old check-in" />
                       </div>
                     ))}
                   </div>
@@ -965,8 +969,12 @@ export default function CheckInDetailsPage({
                   <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
                   <div className="grid grid-cols-2 gap-2">
                     {checkIn.image.map((img, idx) => (
-                      <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-emerald-500/20">
-                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover" alt="Present check-in" />
+                      <div 
+                        key={idx} 
+                        className="aspect-square rounded-lg overflow-hidden border border-emerald-500/20 cursor-pointer hover:border-emerald-500/50 transition-all group"
+                        onClick={() => setSelectedImage(img)}
+                      >
+                        <img src={img ? getFullImageUrl(img) : "/placeholder.svg"} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="Present check-in" />
                       </div>
                     ))}
                   </div>
