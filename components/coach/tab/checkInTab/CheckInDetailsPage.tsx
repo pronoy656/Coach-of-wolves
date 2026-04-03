@@ -850,8 +850,8 @@ export default function CheckInDetailsPage({
                   <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
                   <div className="grid grid-cols-2 gap-2">
                     {oldCheckin.image.map((img, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="aspect-square rounded-lg overflow-hidden border border-slate-800 cursor-pointer hover:border-emerald-500/50 transition-all group"
                         onClick={() => setSelectedImage(img)}
                       >
@@ -969,8 +969,8 @@ export default function CheckInDetailsPage({
                   <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
                   <div className="grid grid-cols-2 gap-2">
                     {checkIn.image.map((img, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="aspect-square rounded-lg overflow-hidden border border-emerald-500/20 cursor-pointer hover:border-emerald-500/50 transition-all group"
                         onClick={() => setSelectedImage(img)}
                       >
@@ -1032,23 +1032,23 @@ export default function CheckInDetailsPage({
 
       {/* Enlarged Image Popup */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
           onClick={() => setSelectedImage(null)}
         >
-          <button 
+          <button
             className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-full"
             onClick={() => setSelectedImage(null)}
           >
             <X size={28} />
           </button>
-          <div 
+          <div
             className="relative max-w-5xl w-full max-h-[90vh] flex items-center justify-center animate-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <img 
-              src={getFullImageUrl(selectedImage)} 
-              alt="Enlarged workout" 
+            <img
+              src={getFullImageUrl(selectedImage)}
+              alt="Enlarged workout"
               className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
             />
           </div>
