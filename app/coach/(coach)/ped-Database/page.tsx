@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent } from "react";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, X, Loader2, Trash2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchPedData,
   addPedData,
+  deletePedCategory,
+  deletePedSubCategory,
   clearPedSuccess,
   clearPedError,
   PedCategory as BackendPedCategory,
@@ -14,6 +16,7 @@ import toast from "react-hot-toast";
 
 // --- Types ---
 interface PedItem {
+  _id?: string;
   name: string;
   dosage: string;
   freq: string;
@@ -21,6 +24,7 @@ interface PedItem {
 }
 
 interface PedCategory {
+  _id?: string;
   category: string;
   items: PedItem[];
 }
@@ -38,6 +42,11 @@ const translations = {
     adding: "Adding...",
     fillBoth: "Please fill in both Category and Sub-category",
     days: ["MO", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+    confirmDelete: "Confirm Deletion",
+    deleteMsg: "Are you sure you want to delete",
+    cannotUndo: "This action cannot be undone.",
+    cancel: "Cancel",
+    delete: "Delete",
   },
   de: {
     addPed: "PED hinzufügen",
@@ -52,6 +61,11 @@ const translations = {
     adding: "Hinzufügen...",
     fillBoth: "Bitte füllen Sie sowohl Kategorie als auch Unterkategorie aus",
     days: ["MO", "DI", "MI", "DO", "FR", "SA", "SO"],
+    confirmDelete: "Löschen bestätigen",
+    deleteMsg: "Möchten Sie wirklich löschen:",
+    cannotUndo: "Diese Aktion kann nicht rückgängig gemacht werden.",
+    cancel: "Abbrechen",
+    delete: "Löschen",
   },
 };
 
@@ -71,8 +85,10 @@ const PedTracker: React.FC = () => {
   const mapPedDataToSchedule = (data: typeof pedData): PedCategory[] => {
     if (!data?.categories) return [];
     return data.categories.map((cat: BackendPedCategory) => ({
+      _id: cat._id,
       category: cat.name,
       items: cat.subCategory.map((sub) => ({
+        _id: sub._id,
         name: sub.name,
         dosage: sub.dosage || "",
         freq: sub.frequency || "",
@@ -97,6 +113,7 @@ const PedTracker: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
+  const [deleteData, setDeleteData] = useState<{ categoryId: string; subCategoryId?: string; name: string } | null>(null);
 
   // Fetch data on mount
   useEffect(() => {
@@ -170,6 +187,34 @@ const PedTracker: React.FC = () => {
     } catch (err) {
       // Error handling is managed by the slice/effect
       console.error("Failed to add PED:", err);
+    }
+  };
+
+  const triggerDeleteCategory = (categoryId: string, name: string) => {
+    setDeleteData({ categoryId, name });
+  };
+
+  const triggerDeleteSubCategory = (categoryId: string, subCategoryId: string, name: string) => {
+    setDeleteData({ categoryId, subCategoryId, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!pedData?._id || !deleteData) return;
+    try {
+      if (deleteData.subCategoryId) {
+        const result = await dispatch(
+          deletePedSubCategory({ pedId: pedData._id, categoryId: deleteData.categoryId, subCategoryId: deleteData.subCategoryId })
+        ).unwrap();
+        setSchedule(mapPedDataToSchedule(result));
+      } else {
+        const result = await dispatch(
+          deletePedCategory({ pedId: pedData._id, categoryId: deleteData.categoryId })
+        ).unwrap();
+        setSchedule(mapPedDataToSchedule(result));
+      }
+      setDeleteData(null);
+    } catch (err) {
+      console.error("Failed to delete:", err);
     }
   };
 
@@ -258,7 +303,7 @@ const PedTracker: React.FC = () => {
                       {itemIndex === 0 && (
                         <td
                           rowSpan={cat.items.length}
-                          className="bg-[#4b3c5e]/40 text-gray-200 font-bold text-center border-r border-[#4b3c5e] p-2 align-middle uppercase"
+                          className="bg-[#4b3c5e]/40 text-gray-200 font-bold text-center border-r border-[#4b3c5e] p-2 align-middle uppercase relative group"
                         >
                           <span className="block text-[10px] leading-tight">
                             {cat.category ===
@@ -273,12 +318,30 @@ const PedTracker: React.FC = () => {
                               cat.category
                             )}
                           </span>
+                          {cat._id && (
+                            <button
+                              onClick={() => triggerDeleteCategory(cat._id!, cat.category)}
+                              className="absolute top-1 right-1 p-1 text-red-500/40 hover:text-red-500 hover:bg-[#352c41] transition-all bg-[#2a2435] rounded"
+                              title="Delete Category"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
                         </td>
                       )}
 
                       {/* Item Name */}
-                      <td className="bg-[#382b42]/50 text-gray-300 font-medium text-center border-r border-[#4b3c5e] text-[10px]">
+                      <td className="bg-[#382b42]/50 text-gray-300 font-medium text-center border-r border-[#4b3c5e] text-[10px] relative group">
                         {item.name}
+                        {cat._id && item._id && (
+                          <button
+                            onClick={() => triggerDeleteSubCategory(cat._id!, item._id!, item.name)}
+                            className="absolute top-1/2 -translate-y-1/2 right-1 p-1 text-red-500/40 hover:text-red-500 hover:bg-[#352c41] transition-all bg-[#2a2435] rounded"
+                            title="Delete Sub-category"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
                       </td>
 
                       {/* Dosage Input (Editable) */}
@@ -420,6 +483,33 @@ const PedTracker: React.FC = () => {
                 ) : (
                   t.addToDatabase
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteData && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#1a1625] border border-[#4b3c5e] rounded-lg p-6 w-96 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">{t.confirmDelete}</h3>
+            <p className="text-gray-300 mb-6">
+              {t.deleteMsg} <span className="font-semibold text-emerald-500">{deleteData.name}</span>? {t.cannotUndo}
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteData(null)}
+                className="flex-1 bg-transparent border border-[#4b3c5e] text-white py-2 rounded hover:bg-[#2a2435] transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors flex justify-center items-center gap-2"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.delete}
               </button>
             </div>
           </div>

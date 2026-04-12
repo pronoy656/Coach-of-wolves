@@ -5,6 +5,7 @@ import axiosInstance from "@/lib/axiosInstance";
 // --- Types based on Backend Response ---
 
 export interface PedSubCategoryItem {
+  _id?: string;
   name: string;
   dosage: string;
   frequency: string;
@@ -18,6 +19,7 @@ export interface PedSubCategoryItem {
 }
 
 export interface PedCategory {
+  _id?: string;
   name: string;
   subCategory: PedSubCategoryItem[];
 }
@@ -151,6 +153,46 @@ export const addPedData = createAsyncThunk<
   }
 });
 
+export const deletePedCategory = createAsyncThunk<
+  PedData,
+  { pedId: string; categoryId: string },
+  { rejectValue: string }
+>("ped/deletePedCategory", async ({ pedId, categoryId }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.delete<PedResponse>(
+      `/ped/${pedId}/category/${categoryId}`
+    );
+    if (!response.data.success) {
+      return rejectWithValue(response.data.message || "Failed to delete category");
+    }
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to delete category"
+    );
+  }
+});
+
+export const deletePedSubCategory = createAsyncThunk<
+  PedData,
+  { pedId: string; categoryId: string; subCategoryId: string },
+  { rejectValue: string }
+>("ped/deletePedSubCategory", async ({ pedId, categoryId, subCategoryId }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.delete<PedResponse>(
+      `/ped/${pedId}/category/${categoryId}/subcategory/${subCategoryId}`
+    );
+    if (!response.data.success) {
+      return rejectWithValue(response.data.message || "Failed to delete subcategory");
+    }
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to delete subcategory"
+    );
+  }
+});
+
 // --- Slice ---
 
 const pedSlice = createSlice({
@@ -221,6 +263,36 @@ const pedSlice = createSlice({
       .addCase(updateAthletePedData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to update PED data";
+      })
+      // Delete PED Category
+      .addCase(deletePedCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(deletePedCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload; // Update with the new data returned from backend
+        state.successMessage = "Category deleted successfully";
+      })
+      .addCase(deletePedCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to delete category";
+      })
+      // Delete PED SubCategory
+      .addCase(deletePedSubCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(deletePedSubCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload; // Update with the new data returned from backend
+        state.successMessage = "Subcategory deleted successfully";
+      })
+      .addCase(deletePedSubCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to delete subcategory";
       });
   },
 });

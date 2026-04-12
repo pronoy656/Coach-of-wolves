@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent } from "react";
-import { Edit3, Save, Loader2 } from "lucide-react";
+import { Edit3, Save, Loader2, Trash2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchPedData,
   fetchAthletePedData,
   updateAthletePedData,
+  deletePedCategory,
+  deletePedSubCategory,
   clearPedSuccess,
   clearPedError,
   PedCategory as BackendPedCategory,
@@ -15,6 +17,7 @@ import toast from "react-hot-toast";
 
 // --- Types ---
 interface PedItem {
+  _id?: string;
   name: string;
   dosage: string;
   freq: string;
@@ -22,6 +25,7 @@ interface PedItem {
 }
 
 interface PedCategory {
+  _id?: string;
   category: string;
   items: PedItem[];
 }
@@ -55,6 +59,7 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
       );
 
       return {
+        _id: globalCat._id,
         category: globalCat.name,
         items: globalCat.subCategory.map((globalSub) => {
           // Find corresponding subcategory (item) in athlete data
@@ -63,6 +68,7 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
           );
 
           return {
+            _id: globalSub._id,
             name: globalSub.name,
             // Use athlete's value if present, otherwise default to empty string
             dosage: athleteSub?.dosage || "",
@@ -98,6 +104,7 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
   }
 
   const [selectedWeek, setSelectedWeek] = useState<string>("week_1");
+  const [deleteData, setDeleteData] = useState<{ categoryId: string; subCategoryId?: string; name: string } | null>(null);
 
   // Fetch global data (Structure)
   useEffect(() => {
@@ -159,6 +166,32 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
       dispatch(fetchAthletePedData({ athleteId, week: selectedWeek }));
     } catch (err) {
       console.error("Failed to update PED data:", err);
+    }
+  };
+
+  const triggerDeleteCategory = (categoryId: string, name: string) => {
+    setDeleteData({ categoryId, name });
+  };
+
+  const triggerDeleteSubCategory = (categoryId: string, subCategoryId: string, name: string) => {
+    setDeleteData({ categoryId, subCategoryId, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!globalPedData?._id || !deleteData) return;
+    try {
+      if (deleteData.subCategoryId) {
+        await dispatch(
+          deletePedSubCategory({ pedId: globalPedData._id, categoryId: deleteData.categoryId, subCategoryId: deleteData.subCategoryId })
+        ).unwrap();
+      } else {
+        await dispatch(
+          deletePedCategory({ pedId: globalPedData._id, categoryId: deleteData.categoryId })
+        ).unwrap();
+      }
+      setDeleteData(null);
+    } catch (err) {
+      console.error("Failed to delete:", err);
     }
   };
 
@@ -321,7 +354,7 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                       {itemIndex === 0 && (
                         <td
                           rowSpan={cat.items.length}
-                          className="bg-[#4b3c5e]/40 text-gray-200 font-bold text-center border-r border-[#4b3c5e] p-2 align-middle uppercase"
+                          className="bg-[#4b3c5e]/40 text-gray-200 font-bold text-center border-r border-[#4b3c5e] p-2 align-middle uppercase relative group"
                         >
                           <span className="block text-[10px] leading-tight">
                             {cat.category ===
@@ -336,12 +369,30 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
                               cat.category
                             )}
                           </span>
+                          {cat._id && (
+                            <button
+                              onClick={() => triggerDeleteCategory(cat._id!, cat.category)}
+                              className="absolute top-1 right-1 p-1 text-red-500/40 hover:text-red-500 hover:bg-[#352c41] transition-all bg-[#2a2435] rounded"
+                              title="Delete Category"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
                         </td>
                       )}
 
                       {/* Item Name */}
-                      <td className="bg-[#382b42]/50 text-gray-300 font-medium text-center border-r border-[#4b3c5e] text-[10px]">
+                      <td className="bg-[#382b42]/50 text-gray-300 font-medium text-center border-r border-[#4b3c5e] text-[10px] relative group">
                         {item.name}
+                        {cat._id && item._id && (
+                          <button
+                            onClick={() => triggerDeleteSubCategory(cat._id!, item._id!, item.name)}
+                            className="absolute top-1/2 -translate-y-1/2 right-1 p-1 text-red-500/40 hover:text-red-500 hover:bg-[#352c41] transition-all bg-[#2a2435] rounded"
+                            title="Delete Sub-category"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
                       </td>
 
                       {/* Dosage Input (Editable) */}
@@ -425,6 +476,33 @@ const PedTab: React.FC<PedTabProps> = ({ athleteId }) => {
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteData && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#1a1625] border border-[#4b3c5e] rounded-lg p-6 w-96 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Confirm Deletion</h3>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete <span className="font-semibold text-emerald-500">{deleteData.name}</span>? This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteData(null)}
+                className="flex-1 bg-transparent border border-[#4b3c5e] text-white py-2 rounded hover:bg-[#2a2435] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors flex justify-center items-center gap-2"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
