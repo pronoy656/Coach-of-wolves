@@ -25,6 +25,19 @@ interface FoodItemInput {
   quantity: string;
 }
 
+const formatTo24Hour = (timeStr: string) => {
+  if (!timeStr) return "";
+  const upperTime = timeStr.toUpperCase();
+  if (upperTime.includes('AM') || upperTime.includes('PM')) {
+    const [time, modifier] = upperTime.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  }
+  return timeStr;
+};
+
 export default function AddModal({
   open,
   onOpenChange,
@@ -58,14 +71,14 @@ export default function AddModal({
   useEffect(() => {
     if (!open) return;
 
-    const nextFormData = editingMeal
+        const nextFormData = editingMeal
       ? {
           mealsName: editingMeal.mealName,
           foodItems: editingMeal.food.map((item) => ({
             name: item.foodName,
             quantity: item.quantity.toString(),
           })),
-          time: editingMeal.time,
+          time: formatTo24Hour(editingMeal.time),
           day: editingMeal.trainingDay,
         }
       : {
@@ -331,11 +344,23 @@ export default function AddModal({
                 </label>
                 <div className="relative">
                   <input
-                    type="time"
+                    type="text"
                     value={formData.time}
-                    onChange={(e) =>
-                      setFormData({ ...formData, time: e.target.value })
-                    }
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/[^0-9:]/g, '');
+                      // Auto-insert colon
+                      if (val.length === 2 && !val.includes(':') && formData.time.length < val.length) {
+                        val += ':';
+                      }
+                      // Limit length to 5
+                      if (val.length > 5) {
+                        val = val.slice(0, 5);
+                      }
+                      setFormData({ ...formData, time: val });
+                    }}
+                    placeholder="HH:MM (e.g., 14:30)"
+                    pattern="^([01][0-9]|2[0-3]):[0-5][0-9]$"
+                    title="Please enter time in 24-hour format (00:00 to 23:59)"
                     className="w-full bg-[#08081A] border border-[#303245] rounded-lg pl-12 pr-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 text-base"
                     required
                     disabled={loading}

@@ -17,6 +17,19 @@ import {
 import { createNutrition } from "@/redux/features/nutrition/nutritionSlice";
 import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
 
+const formatTo24Hour = (timeStr: string) => {
+  if (!timeStr) return "";
+  const upperTime = timeStr.toUpperCase();
+  if (upperTime.includes('AM') || upperTime.includes('PM')) {
+    const [time, modifier] = upperTime.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  }
+  return timeStr;
+};
+
 interface NutritionTabProps {
   athleteId: string;
 }
@@ -276,7 +289,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="bg-emerald-600/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium">
-                        {meal.time}
+                        {formatTo24Hour(meal.time)}
                       </span>
                       <h3 className="text-xl font-bold flex items-center gap-2">
                         {meal.mealName}
