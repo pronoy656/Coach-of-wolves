@@ -258,8 +258,15 @@ export default function Dashboard() {
       for (const key of keys) {
         val = val?.[key];
       }
-      // If val is null, undefined, or the string "none", return empty string
-      if (val === null || val === undefined) {
+      // If val is null, undefined, "none", or numerically 0, return empty string
+      if (
+        val === null ||
+        val === undefined ||
+        val === "" ||
+        String(val).toLowerCase() === "none" ||
+        (typeof val !== "boolean" && !Number.isNaN(Number(val)) && Number(val) === 0) ||
+        val === false
+      ) {
         return "";
       }
       return val;
@@ -273,11 +280,14 @@ export default function Dashboard() {
     for (const key of keys) {
       val = val?.[key];
     }
-    // Handle null, undefined or "none" for averages
+    // Handle null, undefined, "none", or numerically 0 for averages
     if (
       val === null ||
       val === undefined ||
-      String(val).toLowerCase() === "none"
+      val === "" ||
+      String(val).toLowerCase() === "none" ||
+      (!Number.isNaN(Number(val)) && Number(val) === 0) ||
+      val === false
     ) {
       return "";
     }
@@ -463,13 +473,13 @@ export default function Dashboard() {
           type: "dropdown",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.sick;
-            if (val === undefined || val === null) return "";
+            if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
             return val ? "YES" : "NO";
           }),
           average: "",
           cellColors: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.sick;
-            if (val === undefined || val === null) {
+            if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) {
               return "#2B2B3D";
             }
             return val ? "#b91c1c" : "#15803d";
@@ -546,7 +556,7 @@ export default function Dashboard() {
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.training?.trainingCompleted;
-            if (val === undefined || val === null) return "";
+            if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
             return val ? "Yes" : "No";
           }),
           average: "",
@@ -566,7 +576,7 @@ export default function Dashboard() {
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.training?.cardioCompleted;
-            if (val === undefined || val === null) return "";
+            if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
             return val ? "Yes" : "No";
           }),
           average: "",
@@ -666,10 +676,10 @@ export default function Dashboard() {
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const bp = weekData[i]?.bloodPressure;
-            if (!bp) return "";
+            if (!bp || (Number(bp.systolic) === 0 && Number(bp.diastolic) === 0)) return "";
             return `${bp.systolic}/${bp.diastolic}`;
           }),
-          average: averages?.bloodPressure
+          average: averages?.bloodPressure && (Number(averages.bloodPressure.systolic) > 0 || Number(averages.bloodPressure.diastolic) > 0)
             ? `${Number(averages.bloodPressure.systolic).toFixed(0)}/${Number(
               averages.bloodPressure.diastolic,
             ).toFixed(0)}`
@@ -691,7 +701,6 @@ export default function Dashboard() {
         },
       ],
     },
-
     {
       title: "Daily Note",
       rows: [

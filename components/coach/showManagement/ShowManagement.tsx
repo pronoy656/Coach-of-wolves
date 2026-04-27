@@ -86,7 +86,7 @@ const translations = {
 
 export default function ShowManagement() {
   const dispatch = useAppDispatch();
-  const { shows, loading, error, successMessage } = useAppSelector(
+  const { shows, stats, loading, error, successMessage } = useAppSelector(
     (state) => state.show,
   );
   const { athletes } = useAppSelector((state) => state.athlete);
@@ -124,31 +124,7 @@ export default function ShowManagement() {
     }
   }, [error, successMessage, dispatch]);
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    let upcomingCount = 0;
-    let peakWeekCount = 0;
-    let completedCount = 0;
-
-    shows.forEach((show) => {
-      const showDate = new Date(show.date);
-      const timeDiff = showDate.getTime() - today.getTime();
-      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-      if (daysDiff > 7) {
-        upcomingCount++;
-      } else if (daysDiff > 0 && daysDiff <= 7) {
-        peakWeekCount++;
-      } else if (daysDiff <= 0) {
-        completedCount++;
-      }
-    });
-
-    return { upcomingCount, peakWeekCount, completedCount };
-  }, [shows]);
 
   // Filter athletes based on search query
   const filteredAthletes = useMemo(() => {
@@ -228,9 +204,12 @@ export default function ShowManagement() {
   };
 
   // Sort shows by date (most recent first)
-  const sortedShows = [...shows].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  const sortedShows = useMemo(() => {
+    if (!Array.isArray(shows)) return [];
+    return [...shows].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }, [shows]);
 
   return (
     <div className="flex h-screen bg-black text-white">
@@ -265,9 +244,9 @@ export default function ShowManagement() {
 
             {/* Stats Cards */}
             <ShowManagementStatCard
-              upcomingCount={stats.upcomingCount}
-              peakWeekCount={stats.peakWeekCount}
-              completedCount={stats.completedCount}
+              upcomingCount={stats.upcomingShows}
+              peakWeekCount={stats.peakWeekActive}
+              completedCount={stats.completedShows}
             />
 
             {/* Tabs */}
@@ -375,7 +354,7 @@ export default function ShowManagement() {
                     })}
                   </tbody>
                 </table>
-                {!loading && shows.length === 0 && (
+                {!loading && sortedShows.length === 0 && (
                   <div className="text-center py-12">
                     <p className="text-gray-400 text-lg mb-4">{t.emptyStateText}</p>
                     <button

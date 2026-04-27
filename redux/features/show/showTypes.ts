@@ -20,8 +20,15 @@ export interface ShowFormData {
     location: string;
 }
 
+export interface ShowStats {
+    upcomingShows: number;
+    peakWeekActive: number;
+    completedShows: number;
+}
+
 export interface ShowState {
     shows: Show[];
+    stats: ShowStats;
     loading: boolean;
     error: string | null;
     successMessage: string | null;

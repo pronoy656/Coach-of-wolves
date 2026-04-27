@@ -5,6 +5,11 @@ import { Show, ShowState, ShowFormData } from "./showTypes";
 
 const initialState: ShowState = {
     shows: [],
+    stats: {
+        upcomingShows: 0,
+        peakWeekActive: 0,
+        completedShows: 0
+    },
     loading: false,
     error: null,
     successMessage: null,
@@ -110,7 +115,12 @@ const showSlice = createSlice({
             })
             .addCase(fetchShows.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.shows = action.payload.data || [];
+                state.shows = action.payload.data?.shows || [];
+                state.stats = {
+                    upcomingShows: action.payload.data?.upcomingShows || 0,
+                    peakWeekActive: action.payload.data?.peakWeekActive || 0,
+                    completedShows: action.payload.data?.completedShows || 0,
+                };
                 state.successMessage = action.payload.message;
             })
             .addCase(fetchShows.rejected, (state, action) => {
