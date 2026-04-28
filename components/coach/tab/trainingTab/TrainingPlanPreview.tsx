@@ -1,5 +1,7 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, GripVertical } from "lucide-react";
 import { TrainingPlan } from "@/redux/features/trainingPlan/trainingPlanType";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface PlanPreviewCardProps {
   plan: TrainingPlan;
@@ -12,6 +14,22 @@ export default function TrainingPlanPreview({
   onEdit,
   onDelete,
 }: PlanPreviewCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: plan._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : "auto",
+    opacity: isDragging ? 0.6 : 1,
+  };
+
   // Helper to determine badge colors based on difficulty
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -26,22 +44,36 @@ export default function TrainingPlanPreview({
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] hover:border-emerald-500/50 rounded-xl transition-all shadow-lg overflow-hidden group">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] hover:border-emerald-500/50 rounded-xl transition-all shadow-lg overflow-hidden group"
+    >
       <div className="p-6 space-y-5">
         {/* Header: Title, Difficulty Badge, Actions */}
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="font-bold text-lg text-white leading-tight">
-                {plan.traingPlanName}
-              </h3>
-              <span
-                className={`px-2.5 py-0.5 border text-[10px] uppercase tracking-wider rounded-full font-semibold ${getDifficultyColor(
-                  plan.dificulty,
-                )}`}
-              >
-                {plan.dificulty}
-              </span>
+          <div className="flex items-start gap-2 flex-1">
+            {/* Drag Handle */}
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 -ml-2 text-gray-600 hover:text-emerald-500 transition-colors"
+            >
+              <GripVertical className="w-5 h-5" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h3 className="font-bold text-lg text-white leading-tight">
+                  {plan.traingPlanName}
+                </h3>
+                <span
+                  className={`px-2.5 py-0.5 border text-[10px] uppercase tracking-wider rounded-full font-semibold ${getDifficultyColor(
+                    plan.dificulty,
+                  )}`}
+                >
+                  {plan.dificulty}
+                </span>
+              </div>
             </div>
           </div>
 

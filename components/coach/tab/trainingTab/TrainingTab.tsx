@@ -10,6 +10,8 @@ import {
   deleteTrainingPlan,
   searchTrainingPlans,
   clearMessages,
+  reorderPlans,
+  reorderTrainingPlan,
 } from "@/redux/features/trainingPlan/trainingPlanSlice";
 import {
   TrainingPlan,
@@ -21,6 +23,19 @@ import AddTrainingPlanModal from "./AddTrainingPlanModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import TrainingHistory from "./TrainingHistory";
 import toast from "react-hot-toast";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface TrainingPageProps {
   athleteId: string;
@@ -44,6 +59,48 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
     type: null,
     id: null,
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = plans.findIndex((p) => p._id === active.id);
+      const newIndex = plans.findIndex((p) => p._id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Step 4: Optimistic Update
+        dispatch(reorderPlans({ oldIndex, newIndex }));
+
+        // Step 3: Call Reorder API
+        // Backend position is 1-based, so newPosition = newIndex + 1
+        dispatch(
+          reorderTrainingPlan({
+            athleteId,
+            planId: active.id as string,
+            newPosition: newIndex + 1,
+          })
+        )
+          .unwrap()
+          .then(() => {
+            // Step 5: Re-fetch After Success (Final source of truth)
+            dispatch(fetchTrainingPlans(athleteId));
+          })
+          .catch((err) => {
+            // Step 6: Error Handling (Restore old order if needed, but fetch usually fixes it)
+            toast.error("Reordering failed. Please try again.");
+            dispatch(fetchTrainingPlans(athleteId));
+          });
+      }
+    }
+  };
 
   useEffect(() => {
     if (athleteId) {
@@ -215,16 +272,27 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
               <h3 className="text-xl font-semibold mb-4 text-gray-300">
                 Preview
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {plans.map((plan) => (
-                  <TrainingPlanPreview
-                    key={plan._id}
-                    plan={plan}
-                    onEdit={() => handleEditPreview(plan)}
-                    onDelete={() => handleDeleteClick("plan", plan._id)}
-                  />
-                ))}
-              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={plans.map((p) => p._id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {plans.map((plan) => (
+                      <TrainingPlanPreview
+                        key={plan._id}
+                        plan={plan}
+                        onEdit={() => handleEditPreview(plan)}
+                        onDelete={() => handleDeleteClick("plan", plan._id)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </div>

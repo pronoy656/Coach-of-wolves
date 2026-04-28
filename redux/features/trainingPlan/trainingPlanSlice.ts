@@ -72,6 +72,21 @@ export const deleteTrainingPlan = createAsyncThunk(
     }
 );
 
+// Reorder training plan
+export const reorderTrainingPlan = createAsyncThunk(
+    "trainingPlan/reorder",
+    async ({ athleteId, planId, newPosition }: { athleteId: string; planId: string; newPosition: number }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`/training/plan/reorder/${athleteId}/${planId}`, {
+                newPosition
+            });
+            return { athleteId, ...response.data };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to reorder training plans");
+        }
+    }
+);
+
 // Search training plans (Frontend filtering for now, or backend if needed)
 export const searchTrainingPlans = createAsyncThunk(
     "trainingPlan/search",
@@ -95,6 +110,13 @@ const trainingPlanSlice = createSlice({
         },
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.searchTerm = action.payload;
+        },
+        reorderPlans: (state, action: PayloadAction<{ oldIndex: number; newIndex: number }>) => {
+            const { oldIndex, newIndex } = action.payload;
+            const newPlans = [...state.plans];
+            const [movedItem] = newPlans.splice(oldIndex, 1);
+            newPlans.splice(newIndex, 0, movedItem);
+            state.plans = newPlans;
         },
         resetState: () => initialState,
     },
@@ -162,9 +184,16 @@ const trainingPlanSlice = createSlice({
             // Search
             .addCase(searchTrainingPlans.fulfilled, (state, action: PayloadAction<any>) => {
                 state.plans = action.payload.data || [];
+            })
+            // Reorder
+            .addCase(reorderTrainingPlan.pending, (state) => {
+                state.error = null;
+            })
+            .addCase(reorderTrainingPlan.rejected, (state, action) => {
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { clearMessages, setSearchTerm, resetState } = trainingPlanSlice.actions;
+export const { clearMessages, setSearchTerm, resetState, reorderPlans } = trainingPlanSlice.actions;
 export default trainingPlanSlice.reducer;
