@@ -87,6 +87,22 @@ export const reorderTrainingPlan = createAsyncThunk(
     }
 );
 
+// Reorder exercises within a training plan
+export const reorderExercises = createAsyncThunk(
+    "trainingPlan/reorderExercises",
+    async ({ planId, exerciseId, newPosition }: { planId: string; exerciseId: string; newPosition: number }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`/training/plan/reorder-exercises/${planId}`, {
+                exerciseId,
+                newPosition
+            });
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to reorder exercises");
+        }
+    }
+);
+
 // Search training plans (Frontend filtering for now, or backend if needed)
 export const searchTrainingPlans = createAsyncThunk(
     "trainingPlan/search",
@@ -117,6 +133,16 @@ const trainingPlanSlice = createSlice({
             const [movedItem] = newPlans.splice(oldIndex, 1);
             newPlans.splice(newIndex, 0, movedItem);
             state.plans = newPlans;
+        },
+        reorderExercisesLocally: (state, action: PayloadAction<{ planId: string; oldIndex: number; newIndex: number }>) => {
+            const { planId, oldIndex, newIndex } = action.payload;
+            const planIndex = state.plans.findIndex(p => p._id === planId);
+            if (planIndex !== -1) {
+                const newExercises = [...state.plans[planIndex].exercise];
+                const [movedItem] = newExercises.splice(oldIndex, 1);
+                newExercises.splice(newIndex, 0, movedItem);
+                state.plans[planIndex].exercise = newExercises;
+            }
         },
         resetState: () => initialState,
     },
@@ -191,9 +217,16 @@ const trainingPlanSlice = createSlice({
             })
             .addCase(reorderTrainingPlan.rejected, (state, action) => {
                 state.error = action.payload as string;
+            })
+            // Reorder Exercises
+            .addCase(reorderExercises.pending, (state) => {
+                state.error = null;
+            })
+            .addCase(reorderExercises.rejected, (state, action) => {
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { clearMessages, setSearchTerm, resetState, reorderPlans } = trainingPlanSlice.actions;
+export const { clearMessages, setSearchTerm, resetState, reorderPlans, reorderExercisesLocally } = trainingPlanSlice.actions;
 export default trainingPlanSlice.reducer;

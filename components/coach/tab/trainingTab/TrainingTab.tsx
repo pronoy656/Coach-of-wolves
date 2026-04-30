@@ -286,6 +286,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                       <TrainingPlanPreview
                         key={plan._id}
                         plan={plan}
+                        athleteId={athleteId}
                         onEdit={() => handleEditPreview(plan)}
                         onDelete={() => handleDeleteClick("plan", plan._id)}
                       />
