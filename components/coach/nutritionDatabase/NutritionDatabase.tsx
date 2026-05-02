@@ -14,6 +14,7 @@ import {
   getAllNutritions,
   Nutrition,
   updateNutrition,
+  setPage,
 } from "@/redux/features/nutrition/nutritionSlice";
 import toast from "react-hot-toast";
 import NutritionCard from "./nutritionCard/NutritionCard";
@@ -49,7 +50,7 @@ const translations = {
 
 export default function NutritionDatabase() {
   const dispatch = useDispatch<AppDispatch>();
-  const { nutritions, loading, error, successMessage } = useAppSelector(
+  const { nutritions, loading, error, successMessage, page, total, limit } = useAppSelector(
     (state) => state.nutrition
   );
   const { language } = useAppSelector((state) => state.language);
@@ -62,10 +63,10 @@ export default function NutritionDatabase() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Load nutritions on component mount
+  // Load nutritions on component mount and when page or search changes
   useEffect(() => {
-    dispatch(getAllNutritions({ search: searchQuery }));
-  }, [dispatch, searchQuery]);
+    dispatch(getAllNutritions({ search: searchQuery, page: page, limit: 12 }));
+  }, [dispatch, searchQuery, page]);
 
   // Handle errors and success messages
   useEffect(() => {
@@ -144,7 +145,7 @@ export default function NutritionDatabase() {
       setShowModal(false);
       setEditingId(null);
       // Refresh the list
-      dispatch(getAllNutritions({ search: searchQuery }));
+      dispatch(getAllNutritions({ search: searchQuery, page: page, limit: 12 }));
     } catch (error: any) {
       toast.error(error.message || "Failed to save nutrition item");
     }
@@ -154,7 +155,16 @@ export default function NutritionDatabase() {
     const value = e.target.value;
     setSearchQuery(value);
     setIsSearching(value.length > 0);
+    dispatch(setPage(1)); // Reset to first page on search
   };
+
+  const handlePageChange = (newPage: number) => {
+    dispatch(setPage(newPage));
+  };
+
+  const totalPages = Math.ceil(total / 12);
+  const startIndex = total === 0 ? 0 : (page - 1) * 12 + 1;
+  const endIndex = Math.min(page * 12, total);
 
   // Find the nutrition being edited
   const editingNutrition = editingId
@@ -203,16 +213,46 @@ export default function NutritionDatabase() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
-                {nutritions.map((nutrition) => (
-                  <NutritionCard
-                    key={nutrition._id}
-                    nutrition={nutrition}
-                    onEdit={() => handleEditNutrition(nutrition._id)}
-                    onDelete={() => handleDeleteNutrition(nutrition._id)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-6">
+                  {nutritions.map((nutrition) => (
+                    <NutritionCard
+                      key={nutrition._id}
+                      nutrition={nutrition}
+                      onEdit={() => handleEditNutrition(nutrition._id)}
+                      onDelete={() => handleDeleteNutrition(nutrition._id)}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between bg-card border border-[#303245] rounded-xl px-6 py-4 mt-8">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex} to {endIndex} of {total} nutrition items
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handlePageChange(Math.max(1, page - 1))}
+                      disabled={page === 1 || loading}
+                      className="px-4 py-2 border border-[#4A9E4A] rounded-lg text-sm font-medium hover:bg-[#4A9E4A]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <div className="text-sm font-medium">
+                      Page {page} of {totalPages || 1}
+                    </div>
+                    <button
+                      onClick={() =>
+                        handlePageChange(Math.min(totalPages || 1, page + 1))
+                      }
+                      disabled={page === totalPages || totalPages === 0 || loading}
+                      className="px-4 py-2 border border-[#4A9E4A] rounded-lg text-sm font-medium hover:bg-[#4A9E4A]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </main>

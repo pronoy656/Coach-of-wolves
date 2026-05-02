@@ -68,13 +68,16 @@ const initialState: NutritionState = {
 // Get All Nutritions (matches your get response)
 export const getAllNutritions = createAsyncThunk<
   { items: Nutrition[]; total: number; page: number; limit: number },
-  { search?: string } | void,
+  { search?: string; page?: number; limit?: number } | void,
   { rejectValue: string }
 >("nutrition/getAll", async (params, { rejectWithValue }) => {
   try {
     const search = params && "search" in params ? params.search : "";
+    const page = params && "page" in params ? params.page : 1;
+    const limit = params && "limit" in params ? params.limit : 10;
+    
     const response = await axiosInstance.get("/food/nutrition", {
-      params: { search },
+      params: { search, page, limit },
     });
     return response.data.data; // This contains { items, total, page, limit }
   } catch (error: any) {
@@ -139,6 +142,9 @@ const nutritionSlice = createSlice({
     clearNutritionSuccess: (state) => {
       state.successMessage = null;
     },
+    setPage: (state, action) => {
+      state.page = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -189,5 +195,5 @@ const nutritionSlice = createSlice({
   },
 });
 
-export const { clearNutritionError, clearNutritionSuccess } = nutritionSlice.actions;
+export const { clearNutritionError, clearNutritionSuccess, setPage } = nutritionSlice.actions;
 export default nutritionSlice.reducer;
