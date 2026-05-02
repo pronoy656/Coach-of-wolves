@@ -25,6 +25,7 @@ interface ComponentSupplement {
   name: string;
   purpose: string;
   brand: string;
+  productLink: string;
   comment: string;
 }
 
@@ -41,6 +42,7 @@ const translations = {
       name: "Name",
       purpose: "Purpose",
       brand: "Brand",
+      productLink: "Link",
       comment: "Comment",
       action: "Action",
     } as Record<string, string>,
@@ -63,6 +65,7 @@ const translations = {
       name: "Name",
       purpose: "Zweck",
       brand: "Marke",
+      productLink: "Link",
       comment: "Kommentar",
       action: "Aktion",
     } as Record<string, string>,
@@ -121,6 +124,7 @@ export default function SupplementDatabase() {
         brand: data.brand,
         time: "",
         purpose: data.purpose,
+        frequency: data.productLink,
         note: data.comment,
       };
 
@@ -191,6 +195,7 @@ export default function SupplementDatabase() {
       name: reduxSupplement.name,
       brand: reduxSupplement.brand || "",
       purpose: reduxSupplement.purpose,
+      productLink: reduxSupplement.frequency || "",
       comment: reduxSupplement.note || "",
     };
   };
@@ -264,6 +269,9 @@ export default function SupplementDatabase() {
                       {t.table.brand}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
+                      {t.table.productLink}
+                    </th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">
                       {t.table.comment}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
@@ -290,6 +298,26 @@ export default function SupplementDatabase() {
                         </td>
                         <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.brand}
+                        </td>
+                        <td className="py-3 px-4 text-primary font-medium">
+                          {componentSupplement.productLink ? (
+                            <a
+                              href={
+                                componentSupplement.productLink.startsWith(
+                                  "http",
+                                )
+                                  ? componentSupplement.productLink
+                                  : `https://${componentSupplement.productLink}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:underline"
+                            >
+                              View
+                            </a>
+                          ) : (
+                            "-"
+                          )}
                         </td>
                         <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.comment}

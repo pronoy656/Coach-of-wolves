@@ -12,6 +12,7 @@ const translations = {
     nameLabel: "Supplements Name *",
     purposeLabel: "Purpose *",
     brandLabel: "Brand",
+    productLinkLabel: "Product Link",
     commentLabel: "Comment",
     placeholderValue: "Insert a value",
     alertRequired: "Please fill in all required fields",
@@ -25,6 +26,7 @@ const translations = {
     nameLabel: "Supplementname *",
     purposeLabel: "Zweck *",
     brandLabel: "Marke",
+    productLinkLabel: "Produktlink",
     commentLabel: "Kommentar",
     placeholderValue: "Wert eingeben",
     alertRequired: "Bitte fülle alle Pflichtfelder aus",
@@ -41,12 +43,14 @@ interface SupplementModalProps {
     name: string;
     purpose: string;
     brand: string;
+    productLink: string;
     comment: string;
   }) => void;
   initialData?: {
     name: string;
     purpose: string;
     brand: string;
+    productLink: string;
     comment: string;
   };
 }
@@ -61,6 +65,7 @@ export default function SupplementModal({
     name: "",
     purpose: "",
     brand: "",
+    productLink: "",
     comment: "",
   });
 
@@ -76,6 +81,7 @@ export default function SupplementModal({
         name: "",
         purpose: "",
         brand: "",
+        productLink: "",
         comment: "",
       });
     }
@@ -177,6 +183,22 @@ export default function SupplementModal({
                 disabled={loading}
               />
             </div>
+          </div>
+
+          {/* Row 3: Product Link */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {t.productLinkLabel}
+            </label>
+            <input
+              type="text"
+              name="productLink"
+              value={formData.productLink}
+              onChange={handleChange}
+              placeholder={t.placeholderValue}
+              className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
+              disabled={loading}
+            />
           </div>
 
           {/* Row 3: Comment (Full width textarea) */}
