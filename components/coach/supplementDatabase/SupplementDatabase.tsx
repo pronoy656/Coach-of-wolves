@@ -23,7 +23,6 @@ import DeleteModal from "@/components/coach/exerciseDatabase/deleteModal/DeleteM
 interface ComponentSupplement {
   id?: string;
   name: string;
-  time: string;
   purpose: string;
   brand: string;
   comment: string;
@@ -40,7 +39,6 @@ const translations = {
     emptyState: "No supplements found",
     table: {
       name: "Name",
-      time: "Time",
       purpose: "Purpose",
       brand: "Brand",
       comment: "Comment",
@@ -63,7 +61,6 @@ const translations = {
     emptyState: "Keine Supplements gefunden",
     table: {
       name: "Name",
-      time: "Zeitpunkt",
       purpose: "Zweck",
       brand: "Marke",
       comment: "Kommentar",
@@ -122,7 +119,7 @@ export default function SupplementDatabase() {
       const backendPayload: CreateSupplementPayload = {
         name: data.name,
         brand: data.brand,
-        time: data.time,
+        time: "",
         purpose: data.purpose,
         note: data.comment,
       };
@@ -193,7 +190,6 @@ export default function SupplementDatabase() {
       id: reduxSupplement._id,
       name: reduxSupplement.name,
       brand: reduxSupplement.brand || "",
-      time: reduxSupplement.time,
       purpose: reduxSupplement.purpose,
       comment: reduxSupplement.note || "",
     };
@@ -262,9 +258,6 @@ export default function SupplementDatabase() {
                       {t.table.name}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-                      {t.table.time}
-                    </th>
-                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">
                       {t.table.purpose}
                     </th>
                     <th className="text-left py-3 px-4 text-muted-foreground font-medium">
@@ -291,9 +284,6 @@ export default function SupplementDatabase() {
                       >
                         <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.name}
-                        </td>
-                        <td className="py-3 px-4 text-primary font-medium">
-                          {componentSupplement.time}
                         </td>
                         <td className="py-3 px-4 text-primary font-medium">
                           {componentSupplement.purpose}

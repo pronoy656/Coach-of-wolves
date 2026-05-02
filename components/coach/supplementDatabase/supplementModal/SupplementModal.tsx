@@ -10,7 +10,6 @@ const translations = {
     titleAdd: "Add Supplement",
     titleEdit: "Edit Supplement",
     nameLabel: "Supplements Name *",
-    timeLabel: "Time *",
     purposeLabel: "Purpose *",
     brandLabel: "Brand",
     commentLabel: "Comment",
@@ -24,7 +23,6 @@ const translations = {
     titleAdd: "Supplement hinzufügen",
     titleEdit: "Supplement bearbeiten",
     nameLabel: "Supplementname *",
-    timeLabel: "Zeitpunkt *",
     purposeLabel: "Zweck *",
     brandLabel: "Marke",
     commentLabel: "Kommentar",
@@ -41,14 +39,12 @@ interface SupplementModalProps {
   onClose: () => void;
   onSave: (data: {
     name: string;
-    time: string;
     purpose: string;
     brand: string;
     comment: string;
   }) => void;
   initialData?: {
     name: string;
-    time: string;
     purpose: string;
     brand: string;
     comment: string;
@@ -63,7 +59,6 @@ export default function SupplementModal({
 }: SupplementModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    time: "",
     purpose: "",
     brand: "",
     comment: "",
@@ -79,7 +74,6 @@ export default function SupplementModal({
     } else {
       setFormData({
         name: "",
-        time: "",
         purpose: "",
         brand: "",
         comment: "",
@@ -99,7 +93,7 @@ export default function SupplementModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.time || !formData.purpose) {
+    if (!formData.name || !formData.purpose) {
       alert(t.alertRequired);
       return;
     }
@@ -133,8 +127,8 @@ export default function SupplementModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Name, Time */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Row 1: Name */}
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
                 {t.nameLabel}
@@ -143,21 +137,6 @@ export default function SupplementModal({
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder={t.placeholderValue}
-                className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
-                required
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t.timeLabel}
-              </label>
-              <input
-                type="text"
-                name="time"
-                value={formData.time}
                 onChange={handleChange}
                 placeholder={t.placeholderValue}
                 className="w-full bg-input border border-[#303245] rounded-lg px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
