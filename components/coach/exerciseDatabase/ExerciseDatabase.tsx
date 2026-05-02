@@ -17,6 +17,7 @@ import {
   setSelectedMuscleGroup,
   setSelectedDifficulty,
   resetFilters,
+  setPage,
 } from "@/redux/features/exercise/exerciseSlice";
 import toast from "react-hot-toast";
 import { Search, Dumbbell, Edit2, Trash2, X } from "lucide-react";
@@ -175,6 +176,8 @@ export default function AdminExerciseDatabase() {
     searchQuery,
     selectedMuscleGroup,
     selectedDifficulty,
+    page,
+    total,
   } = useAppSelector((state) => state.exercise);
   const { language } = useAppSelector((state) => state.language);
   const t = translations[language as keyof typeof translations];
@@ -191,12 +194,11 @@ export default function AdminExerciseDatabase() {
   // Get unique equipment options from exercises
   const equipmentOptions = getUniqueEquipment(exercises);
 
-  // Load exercises on component mount and when filters change
   useEffect(() => {
     const filters = {
       search: searchQuery,
-      page: 1,
-      limit: 10,
+      page: page,
+      limit: 12,
       musalCategory:
         selectedMuscleGroup === "All Muscle Groups"
           ? undefined
@@ -216,6 +218,7 @@ export default function AdminExerciseDatabase() {
     selectedMuscleGroup,
     selectedDifficulty,
     selectedEquipment,
+    page,
   ]);
 
   // Debounce search
@@ -308,8 +311,8 @@ export default function AdminExerciseDatabase() {
       // Refresh the list
       const filters = {
         search: searchQuery,
-        page: 1,
-        limit: 10,
+        page: page,
+        limit: 12,
         musalCategory:
           selectedMuscleGroup === "All Muscle Groups"
             ? undefined
@@ -329,20 +332,24 @@ export default function AdminExerciseDatabase() {
 
   const handleMuscleGroupChange = (group: string) => {
     dispatch(setSelectedMuscleGroup(group));
+    dispatch(setPage(1));
   };
 
   const handleDifficultyChange = (difficulty: string) => {
     dispatch(setSelectedDifficulty(difficulty));
+    dispatch(setPage(1));
   };
 
   const handleEquipmentChange = (equipment: string) => {
     setSelectedEquipment(equipment);
+    dispatch(setPage(1));
   };
 
   const handleResetFilters = () => {
     setSearchTerm("");
     setSelectedEquipment("All Equipment");
     dispatch(resetFilters());
+    dispatch(setPage(1));
   };
 
   // Check if any filter is active
@@ -351,6 +358,14 @@ export default function AdminExerciseDatabase() {
     selectedMuscleGroup !== "All Muscle Groups" ||
     selectedDifficulty !== "All Difficulties" ||
     selectedEquipment !== "All Equipment";
+
+  const totalPages = Math.ceil(total / 12);
+  const startIndex = total === 0 ? 0 : (page - 1) * 12 + 1;
+  const endIndex = Math.min(page * 12, total);
+
+  const handlePageChange = (newPage: number) => {
+    dispatch(setPage(newPage));
+  };
 
   // Convert backend exercise to component exercise
   const convertToComponentExercise = useCallback(
@@ -638,6 +653,34 @@ export default function AdminExerciseDatabase() {
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between bg-card border border-[#303245] rounded-xl px-6 py-4 mt-8">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex} to {endIndex} of {total} exercises
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handlePageChange(Math.max(1, page - 1))}
+                      disabled={page === 1 || loading}
+                      className="px-4 py-2 border border-[#4A9E4A] rounded-lg text-sm font-medium hover:bg-[#4A9E4A]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <div className="text-sm font-medium">
+                      Page {page} of {totalPages || 1}
+                    </div>
+                    <button
+                      onClick={() =>
+                        handlePageChange(Math.min(totalPages || 1, page + 1))
+                      }
+                      disabled={page === totalPages || totalPages === 0 || loading}
+                      className="px-4 py-2 border border-[#4A9E4A] rounded-lg text-sm font-medium hover:bg-[#4A9E4A]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
 
                 {exercises.length === 0 && !loading && (
