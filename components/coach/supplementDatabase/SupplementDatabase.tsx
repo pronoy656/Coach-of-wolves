@@ -89,21 +89,34 @@ export default function SupplementDatabase() {
   const t = translations[language as keyof typeof translations];
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Debounce search term to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(
-      getAllSupplements({
-        search: searchTerm || undefined, // optional param
-        page: currentPage,
-        limit: ITEMS_PER_PAGE,
-      }),
-    );
-  }, [dispatch, currentPage, searchTerm]);
+    // Only fetch when search term is fully debounced or when page changes
+    if (searchTerm === debouncedSearch) {
+      dispatch(
+        getAllSupplements({
+          search: debouncedSearch || undefined,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
+    }
+  }, [dispatch, currentPage, debouncedSearch, searchTerm]);
 
   // Handle errors and success messages
   useEffect(() => {
@@ -141,7 +154,7 @@ export default function SupplementDatabase() {
 
       dispatch(
         getAllSupplements({
-          search: searchTerm || undefined,
+          search: debouncedSearch || undefined,
           page: currentPage,
           limit: ITEMS_PER_PAGE,
         }),
@@ -173,7 +186,7 @@ export default function SupplementDatabase() {
           // Refetch current page
           dispatch(
             getAllSupplements({
-              search: searchTerm || undefined,
+              search: debouncedSearch || undefined,
               page: currentPage,
               limit: ITEMS_PER_PAGE,
             }),
@@ -238,7 +251,10 @@ export default function SupplementDatabase() {
             type="text"
             placeholder={t.searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to first page on search
+            }}
             className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#4A9E4A]"
           />
           <Search className="absolute right-4 top-3.5 w-5 h-5 text-muted-foreground" />
