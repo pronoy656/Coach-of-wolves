@@ -193,7 +193,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchTimelineByAthlete(userId));
+      dispatch(fetchTimelineByAthlete({ athleteId: userId }));
     }
   }, [dispatch, userId]);
 

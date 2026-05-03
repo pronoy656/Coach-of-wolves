@@ -80,7 +80,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
 
   useEffect(() => {
     if (athleteId) {
-      dispatch(fetchTimelineByAthlete(athleteId));
+      dispatch(fetchTimelineByAthlete({ athleteId }));
     }
   }, [dispatch, athleteId]);
 
