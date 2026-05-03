@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { Pencil, Save, ChevronDown, Loader2, CheckSquare } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchTimelineByAthlete, updateTimelinePhases, clearMessages } from "@/redux/features/timeline/timelineSlice";
+import { fetchTimelineByAthlete, updateTimelinePhases, clearMessages, fetchAvailableYears } from "@/redux/features/timeline/timelineSlice";
 import { TimelineItem } from "@/redux/features/timeline/timelineType";
 import toast from "react-hot-toast";
 
@@ -42,8 +42,9 @@ interface TimelineTabProps {
 
 export default function TimelineTable({ athleteId }: TimelineTabProps) {
   const dispatch = useAppDispatch();
-  const { timeline, loading, error, successMessage } = useAppSelector((state) => state.timeline);
+  const { timeline, availableYears, loading, error, successMessage } = useAppSelector((state) => state.timeline);
   const { language } = useAppSelector((state) => state.language);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [data, setData] = useState<TrackingRow[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
@@ -93,9 +94,15 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
 
   useEffect(() => {
     if (athleteId) {
-      dispatch(fetchTimelineByAthlete(athleteId));
+      dispatch(fetchAvailableYears(athleteId));
     }
   }, [dispatch, athleteId]);
+
+  useEffect(() => {
+    if (athleteId) {
+      dispatch(fetchTimelineByAthlete({ athleteId, year: selectedYear }));
+    }
+  }, [dispatch, athleteId, selectedYear]);
 
   useEffect(() => {
     if (successMessage) {
@@ -243,7 +250,7 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
         setSelectedIds([]);
         setSelectedPhase("");
         // Refetch to sync from backend
-        dispatch(fetchTimelineByAthlete(athleteId)); 
+        dispatch(fetchTimelineByAthlete({ athleteId, year: selectedYear })); 
       }
     });
   };
@@ -283,7 +290,30 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
             </>
           )}
         </div>
-        {loading && <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />}
+        <div className="flex items-center gap-4">
+          {/* Year Selection Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm">Year:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="bg-[#1e2029] border border-gray-600 rounded px-3 py-1.5 focus:outline-none text-white text-sm"
+              disabled={loading}
+            >
+              {availableYears.length > 0 ? (
+                availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))
+              ) : (
+                <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+              )}
+            </select>
+          </div>
+
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />}
+        </div>
       </div>
 
       {/* --- Scrollable Wrapper --- */}

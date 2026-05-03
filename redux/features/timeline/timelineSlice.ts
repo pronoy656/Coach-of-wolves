@@ -5,6 +5,7 @@ import { TimelineItem, TimelineState } from "./timelineType";
 
 const initialState: TimelineState = {
     timeline: [],
+    availableYears: [],
     loading: false,
     error: null,
     successMessage: null,
@@ -13,12 +14,26 @@ const initialState: TimelineState = {
 // Get timeline for specific athlete
 export const fetchTimelineByAthlete = createAsyncThunk(
     "timeline/fetchByAthlete",
-    async (athleteId: string, { rejectWithValue }) => {
+    async ({ athleteId, year }: { athleteId: string; year?: number }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/timeline/${athleteId}`);
+            const url = year ? `/timeline/${athleteId}?year=${year}` : `/timeline/${athleteId}`;
+            const response = await axiosInstance.get(url);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch timeline");
+        }
+    }
+);
+
+// Get available years for athlete timeline
+export const fetchAvailableYears = createAsyncThunk(
+    "timeline/fetchAvailableYears",
+    async (athleteId: string, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/timeline/years/${athleteId}`);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch available years");
         }
     }
 );
@@ -64,6 +79,19 @@ const timelineSlice = createSlice({
                 state.successMessage = action.payload.message || null;
             })
             .addCase(fetchTimelineByAthlete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Fetch Available Years
+            .addCase(fetchAvailableYears.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAvailableYears.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.availableYears = action.payload.data || [];
+            })
+            .addCase(fetchAvailableYears.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })

@@ -24,6 +24,7 @@ export interface TimelineItem {
 
 export interface TimelineState {
     timeline: TimelineItem[];
+    availableYears: number[];
     loading: boolean;
     error: string | null;
     successMessage: string | null;
