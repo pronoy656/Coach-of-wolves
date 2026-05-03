@@ -13,6 +13,7 @@ export interface Supplement {
   frequency?: string;
   time: string;
   purpose: string;
+  link?: string;
   note?: string;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +28,7 @@ export interface CreateSupplementPayload {
   frequency?: string;
   time: string;
   purpose: string;
+  link?: string;
   note?: string;
 }
 

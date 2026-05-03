@@ -25,6 +25,7 @@ const translations = {
     purpose: "Purpose",
     note: "Note",
     time: "Time",
+    link: "Link",
     typePlaceholder: "Type..",
     save: "Save",
   },
@@ -38,6 +39,7 @@ const translations = {
     purpose: "Zweck",
     note: "Notiz",
     time: "Zeit",
+    link: "Link",
     typePlaceholder: "Eingeben..",
     save: "Speichern",
   },
@@ -73,6 +75,7 @@ export default function AddSupplimentModal({
     note: supplement?.note || "",
     time: supplement?.time || "",
     brand: supplement?.brand || "",
+    link: supplement?.link || "",
   });
 
   const [suggestions, setSuggestions] = useState<DbSupplement[]>([]);
@@ -98,6 +101,7 @@ export default function AddSupplimentModal({
       frequency: supp.frequency || prev.frequency,
       time: supp.time || prev.time,
       purpose: supp.purpose || prev.purpose,
+      link: supp.link || prev.link,
       note: supp.note || prev.note,
     }));
     setSuggestions([]);
@@ -312,6 +316,19 @@ export default function AddSupplimentModal({
                   placeholder={t.typePlaceholder}
                   className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
                   required
+                />
+              </div>
+
+              {/* Link */}
+              <div>
+                <label className="block text-gray-400 mb-2">{(t as any).link}</label>
+                <input
+                  type="text"
+                  name="link"
+                  value={formData.link}
+                  onChange={handleChange}
+                  placeholder={t.typePlaceholder}
+                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
             </div>

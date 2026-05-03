@@ -13,6 +13,7 @@ const translations = {
     purpose: "Purpose",
     note: "Note",
     time: "Time",
+    link: "Link",
   },
   de: {
     noSupplementsFound: "Keine Nahrungsergänzungsmittel gefunden",
@@ -22,6 +23,7 @@ const translations = {
     purpose: "Zweck",
     note: "Notiz",
     time: "Zeit",
+    link: "Link",
   },
 };
 
@@ -76,7 +78,7 @@ export default function SupplementsList({
           </div>
 
           {/* Supplement Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Brand */}
             <div>
               <p className="text-gray-300 mb-1 text-xl">{t.brand}</p>
@@ -115,6 +117,23 @@ export default function SupplementsList({
               <p className="text-emerald-400 font-medium text-base">
                 {supplement.purpose}
               </p>
+            </div>
+
+            {/* Link */}
+            <div>
+              <p className="text-gray-300 mb-1 text-xl">{(t as any).link}</p>
+              {supplement.link ? (
+                <a
+                  href={supplement.link.startsWith("http") ? supplement.link : `https://${supplement.link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline font-medium text-base break-all"
+                >
+                  {supplement.link}
+                </a>
+              ) : (
+                <p className="text-gray-500 font-medium text-base">-</p>
+              )}
             </div>
           </div>
 
