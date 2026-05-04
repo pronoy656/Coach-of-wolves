@@ -185,21 +185,27 @@ export default function TimelineTable({ athleteId }: TimelineTabProps) {
   const getPhaseColor = (phase: string) => {
     switch (phase) {
       case "Prep":
-      case "Peak Week":
         return "bg-amber-600 text-white";
+      case "Peak Week":
+        return "bg-rose-600 text-white";
       case "Offseason":
-      case "Health Phase":
         return "bg-emerald-700 text-white";
+      case "Health Phase":
+        return "bg-teal-600 text-white";
       case "Diet Phase":
-      case "Pre Prep Phase":
         return "bg-blue-600 text-white";
+      case "Pre Prep Phase":
+        return "bg-sky-600 text-white";
       case "Diet-Break":
+        return "bg-violet-600 text-white";
       case "Reverse Diet Phase":
-        return "bg-purple-600 text-white";
+        return "bg-fuchsia-600 text-white";
       case "No Phase":
-        return "bg-gray-800 text-gray-400";
+        return "bg-slate-800 text-gray-400";
+      case "Other":
+        return "bg-zinc-700 text-white";
       default:
-        return "bg-gray-700";
+        return "bg-zinc-800";
     }
   };
 
