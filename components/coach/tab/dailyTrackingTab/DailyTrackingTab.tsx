@@ -164,7 +164,15 @@ export default function Dashboard() {
       return options;
     }
 
-    const sorted = [...timeline].sort((a, b) => {
+    const nowTime = new Date().getTime();
+
+    // Filter to only include past weeks
+    const pastWeeks = timeline.filter((item) => {
+      if (!item.checkInDate) return false;
+      return new Date(item.checkInDate).getTime() < nowTime;
+    });
+
+    const sorted = [...pastWeeks].sort((a, b) => {
       const d1 = new Date(a.checkInDate).getTime();
       const d2 = new Date(b.checkInDate).getTime();
       return d2 - d1;
@@ -175,7 +183,7 @@ export default function Dashboard() {
         return;
       }
       options.push({
-        label: `Week of ${formatDateDisplay(item.checkInDate)}`,
+        label: `Past Week (${formatDateDisplay(item.checkInDate)})`,
         value: item.checkInDate,
       });
     });
@@ -736,7 +744,7 @@ export default function Dashboard() {
           <CalendarIcon />
           <span className="text-base">
             {selectedDate
-              ? `Week of ${formatDateDisplay(selectedDate)}`
+              ? `Past Week (${formatDateDisplay(selectedDate)})`
               : "Current Week"}
           </span>
           <ChevronDown
