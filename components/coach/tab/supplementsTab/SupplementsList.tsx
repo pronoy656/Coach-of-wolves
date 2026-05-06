@@ -51,90 +51,111 @@ export default function SupplementsList({
 
   return (
     <div className="space-y-4">
-      {supplements.map((supplement) => (
-        <div
-          key={supplement._id}
-          className="bg-[#08081A] border border-[#303245] rounded-lg p-6"
-        >
-          {/* Supplement Name and Actions */}
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold text-white">{supplement.name}</h3>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => onEdit(supplement)}
-                className="p-2 hover:bg-[#303245] rounded-lg transition-colors text-emerald-400"
-                aria-label="Edit supplement"
-              >
-                <Edit2 className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => onDelete(supplement._id)}
-                className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-500"
-                aria-label="Delete supplement"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+      {supplements.map((supplement) => {
+        // Legacy support: if the DB has the link stored in frequency
+        let actualLink = supplement.link;
+        let actualFrequency = supplement.frequency;
 
-          {/* Supplement Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {/* Brand */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{t.brand}</p>
-              <p className="text-emerald-400 font-medium text-base">
-                {supplement.brand}
-              </p>
-            </div>
+        if (
+          supplement.frequency &&
+          (supplement.frequency.includes("http") ||
+            supplement.frequency.includes("www.") ||
+            supplement.frequency.includes(".com"))
+        ) {
+          if (!actualLink) {
+            actualLink = supplement.frequency;
+          }
+          actualFrequency = "-"; // Clear frequency as it was mistakenly a link
+        }
 
-            {/* Dosage */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{t.dosage}</p>
-              <p className="text-emerald-400 font-medium text-base">
-                {supplement.dosage}
-              </p>
-            </div>
-
-            {/* Frequency */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{t.frequency}</p>
-              <p className="text-emerald-400 font-medium text-base">
-                {supplement.frequency}
-              </p>
-            </div>
-
-            {/* Time */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{t.time}</p>
-              <p className="text-emerald-400 font-medium text-base">
-                {supplement.time}
-              </p>
-            </div>
-
-            {/* Purpose */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{t.purpose}</p>
-              <p className="text-emerald-400 font-medium text-base">
-                {supplement.purpose}
-              </p>
-            </div>
-
-            {/* Link */}
-            <div>
-              <p className="text-gray-300 mb-1 text-xl">{(t as any).link}</p>
-              {supplement.link ? (
-                <a
-                  href={supplement.link.startsWith("http") ? supplement.link : `https://${supplement.link}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 underline font-medium text-base break-all"
+        return (
+          <div
+            key={supplement._id}
+            className="bg-[#08081A] border border-[#303245] rounded-lg p-6"
+          >
+            {/* Supplement Name and Actions */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-white">{supplement.name}</h3>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => onEdit(supplement)}
+                  className="p-2 hover:bg-[#303245] rounded-lg transition-colors text-emerald-400"
+                  aria-label="Edit supplement"
                 >
-                  {supplement.link}
-                </a>
-              ) : (
-                <p className="text-gray-500 font-medium text-base">-</p>
-              )}
+                  <Edit2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => onDelete(supplement._id)}
+                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-500"
+                  aria-label="Delete supplement"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
+
+            {/* Supplement Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              {/* Brand */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{t.brand}</p>
+                <p className="text-emerald-400 font-medium text-base">
+                  {supplement.brand || "-"}
+                </p>
+              </div>
+
+              {/* Dosage */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{t.dosage}</p>
+                <p className="text-emerald-400 font-medium text-base">
+                  {supplement.dosage || "-"}
+                </p>
+              </div>
+
+              {/* Frequency */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{t.frequency}</p>
+                <p className="text-emerald-400 font-medium text-base">
+                  {actualFrequency || "-"}
+                </p>
+              </div>
+
+              {/* Time */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{t.time}</p>
+                <p className="text-emerald-400 font-medium text-base">
+                  {supplement.time || "-"}
+                </p>
+              </div>
+
+              {/* Purpose */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{t.purpose}</p>
+                <p className="text-emerald-400 font-medium text-base">
+                  {supplement.purpose || "-"}
+                </p>
+              </div>
+
+              {/* Link */}
+              <div>
+                <p className="text-gray-300 mb-1 text-xl">{(t as any).link}</p>
+                {actualLink ? (
+                  <a
+                    href={
+                      actualLink.startsWith("http")
+                        ? actualLink
+                        : `https://${actualLink}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 underline font-medium text-base break-all"
+                  >
+                    {actualLink}
+                  </a>
+                ) : (
+                  <p className="text-gray-500 font-medium text-base">-</p>
+                )}
+              </div>
           </div>
 
           {/* Note */}
@@ -145,7 +166,8 @@ export default function SupplementsList({
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

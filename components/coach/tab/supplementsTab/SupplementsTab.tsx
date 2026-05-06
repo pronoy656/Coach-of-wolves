@@ -27,6 +27,10 @@ const translations = {
     deleteTitle: "Delete Supplement",
     deleteMessage:
       "Are you sure you want to delete this supplement? This action cannot be undone.",
+    pagination: (start: number, end: number, total: number) =>
+      `Showing ${start} to ${end} of ${total} supplements`,
+    previous: "Previous",
+    next: "Next",
   },
   de: {
     title: "Nahrungsergänzungsmittel",
@@ -35,6 +39,10 @@ const translations = {
     deleteTitle: "Ergänzungsmittel löschen",
     deleteMessage:
       "Sind Sie sicher, dass Sie dieses Ergänzungsmittel löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    pagination: (start: number, end: number, total: number) =>
+      `Zeige ${start} bis ${end} von ${total} Supplements`,
+    previous: "Zurück",
+    next: "Weiter",
   },
 };
 
@@ -45,11 +53,13 @@ interface SupplementsPageProps {
 export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
   const dispatch = useAppDispatch();
   const { language } = useAppSelector((state) => state.language);
-  const { supplements, loading, error, successMessage, currentAthleteId } =
+  const { supplements, loading, error, successMessage, currentAthleteId, total, page: currentPageFromStore } =
     useAppSelector((state) => state.coachSupplement);
   const t = translations[language as keyof typeof translations];
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSupplement, setSelectedSupplement] =
@@ -57,6 +67,20 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
   const [supplementToDelete, setSupplementToDelete] = useState<string | null>(
     null,
   );
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   // Handle toast notifications
   useEffect(() => {
@@ -70,23 +94,24 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
     }
   }, [successMessage, error, dispatch]);
 
-  // Fetch supplements when athleteId changes
+  // Fetch supplements when athleteId, page, or debounced search changes
   useEffect(() => {
-    if (athleteId) {
-      // Clear previous supplements to prevent stale data when switching athletes
-      dispatch(clearSupplements());
-      // Use a larger limit to get more items since we are doing local filtering for now
-      dispatch(getAllSupplements({ athleteId, limit: 100 }));
+    if (athleteId && searchQuery === debouncedSearch) {
+      dispatch(
+        getAllSupplements({
+          athleteId,
+          page: currentPage,
+          limit: 12,
+          search: debouncedSearch || undefined,
+        }),
+      );
     }
-  }, [dispatch, athleteId]);
+  }, [dispatch, athleteId, currentPage, debouncedSearch, searchQuery]);
 
   const isDataForCurrentAthlete = currentAthleteId === athleteId;
 
-  const filteredSupplements = isDataForCurrentAthlete
-    ? supplements.filter((supplement) =>
-        supplement.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : [];
+  // We rely on backend filtering and pagination
+  const filteredSupplements = isDataForCurrentAthlete ? supplements : [];
 
   const handleAddSupplement = () => {
     setSelectedSupplement(null);
@@ -108,6 +133,22 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
       await dispatch(
         deleteSupplement({ athleteId, supplementId: supplementToDelete }),
       );
+      
+      // If deleting last item on page, go to previous page if needed
+      if (supplements.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        // Refetch current page
+        dispatch(
+          getAllSupplements({
+            athleteId,
+            page: currentPage,
+            limit: 12,
+            search: debouncedSearch || undefined,
+          }),
+        );
+      }
+
       setIsDeleteModalOpen(false);
       setSupplementToDelete(null);
     }
@@ -125,8 +166,6 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
           data,
         }),
       );
-      // Refetch after update to ensure list is consistent
-      dispatch(getAllSupplements({ athleteId, limit: 100 }));
     } else {
       // Add new
       await dispatch(
@@ -136,9 +175,24 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
         }),
       );
     }
+    
+    // Refetch after update or create to ensure list is consistent
+    dispatch(
+      getAllSupplements({
+        athleteId,
+        limit: 12,
+        page: currentPage,
+        search: debouncedSearch || undefined,
+      })
+    );
+
     setIsFormModalOpen(false);
     setSelectedSupplement(null);
   };
+
+  const totalPages = Math.ceil(total / 12);
+  const startIndex = total === 0 ? 0 : (currentPage - 1) * 12 + 1;
+  const endIndex = Math.min(currentPage * 12, total);
 
   if (!athleteId) {
     return <div className="p-6 text-white">No Athlete ID provided</div>;
@@ -175,11 +229,41 @@ export default function SupplementsPage({ athleteId }: SupplementsPageProps) {
         {!isDataForCurrentAthlete || (loading && supplements.length === 0) ? (
           <div className="text-white">Loading...</div>
         ) : (
-          <SupplementsList
-            supplements={filteredSupplements}
-            onEdit={handleEditSupplement}
-            onDelete={handleDeleteSupplement}
-          />
+          <>
+            <SupplementsList
+              supplements={filteredSupplements}
+              onEdit={handleEditSupplement}
+              onDelete={handleDeleteSupplement}
+            />
+            
+            {/* Pagination Controls */}
+            {total > 0 && (
+              <div className="flex items-center justify-between bg-[#08081A] border border-[#303245] rounded-lg mt-6 px-4 py-4">
+                <div className="text-sm text-gray-400">
+                  {t.pagination(startIndex, endIndex, total)}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1 || loading}
+                    className="p-2 border border-[#303245] rounded-lg hover:bg-[#1a1b2b] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {t.previous}
+                  </button>
+                  <div className="text-sm text-gray-400">
+                    Page {currentPage} of {totalPages || 1}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0 || loading}
+                    className="p-2 border border-[#303245] rounded-lg hover:bg-[#1a1b2b] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {t.next}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -93,17 +93,30 @@ export default function AddSupplimentModal({
   };
 
   const handleSelectSuggestion = (supp: DbSupplement) => {
-    setFormData((prev) => ({
-      ...prev,
-      name: supp.name,
-      brand: supp.brand || prev.brand,
-      dosage: supp.dosage || prev.dosage,
-      frequency: supp.frequency || prev.frequency,
-      time: supp.time || prev.time,
-      purpose: supp.purpose || prev.purpose,
-      link: supp.link || prev.link,
-      note: supp.note || prev.note,
-    }));
+    setFormData((prev) => {
+      let actualLink = supp.link || prev.link;
+      let actualFrequency = supp.frequency;
+      
+      // Legacy support: if the DB has the link stored in frequency
+      if (supp.frequency && (supp.frequency.includes('http') || supp.frequency.includes('www.') || supp.frequency.includes('.com'))) {
+        if (!supp.link) {
+          actualLink = supp.frequency;
+        }
+        actualFrequency = ""; // Clear frequency as it was mistakenly a link
+      }
+
+      return {
+        ...prev,
+        name: supp.name,
+        brand: supp.brand || prev.brand,
+        dosage: supp.dosage || prev.dosage,
+        frequency: actualFrequency || prev.frequency,
+        time: supp.time || prev.time,
+        purpose: supp.purpose || prev.purpose,
+        link: actualLink,
+        note: supp.note || prev.note,
+      };
+    });
     setSuggestions([]);
     setShowDropdown(false);
   };
