@@ -7,6 +7,7 @@ import AssignMultipleShowsModal from "./assignMultipleShowsModal/AssignMultipleS
 import DeleteModal from "../exerciseDatabase/deleteModal/DeleteModal";
 import Image from "next/image";
 import { getFullImageUrl } from "@/lib/utils";
+import ViewShowsDetailsModal from "./viewShowsDetailsModal/ViewShowsDetailsModal";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   fetchCoachAthletes,
@@ -75,7 +76,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Last Check-in",
     thWater: "Water (L)",
+    thAssignedShows: "Assigned Shows",
     thAction: "Action",
+    details: "Details",
     emptyState: "No athletes found matching your filters",
     deleteTitle: "Delete Athlete",
     deleteMessage: (name?: string) =>
@@ -137,7 +140,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Letzter Check-in",
     thWater: "Wasser (L)",
+    thAssignedShows: "Zugewiesene Shows",
     thAction: "Aktion",
+    details: "Details",
     emptyState: "Keine Athleten entsprechen deinen Filtern",
     deleteTitle: "Athlet löschen",
     deleteMessage: (name?: string) =>
@@ -201,6 +206,8 @@ export default function AthleteManagement() {
   const [athleteToDelete, setAthleteToDelete] = useState<Athlete | null>(null);
   const [isAssignShowsModalOpen, setIsAssignShowsModalOpen] = useState(false);
   const [selectedAthleteForShows, setSelectedAthleteForShows] = useState<Athlete | null>(null);
+  const [isViewShowsModalOpen, setIsViewShowsModalOpen] = useState(false);
+  const [selectedAthleteForViewShows, setSelectedAthleteForViewShows] = useState<Athlete | null>(null);
 
   useEffect(() => {
     if (!profile) {
@@ -280,6 +287,11 @@ export default function AthleteManagement() {
   const handleAssignShows = (athlete: Athlete) => {
     setSelectedAthleteForShows(athlete);
     setIsAssignShowsModalOpen(true);
+  };
+
+  const handleViewShows = (athlete: Athlete) => {
+    setSelectedAthleteForViewShows(athlete);
+    setIsViewShowsModalOpen(true);
   };
 
   const confirmDelete = () => {
@@ -431,6 +443,9 @@ export default function AthleteManagement() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     {t.thWater}
                   </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-muted-foreground">
+                    {t.thAssignedShows}
+                  </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     {t.thAction}
                   </th>
@@ -510,8 +525,17 @@ export default function AthleteManagement() {
                     <td className="px-6 py-4 text-white">
                       {athlete.waterQuantity} L
                     </td>
+                    <td className="px-6 py-4 text-white text-center font-bold">
+                      {(athlete as any).shows?.length || 0}
+                    </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 items-center">
+                        <button
+                          onClick={() => handleViewShows(athlete)}
+                          className="px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded hover:bg-indigo-500/30 transition-colors text-xs font-semibold"
+                        >
+                          {t.details}
+                        </button>
                         <button
                           onClick={() => handleAssignShows(athlete)}
                           className="p-2 bg-amber-500/20 text-amber-500 rounded-full hover:bg-amber-500/30 transition-colors"
@@ -575,6 +599,15 @@ export default function AthleteManagement() {
           onClose={() => {
             setIsAssignShowsModalOpen(false);
             setSelectedAthleteForShows(null);
+          }}
+        />
+      )}
+      {isViewShowsModalOpen && selectedAthleteForViewShows && (
+        <ViewShowsDetailsModal
+          athlete={selectedAthleteForViewShows}
+          onClose={() => {
+            setIsViewShowsModalOpen(false);
+            setSelectedAthleteForViewShows(null);
           }}
         />
       )}
