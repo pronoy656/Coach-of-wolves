@@ -75,7 +75,7 @@ export default function AddSupplimentModal({
     note: supplement?.note || "",
     time: supplement?.time || "",
     brand: supplement?.brand || "",
-    link: supplement?.link || "",
+    productLink: supplement?.productLink || (supplement as any)?.link || "",
   });
 
   const [suggestions, setSuggestions] = useState<DbSupplement[]>([]);
@@ -94,12 +94,12 @@ export default function AddSupplimentModal({
 
   const handleSelectSuggestion = (supp: DbSupplement) => {
     setFormData((prev) => {
-      let actualLink = supp.link || prev.link;
+      let actualLink = supp.productLink || (supp as any).link || prev.productLink;
       let actualFrequency = supp.frequency;
       
       // Legacy support: if the DB has the link stored in frequency
       if (supp.frequency && (supp.frequency.includes('http') || supp.frequency.includes('www.') || supp.frequency.includes('.com'))) {
-        if (!supp.link) {
+        if (!supp.productLink && !(supp as any).link) {
           actualLink = supp.frequency;
         }
         actualFrequency = ""; // Clear frequency as it was mistakenly a link
@@ -113,7 +113,7 @@ export default function AddSupplimentModal({
         frequency: actualFrequency || prev.frequency,
         time: supp.time || prev.time,
         purpose: supp.purpose || prev.purpose,
-        link: actualLink,
+        productLink: actualLink,
         note: supp.note || prev.note,
       };
     });
@@ -337,8 +337,8 @@ export default function AddSupplimentModal({
                 <label className="block text-gray-400 mb-2">{(t as any).link}</label>
                 <input
                   type="text"
-                  name="link"
-                  value={formData.link}
+                  name="productLink"
+                  value={formData.productLink}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
                   className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"

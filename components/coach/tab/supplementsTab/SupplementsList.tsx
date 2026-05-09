@@ -14,6 +14,7 @@ const translations = {
     note: "Note",
     time: "Time",
     link: "Link",
+    view: "View",
   },
   de: {
     noSupplementsFound: "Keine Nahrungsergänzungsmittel gefunden",
@@ -24,6 +25,7 @@ const translations = {
     note: "Notiz",
     time: "Zeit",
     link: "Link",
+    view: "Ansehen",
   },
 };
 
@@ -53,7 +55,7 @@ export default function SupplementsList({
     <div className="space-y-4">
       {supplements.map((supplement) => {
         // Legacy support: if the DB has the link stored in frequency
-        let actualLink = supplement.link;
+        let actualLink = supplement.productLink || (supplement as any).link;
         let actualFrequency = supplement.frequency;
 
         if (
@@ -148,9 +150,9 @@ export default function SupplementsList({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline font-medium text-base break-all"
+                    className="text-blue-400 hover:text-blue-300 underline font-medium text-base"
                   >
-                    {actualLink}
+                    {(t as any).view}
                   </a>
                 ) : (
                   <p className="text-gray-500 font-medium text-base">-</p>

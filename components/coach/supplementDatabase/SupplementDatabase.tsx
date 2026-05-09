@@ -137,7 +137,7 @@ export default function SupplementDatabase() {
         brand: data.brand,
         time: "",
         purpose: data.purpose,
-        link: data.productLink,
+        productLink: data.productLink,
         frequency: "",
         note: data.comment,
       };
@@ -209,7 +209,7 @@ export default function SupplementDatabase() {
       name: reduxSupplement.name,
       brand: reduxSupplement.brand || "",
       purpose: reduxSupplement.purpose,
-      productLink: reduxSupplement.link || (reduxSupplement.frequency && (reduxSupplement.frequency.includes('http') || reduxSupplement.frequency.includes('www') || reduxSupplement.frequency.includes('.com')) ? reduxSupplement.frequency : ""),
+      productLink: reduxSupplement.productLink || (reduxSupplement as any).link || (reduxSupplement.frequency && (reduxSupplement.frequency.includes('http') || reduxSupplement.frequency.includes('www') || reduxSupplement.frequency.includes('.com')) ? reduxSupplement.frequency : ""),
       comment: reduxSupplement.note || "",
     };
   };
