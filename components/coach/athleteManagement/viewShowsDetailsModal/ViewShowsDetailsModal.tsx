@@ -8,11 +8,22 @@ interface ViewShowsDetailsModalProps {
   onClose: () => void;
 }
 
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchShows } from "@/redux/features/show/showSlice";
+
 export default function ViewShowsDetailsModal({
   athlete,
   onClose,
 }: ViewShowsDetailsModalProps) {
-  const shows = (athlete as any).shows || [];
+  const dispatch = useAppDispatch();
+  const allShows = useAppSelector((state) => state.show.shows);
+  
+  useEffect(() => {
+    dispatch(fetchShows());
+  }, [dispatch]);
+
+  const athleteShows = (athlete as any).shows || [];
 
   return (
     <>
@@ -34,7 +45,7 @@ export default function ViewShowsDetailsModal({
             {athlete.name}'s Details
           </h2>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-8">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* Athlete Information Section */}
             <div>
               <h3 className="text-lg font-semibold text-emerald-400 mb-4 flex items-center gap-2">
@@ -69,42 +80,6 @@ export default function ViewShowsDetailsModal({
               </div>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold text-emerald-400 mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Competition & Program Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-[#111125] p-5 rounded-lg border border-[#303245]">
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Category</p>
-                  <p className="text-sm text-gray-200">{athlete.category || "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Phase</p>
-                  <p className="text-sm text-gray-200">{athlete.phase || "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Goal</p>
-                  <p className="text-sm text-gray-200">{athlete.goal || "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Water Intake</p>
-                  <p className="text-sm text-gray-200">{athlete.waterQuantity ? `${athlete.waterQuantity} L` : "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Training Steps</p>
-                  <p className="text-sm text-gray-200">{athlete.trainingDaySteps ? athlete.trainingDaySteps.toLocaleString() : "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Rest Steps</p>
-                  <p className="text-sm text-gray-200">{athlete.restDaySteps ? athlete.restDaySteps.toLocaleString() : "N/A"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Check-In Day</p>
-                  <p className="text-sm text-gray-200">{athlete.checkInDay || "N/A"}</p>
-                </div>
-              </div>
-            </div>
 
             {/* Assigned Shows Section */}
             <div>
@@ -114,30 +89,35 @@ export default function ViewShowsDetailsModal({
                   Assigned Shows
                 </h3>
                 <span className="text-xs bg-slate-800 text-gray-300 px-3 py-1 rounded-full border border-[#303245]">
-                  Total: {shows.length}
+                  Total: {athleteShows.length}
                 </span>
               </div>
               
               <div className="space-y-3">
-                {shows.length > 0 ? (
-                  shows.map((show: any, index: number) => {
-                    const isObject = typeof show === 'object' && show !== null;
-                    const showName = isObject ? show.name : "Unknown Show (ID Only)";
-                    const showDate = isObject ? show.date : null;
-                    const showLocation = isObject ? show.location : "Unknown Location";
-                    const showDivision = isObject ? show.division : "Unknown Division";
-                    const showCountdown = isObject ? show.countdown : 0;
+                {athleteShows.length > 0 ? (
+                  athleteShows.map((showItem: any, index: number) => {
+                    // It can be a string ID or an object. Let's find it in allShows if it's a string.
+                    const isObjectItem = typeof showItem === 'object' && showItem !== null;
+                    const showId = isObjectItem ? showItem._id : showItem;
+                    
+                    const populatedShow = allShows.find((s) => s._id === showId);
+                    
+                    const showName = populatedShow?.name || (isObjectItem ? showItem.name : "Unknown Show");
+                    const showDate = populatedShow?.date || (isObjectItem ? showItem.date : null);
+                    const showLocation = populatedShow?.location || (isObjectItem ? showItem.location : "Unknown Location");
+                    const showDivision = populatedShow?.division || (isObjectItem ? showItem.division : "Unknown Division");
+                    const showCountdown = populatedShow?.countdown !== undefined ? populatedShow.countdown : (isObjectItem ? showItem.countdown : undefined);
 
                     return (
                       <div
-                        key={isObject ? show._id || index : show}
+                        key={showId || index}
                         className="bg-[#111125] border border-[#303245] rounded-lg p-5 flex flex-col gap-3 transition-colors hover:border-emerald-500/50"
                       >
                         <div className="flex justify-between items-start gap-4">
                           <h4 className="text-base font-bold text-emerald-400">
                             {showName}
                           </h4>
-                          {isObject && showCountdown !== undefined && (
+                          {showCountdown !== undefined && (
                             <div className="bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full whitespace-nowrap">
                               <span className="text-emerald-500 text-[10px] font-bold uppercase tracking-wider">
                                 {showCountdown} days left
