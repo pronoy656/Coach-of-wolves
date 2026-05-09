@@ -34,8 +34,18 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
 
   const formatDateDisplay = (dateString: string | undefined) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
+    
+    let date = new Date(dateString);
+    // If invalid date or if it's DD-MM-YYYY that got parsed as MM-DD-YYYY incorrectly
+    if (Number.isNaN(date.getTime()) || (!dateString.includes('T') && !/^\d{4}-\d{2}-\d{2}/.test(dateString))) {
+      const parts = dateString.split(/[-.]/);
+      if (parts.length === 3) {
+        date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+      }
+    }
+    
     if (Number.isNaN(date.getTime())) return dateString;
+    
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
@@ -51,20 +61,46 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
       return options;
     }
 
+    const parseDate = (d: string | undefined) => {
+      if (!d) return 0;
+      if (d.includes('T') || /^\d{4}-\d{2}-\d{2}/.test(d)) {
+        return new Date(d).getTime();
+      }
+      const parts = d.split(/[-.]/);
+      if (parts.length === 3) {
+        const time = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`).getTime();
+        if (!Number.isNaN(time)) return time;
+      }
+      return new Date(d).getTime();
+    };
+
     const sorted = [...timeline].sort((a, b) => {
-      const d1 = new Date(a.checkInDate).getTime();
-      const d2 = new Date(b.checkInDate).getTime();
+      const d1 = parseDate(a.checkInDate);
+      const d2 = parseDate(b.checkInDate);
       return d2 - d1;
     });
+
+    const seen = new Set<string>();
+    const now = Date.now();
 
     sorted.forEach((item) => {
       if (!item.checkInDate) {
         return;
       }
-      options.push({
-        label: `Week of ${formatDateDisplay(item.checkInDate)}`,
-        value: item.checkInDate,
-      });
+      
+      const itemTime = parseDate(item.checkInDate);
+      // Filter out future weeks
+      if (itemTime > now) {
+        return;
+      }
+
+      if (!seen.has(item.checkInDate)) {
+        seen.add(item.checkInDate);
+        options.push({
+          label: `Week of ${formatDateDisplay(item.checkInDate)}`,
+          value: item.checkInDate,
+        });
+      }
     });
 
     return options;
