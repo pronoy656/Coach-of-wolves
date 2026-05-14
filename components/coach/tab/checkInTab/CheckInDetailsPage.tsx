@@ -7,6 +7,9 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { getFullImageUrl } from "@/lib/utils";
 import { updateWeeklyCheckin, fetchOldCheckinData } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
 import { WeeklyCheckin, QuestionAndAnswer, CoachSlider } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes";
+import axiosInstance from "@/lib/axiosInstance";
+import SliderManagementModal from "./sliderManagementModal/SliderManagementModal";
+import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import toast from "react-hot-toast";
 
 interface CheckInDetailProps {
@@ -70,28 +73,30 @@ export default function CheckInDetailsPage({
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showSliderManager, setShowSliderManager] = useState(false);
+  const [activeSliders, setActiveSliders] = useState<any[]>([]);
+  const [sliderToDelete, setSliderToDelete] = useState<string | null>(null);
+  const [isDeletingSlider, setIsDeletingSlider] = useState(false);
 
-  // Coach sliders – stored locally; derived from extra wellBeing keys
-  const [coachSliders, setCoachSliders] = useState<CoachSlider[]>(() => {
-    const wb = checkIn.wellBeing || {};
-    return Object.entries(wb)
-      .filter(([k]) => !STANDARD_WELLBEING_KEYS.has(k))
-      .map(([k, v]) => ({ key: k, title: fromCamelCase(k), value: Number(v) || 0 }));
-  });
+  const fetchActiveSliders = async () => {
+    try {
+      const res = await axiosInstance.get(`/check-in/sliders/${checkIn.userId}`);
+      if (res.data?.success) {
+        setActiveSliders(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch active sliders", error);
+    }
+  };
 
-  // Modal state for adding a slider
-  const [showSliderModal, setShowSliderModal] = useState(false);
-  const [newSliderTitle, setNewSliderTitle] = useState("");
-  const modalInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (checkIn?.userId) {
+      fetchActiveSliders();
+    }
+  }, [checkIn?.userId]);
 
   useEffect(() => {
     setEditData(checkIn);
-    const wb = checkIn.wellBeing || {};
-    setCoachSliders(
-      Object.entries(wb)
-        .filter(([k]) => !STANDARD_WELLBEING_KEYS.has(k))
-        .map(([k, v]) => ({ key: k, title: fromCamelCase(k), value: Number(v) || 0 }))
-    );
   }, [checkIn]);
 
   useEffect(() => {
@@ -100,12 +105,20 @@ export default function CheckInDetailsPage({
     }
   }, [checkIn?.userId, dispatch]);
 
-  // Focus modal input when it opens
-  useEffect(() => {
-    if (showSliderModal) {
-      setTimeout(() => modalInputRef.current?.focus(), 50);
+  const handleDeleteSlider = async () => {
+    if (!sliderToDelete) return;
+    setIsDeletingSlider(true);
+    try {
+      await axiosInstance.delete(`/check-in/sliders/${checkIn.userId}/${sliderToDelete}`);
+      toast.success("Slider removed successfully");
+      setSliderToDelete(null);
+      fetchActiveSliders();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to remove slider");
+    } finally {
+      setIsDeletingSlider(false);
     }
-  }, [showSliderModal]);
+  };
 
   // ── Question handlers ────────────────────────────────────────────────────────
   const handleAddQuestion = () => {
@@ -142,33 +155,6 @@ export default function CheckInDetailsPage({
     }));
   };
 
-  // ── Slider handlers ──────────────────────────────────────────────────────────
-  const handleOpenSliderModal = () => {
-    setNewSliderTitle("");
-    setShowSliderModal(true);
-  };
-
-  const handleAddSlider = () => {
-    const title = newSliderTitle.trim();
-    if (!title) return;
-    const key = toCamelCase(title);
-    if (coachSliders.some((s) => s.key === key)) {
-      toast.error("A slider with this title already exists.");
-      return;
-    }
-    setCoachSliders((prev) => [...prev, { key, title, value: 0 }]);
-    setShowSliderModal(false);
-    setNewSliderTitle("");
-  };
-
-  const handleDeleteSlider = (key: string) => {
-    setCoachSliders((prev) => prev.filter((s) => s.key !== key));
-  };
-
-  const handleSliderValueChange = (key: string, value: number) => {
-    setCoachSliders((prev) => prev.map((s) => (s.key === key ? { ...s, value } : s)));
-  };
-
   /** Merge coach sliders into wellBeing for the PATCH payload */
   const buildWellBeingPayload = () => {
     const base = {
@@ -178,9 +164,7 @@ export default function CheckInDetailsPage({
       sleepQuality: editData.wellBeing?.sleepQuality,
       hungerLevel: editData.wellBeing?.hungerLevel,
     };
-    const extras: Record<string, number> = {};
-    coachSliders.forEach((s) => { extras[s.key] = s.value; });
-    return { ...base, ...extras };
+    return { ...base };
   };
 
   // ── Save / Complete ───────────────────────────────────────────────────────────
@@ -236,31 +220,59 @@ export default function CheckInDetailsPage({
   const SliderWithIndicator = ({
     label,
     value,
+    max = 10,
+    onEdit,
+    onDelete,
   }: {
     label: string;
     value: number;
+    max?: number;
+    onEdit?: () => void;
+    onDelete?: () => void;
   }) => {
     return (
-      <div className="bg-[#0b0b22] rounded-lg p-4 border border-slate-700/30">
+      <div className="bg-[#0b0b22] rounded-lg p-4 border border-slate-700/30 group relative">
         <div className="flex justify-between items-center mb-3">
           <label className="text-gray-300 text-sm font-semibold">{label}</label>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="text-green-500 font-medium text-lg">
-              {value}/10
+              {value}/{max}
             </span>
+            {(onEdit || onDelete) && (
+              <div className="flex items-center gap-1">
+                {onEdit && (
+                  <button
+                    onClick={onEdit}
+                    className="p-1.5 text-blue-400 hover:bg-blue-400/10 rounded-md transition-colors"
+                    title="Edit slider"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={onDelete}
+                    className="p-1.5 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                    title="Delete slider"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <input
           type="range"
           min="1"
-          max="10"
+          max={max}
           step="1"
           value={value}
           readOnly
           className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-not-allowed opacity-50"
           style={{
-            background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${((value - 1) / 9) * 100
-              }%, rgb(30, 41, 59) ${((value - 1) / 9) * 100
+            background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${((value - 1) / (max - 1)) * 100
+              }%, rgb(30, 41, 59) ${((value - 1) / (max - 1)) * 100
               }%, rgb(30, 41, 59) 100%)`,
           }}
         />
@@ -271,83 +283,13 @@ export default function CheckInDetailsPage({
   return (
     <div className="space-y-8">
 
-      {/* ── Add Slider Modal ─────────────────────────────────────────────────── */}
-      {showSliderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowSliderModal(false)}
-          />
-          {/* Modal card */}
-          <div className="relative z-10 w-full max-w-md mx-4 bg-[#0d0d24] border border-violet-500/30 rounded-2xl p-6 shadow-2xl shadow-violet-900/20">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                  <SlidersHorizontal className="w-4 h-4 text-violet-400" />
-                </div>
-                <h3 className="text-white font-bold text-lg">Add Slider</h3>
-              </div>
-              <button
-                onClick={() => setShowSliderModal(false)}
-                className="text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <p className="text-gray-400 text-sm mb-5">
-              Enter a title for the new slider. It will appear in the
-              <span className="text-violet-400 font-semibold"> New Slider</span> section
-              inside Well-Being and will default to <span className="text-white font-semibold">0</span>.
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                  Slider Title
-                </label>
-                <input
-                  ref={modalInputRef}
-                  type="text"
-                  value={newSliderTitle}
-                  onChange={(e) => setNewSliderTitle(e.target.value)}
-                  placeholder="e.g. Nutrition Plan Adherence"
-                  className="w-full bg-slate-900 border border-slate-700 text-gray-200 rounded-lg px-4 py-3 focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 transition-colors placeholder:text-slate-600"
-                  onKeyDown={(e) => { if (e.key === "Enter") handleAddSlider(); }}
-                />
-                {newSliderTitle.trim() && (
-                  <p className="text-xs text-slate-500 mt-1.5">
-                    Backend key: <code className="text-violet-400">{toCamelCase(newSliderTitle)}</code>
-                  </p>
-                )}
-              </div>
-
-              <div className="flex gap-3 pt-1">
-                <button
-                  onClick={() => setShowSliderModal(false)}
-                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-gray-400 hover:bg-slate-800 transition-colors font-semibold text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddSlider}
-                  disabled={!newSliderTitle.trim()}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Add Slider
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Check-In Details Header ───────────────────────────────────────────── */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
         <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
         <button
-          onClick={handleOpenSliderModal}
+          onClick={() => setShowSliderManager(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400/50"
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -375,51 +317,30 @@ export default function CheckInDetailsPage({
           ))}
         </div>
 
-        {/* New Slider subsection — coach-added sliders */}
-        {coachSliders.length > 0 && (
+        {/* Dynamic Sliders (New Architecture) */}
+        {(activeSliders.length > 0 || (checkIn.sliderAnswers && checkIn.sliderAnswers.length > 0)) && (
           <div className="mt-6 pt-5 border-t border-slate-700/40">
             <p className="text-[10px] text-violet-400/80 font-bold uppercase tracking-widest mb-4">
-              New Slider
+              Dynamic Sliders
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {coachSliders.map((slider) => (
-                <div
-                  key={slider.key}
-                  className="bg-[#0b0b22] rounded-lg p-4 border border-violet-700/25 hover:border-violet-600/40 transition-colors"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <label className="text-gray-300 text-sm font-semibold flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block"></span>
-                      {slider.title}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-violet-400 font-medium text-lg">{slider.value}/10</span>
-                      <button
-                        onClick={() => handleDeleteSlider(slider.key)}
-                        className="text-red-500/70 hover:text-red-400 transition-colors"
-                        title="Remove slider"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    step="1"
-                    value={slider.value}
-                    onChange={(e) => handleSliderValueChange(slider.key, Number(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, rgb(139,92,246) 0%, rgb(139,92,246) ${(slider.value / 10) * 100}%, rgb(30,41,59) ${(slider.value / 10) * 100}%, rgb(30,41,59) 100%)`,
-                    }}
+              {activeSliders.map((slider) => {
+                const answer = checkIn.sliderAnswers?.find(a => a.sliderId === slider._id || a.title === slider.title);
+                const value = answer ? Number(answer.value) : slider.min;
+                return (
+                  <SliderWithIndicator 
+                    key={slider._id} 
+                    label={slider.title} 
+                    value={value} 
+                    max={slider.max}
+                    onEdit={() => setShowSliderManager(true)}
+                    onDelete={() => setSliderToDelete(slider._id)}
                   />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-xs text-slate-600">0</span>
-                    <span className="text-xs text-slate-600">10</span>
-                  </div>
-                </div>
+                );
+              })}
+              {/* Also render any sliderAnswers that are no longer active, just for history */}
+              {checkIn.sliderAnswers?.filter(a => !activeSliders.some(s => s._id === a.sliderId || s.title === a.title)).map(answer => (
+                <SliderWithIndicator key={answer._id || answer.title} label={answer.title + " (Archived)"} value={Number(answer.value) || 0} />
               ))}
             </div>
           </div>
@@ -518,7 +439,6 @@ export default function CheckInDetailsPage({
               setEditData(checkIn);
               setIsEditing(false);
               setShowAddQuestion(false);
-              setNewSliderTitle("");
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-slate-600 text-gray-400 hover:bg-slate-700/30 text-base"
           >
@@ -1053,6 +973,25 @@ export default function CheckInDetailsPage({
             />
           </div>
         </div>
+      )}
+      {showSliderManager && (
+        <SliderManagementModal
+          athleteId={checkIn.userId}
+          isOpen={showSliderManager}
+          onClose={() => {
+            setShowSliderManager(false);
+            fetchActiveSliders();
+          }}
+        />
+      )}
+      {sliderToDelete && (
+        <DeleteModal
+          isOpen={!!sliderToDelete}
+          title="Remove Slider"
+          message="Are you sure you want to remove this slider configuration? This will affect future check-ins for this athlete."
+          onConfirm={handleDeleteSlider}
+          onCancel={() => setSliderToDelete(null)}
+        />
       )}
     </div>
   );

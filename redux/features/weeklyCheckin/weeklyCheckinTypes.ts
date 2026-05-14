@@ -40,6 +40,13 @@ export interface Training {
     _id: string;
 }
 
+export interface SliderAnswer {
+    _id?: string;
+    sliderId?: string;
+    title: string;
+    value: string | number;
+}
+
 export interface WeeklyCheckin {
     _id: string;
     userId: string;
@@ -48,6 +55,7 @@ export interface WeeklyCheckin {
     averageWeight: number;
     questionAndAnswer: QuestionAndAnswer[];
     wellBeing: WellBeing;
+    sliderAnswers?: SliderAnswer[];
     nutrition?: Nutrition;
     training?: Training;
     trainingFeedback?: string;

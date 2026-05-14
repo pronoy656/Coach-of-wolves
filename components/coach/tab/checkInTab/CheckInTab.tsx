@@ -13,6 +13,7 @@ import { WeeklyCheckin } from "@/redux/features/weeklyCheckin/weeklyCheckinTypes
 import { fetchTimelineByAthlete } from "@/redux/features/timeline/timelineSlice";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import CheckInDetailsPage from "./CheckInDetailsPage";
+
 import toast from "react-hot-toast";
 
 interface CheckInTabProps {
@@ -30,6 +31,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const formatDateDisplay = (dateString: string | undefined) => {
@@ -177,7 +179,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
           <h1 className="text-4xl font-bold text-white">Check-Ins</h1>
           
-          <div className="relative" ref={dropdownRef}>
+          <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+
             <button
               onClick={() => setIsCalendarOpen(!isCalendarOpen)}
               className="flex items-center gap-2 px-6 py-3 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium"
@@ -333,6 +336,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
           onCancel={() => setDeleteId(null)}
         />
       )}
+
+
     </div>
   );
 }
