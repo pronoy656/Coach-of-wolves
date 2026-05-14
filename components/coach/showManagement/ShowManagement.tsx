@@ -203,11 +203,27 @@ export default function ShowManagement() {
     return t.countdownDays(countdown);
   };
 
-  // Sort shows by date (most recent first)
+  // Sort shows: upcoming shows first (closest date first), then past shows (most recent first)
   const sortedShows = useMemo(() => {
     if (!Array.isArray(shows)) return [];
+    
+    const now = new Date().getTime();
+    
     return [...shows].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      
+      const isPastA = timeA < now;
+      const isPastB = timeB < now;
+      
+      if (!isPastA && isPastB) return -1;
+      if (isPastA && !isPastB) return 1;
+      
+      if (!isPastA && !isPastB) {
+        return timeA - timeB; // Closest upcoming first
+      } else {
+        return timeB - timeA; // Most recent past first
+      }
     });
   }, [shows]);
 

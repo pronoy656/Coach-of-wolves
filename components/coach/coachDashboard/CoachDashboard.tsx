@@ -41,6 +41,16 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("Daily Tracking");
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get("tab") as Tab;
+      if (tabParam && tabs.includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (athleteId) {
       dispatch(getAthleteById(athleteId));
     }

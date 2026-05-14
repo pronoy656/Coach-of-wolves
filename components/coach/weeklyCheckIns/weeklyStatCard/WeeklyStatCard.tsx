@@ -19,15 +19,13 @@ interface CheckInStatsProps {
 const translations = {
   en: {
     completedThisWeek: "Completed This Week",
-    pending: "Pending",
-    completionRate: "% completion rate",
-    pendingRate: "% pending",
+ 
+  
+   
   },
   de: {
     completedThisWeek: "Diese Woche abgeschlossen",
-    pending: "Ausstehend",
-    completionRate: "% Abschlussquote",
-    pendingRate: "% ausstehend",
+    
   },
 };
 
@@ -53,20 +51,13 @@ export default function WeeklyStatCard() {
       icon: "CheckCircle" as const,
       color: "text-green-400",
       bgColor: "bg-green-400/20",
-      getSubtext: () => `${completionRate}${t.completionRate}`,
     },
     {
-      title: t.pending,
+      title: "Pending",
       count: pendingCount,
       icon: "Clock" as const,
       color: "text-red-500",
       bgColor: "bg-red-500/20",
-      getSubtext: () => {
-        const percentage = Math.round(
-          (pendingCount / (completedCount + pendingCount || 1)) * 100
-        );
-        return `${percentage}${t.pendingRate}`;
-      },
     },
   ];
 
@@ -92,7 +83,6 @@ export default function WeeklyStatCard() {
 
             <div className="text-4xl font-bold mb-2">{card.count}</div>
 
-            <p className="text-sm text-muted-foreground">{card.getSubtext()}</p>
           </div>
         );
       })}
