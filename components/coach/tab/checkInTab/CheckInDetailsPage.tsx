@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Edit2, Loader2, X, SlidersHorizontal } from "lucide-react";
+import { Plus, Trash2, Edit2, Loader2, X, SlidersHorizontal, History } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { getFullImageUrl } from "@/lib/utils";
 import { updateWeeklyCheckin, fetchOldCheckinData } from "@/redux/features/weeklyCheckin/weeklyCheckinSlice";
@@ -11,6 +11,7 @@ import axiosInstance from "@/lib/axiosInstance";
 import SliderManagementModal from "./sliderManagementModal/SliderManagementModal";
 import DeleteModal from "../../exerciseDatabase/deleteModal/DeleteModal";
 import toast from "react-hot-toast";
+import ComparisonModal from "./ComparisonModal";
 
 interface CheckInDetailProps {
   checkIn: WeeklyCheckin;
@@ -77,6 +78,7 @@ export default function CheckInDetailsPage({
   const [activeSliders, setActiveSliders] = useState<any[]>([]);
   const [sliderToDelete, setSliderToDelete] = useState<string | null>(null);
   const [isDeletingSlider, setIsDeletingSlider] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
 
   const fetchActiveSliders = async () => {
     try {
@@ -157,14 +159,30 @@ export default function CheckInDetailsPage({
 
   /** Merge coach sliders into wellBeing for the PATCH payload */
   const buildWellBeingPayload = () => {
-    const base = {
+    const base: any = {
       energyLevel: editData.wellBeing?.energyLevel,
       stressLevel: editData.wellBeing?.stressLevel,
       moodLevel: editData.wellBeing?.moodLevel,
       sleepQuality: editData.wellBeing?.sleepQuality,
       hungerLevel: editData.wellBeing?.hungerLevel,
     };
-    return { ...base };
+    
+    // Inject all active dynamic sliders into wellBeing using camelCase of their title
+    activeSliders.forEach(slider => {
+      const camelKey = toCamelCase(slider.title);
+      // If it already exists in the backend data, preserve it, otherwise default to slider.min
+      const existingValue = checkIn.wellBeing?.[camelKey as keyof typeof checkIn.wellBeing];
+      base[camelKey] = existingValue !== undefined ? existingValue : slider.min;
+    });
+
+    // Preserve any old "archived" sliders that might be in wellBeing but aren't active anymore
+    Object.keys(checkIn.wellBeing || {}).forEach(key => {
+      if (!STANDARD_WELLBEING_KEYS.has(key) && base[key] === undefined) {
+         base[key] = (checkIn.wellBeing as any)[key];
+      }
+    });
+
+    return base;
   };
 
   // ── Save / Complete ───────────────────────────────────────────────────────────
@@ -205,6 +223,9 @@ export default function CheckInDetailsPage({
         wellBeing: buildWellBeingPayload(),
         checkinCompleted: "Completed",
       };
+      
+      console.log("🚀 COMPLETE CHECK-IN PAYLOAD POSTED TO BACKEND:", completePayload);
+      
       await dispatch(updateWeeklyCheckin({ id: checkIn._id, data: completePayload })).unwrap();
       toast.success("Check-in completed successfully!");
       setIsSaved(true);
@@ -288,13 +309,24 @@ export default function CheckInDetailsPage({
       {/* ── Check-In Details Header ───────────────────────────────────────────── */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
         <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
-        <button
-          onClick={() => setShowSliderManager(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400/50"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          Add Slider
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowComparisonModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:border-blue-400/50"
+          >
+            <History className="w-4 h-4" />
+            Compare History
+          </button>
+          {checkIn.checkinCompleted !== "Completed" && (
+            <button
+              onClick={() => setShowSliderManager(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400/50"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Add Slider
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Well-Being Card */}
@@ -318,15 +350,16 @@ export default function CheckInDetailsPage({
         </div>
 
         {/* Dynamic Sliders (New Architecture) */}
-        {(activeSliders.length > 0 || (checkIn.sliderAnswers && checkIn.sliderAnswers.length > 0)) && (
+        {(activeSliders.length > 0 || Object.keys(checkIn.wellBeing || {}).some(k => !STANDARD_WELLBEING_KEYS.has(k))) && (
           <div className="mt-6 pt-5 border-t border-slate-700/40">
             <p className="text-[10px] text-violet-400/80 font-bold uppercase tracking-widest mb-4">
               Dynamic Sliders
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeSliders.map((slider) => {
-                const answer = checkIn.sliderAnswers?.find(a => a.sliderId === slider._id || a.title === slider.title);
-                const value = answer ? Number(answer.value) : slider.min;
+                const camelKey = toCamelCase(slider.title);
+                const answer = (checkIn.wellBeing as any)?.[camelKey];
+                const value = answer !== undefined ? Number(answer) : slider.min;
                 return (
                   <SliderWithIndicator 
                     key={slider._id} 
@@ -338,10 +371,20 @@ export default function CheckInDetailsPage({
                   />
                 );
               })}
-              {/* Also render any sliderAnswers that are no longer active, just for history */}
-              {checkIn.sliderAnswers?.filter(a => !activeSliders.some(s => s._id === a.sliderId || s.title === a.title)).map(answer => (
-                <SliderWithIndicator key={answer._id || answer.title} label={answer.title + " (Archived)"} value={Number(answer.value) || 0} />
-              ))}
+              {/* Also render any archived sliders that are no longer active, just for history */}
+              {Object.keys(checkIn.wellBeing || {}).map(key => {
+                if (STANDARD_WELLBEING_KEYS.has(key)) return null;
+                if (activeSliders.some(s => toCamelCase(s.title) === key)) return null;
+                
+                const formattedTitle = fromCamelCase(key) + " (Archived)";
+                return (
+                  <SliderWithIndicator 
+                    key={key} 
+                    label={formattedTitle} 
+                    value={Number((checkIn.wellBeing as any)?.[key]) || 0} 
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -518,14 +561,26 @@ export default function CheckInDetailsPage({
                 key={q._id}
                 className="bg-[#0B0B22] rounded-lg p-5 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-white font-semibold">
-                      Q{index + 1}. {q.question}{" "}
-                      {q.status && (
-                        <span className="text-red-500 ml-1">*</span>
-                      )}
-                    </p>
+                <div className="flex items-start justify-between mb-3 w-full gap-4">
+                  <div className="flex flex-col gap-1 w-full">
+                    {isEditing ? (
+                      <div className="flex flex-col gap-2 mb-2 w-full">
+                        <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Q{index + 1} Question Text</span>
+                        <input
+                          type="text"
+                          value={q.question}
+                          onChange={(e) => handleQuestionChange(q._id, e.target.value, "question")}
+                          className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-white font-semibold">
+                        Q{index + 1}. {q.question}{" "}
+                        {q.status && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </p>
+                    )}
                     {isEditing && (
                       <div className="flex gap-4 mt-1">
                         <label className="flex items-center gap-2 cursor-pointer group">
@@ -991,6 +1046,14 @@ export default function CheckInDetailsPage({
           message="Are you sure you want to remove this slider configuration? This will affect future check-ins for this athlete."
           onConfirm={handleDeleteSlider}
           onCancel={() => setSliderToDelete(null)}
+        />
+      )}
+      {showComparisonModal && (
+        <ComparisonModal
+          isOpen={showComparisonModal}
+          onClose={() => setShowComparisonModal(false)}
+          userId={checkIn.userId}
+          currentWeekId={checkIn._id}
         />
       )}
     </div>
