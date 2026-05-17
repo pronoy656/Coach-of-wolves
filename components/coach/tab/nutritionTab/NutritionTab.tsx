@@ -40,7 +40,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
     (state) => state.oneNutritionPlan
   );
 
-  const [activeDay, setActiveDay] = useState<string>("All");
+  const [activeDay, setActiveDay] = useState<string>("training day");
   const [searchQuery, setSearchQuery] = useState("");
   const [showMealModal, setShowMealModal] = useState(false);
   const [editingMeal, setEditingMeal] = useState<NutritionPlan | null>(null);
@@ -168,7 +168,6 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
   };
 
   const dayTypes = [
-    { label: "All", value: "All" },
     { label: "Training Day", value: "training day" },
     { label: "Rest Day", value: "rest day" },
     { label: "Special Day", value: "special day" },
