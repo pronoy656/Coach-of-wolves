@@ -4,6 +4,7 @@ import { Eye, Loader2, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAppSelector } from "@/redux/hooks";
+import { getFullImageUrl } from "@/lib/utils";
 
 export interface AthleteTableData {
   athleteId: string;
@@ -114,11 +115,11 @@ export default function CheckInTable({
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center relative">
                           {athlete.avatar && !athlete.avatar.includes("null") ? (
                          <img
-              src={athlete.avatar}
+              src={getFullImageUrl(athlete.avatar)}
               alt={athlete.name}
-              width={64}
-              height={64}
-              className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full object-cover border-2 border-[#4A9E4A]/30"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
             />
                           ) : (
                             <span className="text-emerald-500 font-bold text-sm">
