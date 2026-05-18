@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Edit2, Trash2, Loader2, Plus, Search } from "lucide-react";
+import { Edit2, Trash2, Loader2, Plus, Search, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Show } from "@/redux/features/show/showTypes";
 import {
@@ -11,6 +11,7 @@ import {
   addShow,
   updateShow,
   deleteShow,
+  unassignShowFromAthlete,
   clearMessages,
 } from "@/redux/features/show/showSlice";
 import { getAllAthletesByCoach } from "@/redux/features/athlete/athleteSlice";
@@ -40,6 +41,14 @@ const translations = {
     deleteTitle: "Delete Show",
     deleteMessage: (name: string) =>
       `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+    unassignTitle: "Remove Athlete from Show",
+    unassignMessage: (athleteName: string, showName: string) =>
+      `Are you sure you want to remove ${athleteName} from the show "${showName}"?`,
+    unassignAllTitle: "Remove Athlete from All Shows",
+    unassignAllMessage: (athleteName: string, count: number) =>
+      `Are you sure you want to remove ${athleteName} from all ${count} assigned shows?`,
+    unassignTooltip: "Remove from show",
+    unassignCardTooltip: "Remove athlete from assigned show",
     editTooltip: "Edit",
     deleteTooltip: "Delete",
     countdownFinished: "Finished",
@@ -71,6 +80,14 @@ const translations = {
     deleteTitle: "Show löschen",
     deleteMessage: (name: string) =>
       `Möchtest du die Show „${name}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+    unassignTitle: "Athlet von Show entfernen",
+    unassignMessage: (athleteName: string, showName: string) =>
+      `Möchten Sie ${athleteName} wirklich von der Show "${showName}" entfernen?`,
+    unassignAllTitle: "Athlet von allen Shows entfernen",
+    unassignAllMessage: (athleteName: string, count: number) =>
+      `Möchten Sie ${athleteName} wirklich von allen ${count} zugewiesenen Shows entfernen?`,
+    unassignTooltip: "Von Show entfernen",
+    unassignCardTooltip: "Athlet von zugewiesener Show entfernen",
     editTooltip: "Bearbeiten",
     deleteTooltip: "Löschen",
     countdownFinished: "Abgeschlossen",
@@ -100,6 +117,14 @@ export default function ShowManagement() {
     null,
   );
   const [deleteConfirmShow, setDeleteConfirmShow] = useState<Show | null>(null);
+  const [unassignConfirm, setUnassignConfirm] = useState<{
+    athleteId: string;
+    athleteName: string;
+    showId: string;
+    showName: string;
+    isAll?: boolean;
+    shows?: any[];
+  } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "assign">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,6 +141,8 @@ export default function ShowManagement() {
       toast.success(successMessage);
       dispatch(clearMessages());
       setIsProcessing(false);
+      dispatch(getAllAthletesByCoach());
+      dispatch(fetchShows());
     }
     if (error) {
       toast.error(error);
@@ -153,12 +180,44 @@ export default function ShowManagement() {
     setDeleteConfirmShow(show);
   };
 
+  const handleUnassignClick = (athleteId: string, athleteName: string, showId: string, showName: string) => {
+    setUnassignConfirm({ athleteId, athleteName, showId, showName });
+  };
+
+
   const handleConfirmDelete = async () => {
     if (deleteConfirmShow) {
       try {
         setIsProcessing(true);
         await dispatch(deleteShow(deleteConfirmShow._id)).unwrap();
         setDeleteConfirmShow(null);
+      } catch (error: any) {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleConfirmUnassign = async () => {
+    if (unassignConfirm) {
+      try {
+        setIsProcessing(true);
+        if (unassignConfirm.isAll && unassignConfirm.shows) {
+          await Promise.all(
+            unassignConfirm.shows.map(async (showItem: any) => {
+              const showId = typeof showItem === 'string' ? showItem : showItem._id;
+              return dispatch(unassignShowFromAthlete({
+                showId,
+                athleteId: unassignConfirm.athleteId,
+              })).unwrap();
+            })
+          );
+        } else {
+          await dispatch(unassignShowFromAthlete({
+            showId: unassignConfirm.showId,
+            athleteId: unassignConfirm.athleteId,
+          })).unwrap();
+        }
+        setUnassignConfirm(null);
       } catch (error: any) {
         setIsProcessing(false);
       }
@@ -410,7 +469,7 @@ export default function ShowManagement() {
                   {filteredAthletes.map((athlete: any) => (
                     <div
                       key={athlete._id}
-                      className="bg-[#0f0f1e] border border-[#24273f] rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group"
+                      className="bg-[#0f0f1e] border border-[#24273f] rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group relative"
                     >
                       <div className="flex items-center gap-4 mb-4">
                         <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-lg">
@@ -438,13 +497,21 @@ export default function ShowManagement() {
                                   : sortedShows.find(s => s._id === showId)?.name || "Show";
                                 
                                 return (
-                                  <span 
+                                  <div 
                                     key={i} 
-                                    className="px-3 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400 font-medium whitespace-nowrap animate-in fade-in zoom-in-95 duration-200"
+                                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400 font-medium whitespace-nowrap animate-in fade-in zoom-in-95 duration-200 group/pill"
                                     style={{ animationDelay: `${i * 50}ms` }}
                                   >
-                                    {showName}
-                                  </span>
+                                    <span>{showName}</span>
+                                    <button
+                                      onClick={() => handleUnassignClick(athlete._id, athlete.name, showId, showName)}
+                                      disabled={loading || isProcessing}
+                                      className="text-emerald-500/60 hover:text-red-400 transition-colors disabled:opacity-50 ml-0.5"
+                                      title={t.unassignTooltip}
+                                    >
+                                      <X size={13} />
+                                    </button>
+                                  </div>
                                 );
                               })
                            ) : (
@@ -492,6 +559,20 @@ export default function ShowManagement() {
           message={t.deleteMessage(deleteConfirmShow.name)}
           onConfirm={handleConfirmDelete}
           onCancel={() => setDeleteConfirmShow(null)}
+        />
+      )}
+
+      {unassignConfirm && (
+        <DeleteModal
+          isOpen={!!unassignConfirm}
+          title={unassignConfirm.isAll ? t.unassignAllTitle : t.unassignTitle}
+          message={
+            unassignConfirm.isAll
+              ? t.unassignAllMessage(unassignConfirm.athleteName, unassignConfirm.shows?.length || 0)
+              : t.unassignMessage(unassignConfirm.athleteName, unassignConfirm.showName)
+          }
+          onConfirm={handleConfirmUnassign}
+          onCancel={() => setUnassignConfirm(null)}
         />
       )}
     </div>

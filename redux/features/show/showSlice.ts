@@ -83,6 +83,24 @@ export const assignShowToAthlete = createAsyncThunk(
     }
 );
 
+// Unassign show from athlete
+export const unassignShowFromAthlete = createAsyncThunk(
+    "show/unassign",
+    async ({ showId, athleteId }: { showId: string; athleteId: string }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.delete(`/profile/remove-show`, {
+                data: {
+                    athleteId,
+                    showId
+                }
+            });
+            return { showId, athleteId, ...response.data };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to unassign show");
+        }
+    }
+);
+
 const showSlice = createSlice({
     name: "show",
     initialState,
@@ -121,7 +139,6 @@ const showSlice = createSlice({
                     peakWeekActive: action.payload.data?.peakWeekActive || 0,
                     completedShows: action.payload.data?.completedShows || 0,
                 };
-                state.successMessage = action.payload.message;
             })
             .addCase(fetchShows.rejected, (state, action) => {
                 state.loading = false;
@@ -192,6 +209,19 @@ const showSlice = createSlice({
                 state.successMessage = action.payload.message || "Show assigned successfully";
             })
             .addCase(assignShowToAthlete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Unassign show
+            .addCase(unassignShowFromAthlete.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(unassignShowFromAthlete.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.successMessage = action.payload.message || "Athlete removed from show successfully";
+            })
+            .addCase(unassignShowFromAthlete.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });
