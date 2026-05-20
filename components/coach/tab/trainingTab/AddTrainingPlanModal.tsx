@@ -18,6 +18,7 @@ import {
 
 interface ExerciseState extends BackendExercise {
   id: string;
+  dbId?: string; // Storing the MongoDB _id of the exercise template
 }
 
 interface AddPlanModalProps {
@@ -58,6 +59,26 @@ export default function AddTrainingPlanModal({
   const [showDropdownForId, setShowDropdownForId] = useState<string | null>(
     null,
   );
+  const [fallbackExerciseId, setFallbackExerciseId] = useState("6988ff7ffd965df20288901c");
+
+  // Fetch initial exercise list to have a valid fallback exerciseId if needed
+  useEffect(() => {
+    if (!open) return;
+    dispatch(
+      getAllExercises({
+        page: 1,
+        limit: 10,
+        search: "",
+      }),
+    )
+      .unwrap()
+      .then((res) => {
+        if (res.exercises && res.exercises.length > 0) {
+          setFallbackExerciseId(res.exercises[0]._id);
+        }
+      })
+      .catch(() => {});
+  }, [dispatch, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -74,6 +95,7 @@ export default function AddTrainingPlanModal({
         ? editingPlan.exercise.map((ex, index) => ({
             ...ex,
             id: ex._id || `local-${index}`,
+            dbId: index === 0 ? editingPlan.exerciseId : "", // Map top-level exerciseId to first exercise
             exerciseSets:
               ex.exerciseSets && ex.exerciseSets.length > 0
                 ? ex.exerciseSets.map((sd) => ({
@@ -172,10 +194,15 @@ export default function AddTrainingPlanModal({
   };
 
   const handleSave = () => {
+    // Find the first exercise that has a dbId template reference
+    const firstDbExercise = exercises.find((ex) => ex.dbId);
+    const resolvedExerciseId = firstDbExercise?.dbId || editingPlan?.exerciseId || fallbackExerciseId;
+
     const planData: TrainingPlanFormData = {
       traingPlanName,
+      exerciseId: resolvedExerciseId,
       dificulty,
-      exercise: exercises.map(({ id, ...rest }) => rest),
+      exercise: exercises.map(({ id, dbId, ...rest }) => rest),
       comment,
     };
     onSave(planData);
@@ -240,7 +267,7 @@ export default function AddTrainingPlanModal({
   const handleSelectExerciseSuggestion = (id: string, item: Exercise) => {
     setExercises((prev) =>
       prev.map((ex) =>
-        ex.id === id ? { ...ex, exerciseName: item.name } : ex,
+        ex.id === id ? { ...ex, exerciseName: item.name, dbId: item._id } : ex,
       ),
     );
     setShowDropdownForId(null);

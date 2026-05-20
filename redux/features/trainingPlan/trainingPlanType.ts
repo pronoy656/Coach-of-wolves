@@ -17,6 +17,7 @@ export interface TrainingPlan {
     userId: string;
     coachId: string;
     traingPlanName: string;
+    exerciseId: string;
     dificulty: string;
     comment: string;
     exercise: BackendExercise[];
@@ -27,6 +28,7 @@ export interface TrainingPlan {
 
 export interface TrainingPlanFormData {
     traingPlanName: string;
+    exerciseId: string;
     dificulty: string;
     comment: string;
     exercise: BackendExercise[];
