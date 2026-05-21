@@ -10,8 +10,9 @@ import {
   createCoachNote, 
   clearNoteMessages 
 } from "@/redux/features/coachNote/coachNoteSlice";
-import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
+import { Loader2, ChevronDown, MessageSquare, Send, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const CalendarIcon = () => (
   <svg
@@ -120,6 +121,65 @@ const LabelCell = ({
     )}
   </div>
 );
+
+// --- Charts Component ---
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white px-2 py-1 rounded text-black text-[10px] font-bold shadow-lg flex items-center justify-center relative">
+        <span>{`${payload[0].value} (${label})`}</span>
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-white"></div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const TrackingChart = ({ title, data, dataKey }: { title: string; data: any[]; dataKey: string }) => {
+  return (
+    <div className="bg-[#0f101a] border border-gray-800 rounded-xl p-5 shadow-xl flex flex-col h-[280px]">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-white font-bold text-sm tracking-wide">{title}</h3>
+        <button className="text-gray-400 hover:text-white transition-colors">
+          <Pencil className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="flex-1 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`color${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1f2937" />
+            <XAxis 
+              dataKey="name" 
+              axisLine={false} 
+              tickLine={false} 
+              tick={{fill: '#9CA3AF', fontSize: 10}} 
+              dy={10} 
+              interval={0} 
+              padding={{ left: 10, right: 10 }}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4b5563', strokeWidth: 1, strokeDasharray: '3 3' }} />
+            <Area 
+              type="monotone" 
+              dataKey={dataKey} 
+              stroke="#8b5cf6" 
+              strokeWidth={3} 
+              fillOpacity={1} 
+              fill={`url(#color${dataKey})`} 
+              style={{ filter: 'drop-shadow(0px 4px 10px rgba(139, 92, 246, 0.8))' }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
 
 // --- Main Dashboard Component ---
 
@@ -733,6 +793,29 @@ export default function Dashboard() {
     return true;
   });
 
+  const demoData = {
+    sleep:    [6, 7.5, 5, 8, 6.5, 7, 8.5],
+    mood:     [5, 7,   6, 9, 4,   8, 7  ],
+    stress:   [6, 4,   8, 3, 7,   5, 6  ],
+    cardio:   [30, 45, 20, 60, 40, 55, 35],
+    training: [3000, 7500, 5000, 9000, 4000, 8000, 6500],
+    customer: [75, 74.5, 75.2, 74, 76, 73.5, 75.8],
+  };
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
+  const chartData = days.map((day, i) => {
+    const realDay = weekData[i];
+    return {
+      name: day,
+      sleep:    Number(realDay?.sleepHour) || demoData.sleep[i],
+      mood:     Number(realDay?.energyAndWellBeing?.mood) || demoData.mood[i],
+      stress:   Number(realDay?.energyAndWellBeing?.stressLevel) || demoData.stress[i],
+      cardio:   Number(realDay?.training?.duration) || demoData.cardio[i],
+      training: Number(realDay?.activityStep) || demoData.training[i],
+      customer: Number(realDay?.weight) || demoData.customer[i],
+    };
+  });
+
   return (
     <div className="min-h-screen bg-[#0B0C15] p-6 font-sans text-white">
       {/* Top Header Button with Dropdown */}
@@ -905,6 +988,16 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Graphs Section */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TrackingChart title="Customer Chart" data={chartData} dataKey="customer" />
+        <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" />
+        <TrackingChart title="Training Performance" data={chartData} dataKey="training" />
+        <TrackingChart title="Cardio Data" data={chartData} dataKey="cardio" />
+        <TrackingChart title="Mood Treake" data={chartData} dataKey="mood" />
+        <TrackingChart title="Strees Treake" data={chartData} dataKey="stress" />
       </div>
     </div>
   );
