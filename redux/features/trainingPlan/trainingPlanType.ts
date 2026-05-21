@@ -7,8 +7,13 @@ export interface ExerciseSet {
 
 export interface BackendExercise {
     exerciseName: string;
-    excerciseNote: string;
-    exerciseSets: ExerciseSet[];
+    sets?: string;
+    rep?: string;
+    range?: string;
+    comment?: string;
+    exerciseId?: string;
+    excerciseNote?: string;
+    exerciseSets?: ExerciseSet[];
     _id?: string;
 }
 

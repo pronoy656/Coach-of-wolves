@@ -234,42 +234,48 @@ function SortableExercise({ exercise, index }: SortableExerciseProps) {
           </span>
         </div>
         {/* Individual Exercise Note */}
-        {exercise.excerciseNote && (
+        {exercise.comment && (
           <div className="pl-16">
             <p className="text-[11px] text-emerald-400/80 italic leading-relaxed bg-emerald-500/5 px-2 py-1 rounded-md border border-emerald-500/10 inline-block">
-              Note: {exercise.excerciseNote}
+              Note: {exercise.comment}
             </p>
           </div>
         )}
       </div>
 
-      {/* Stats: Sets, Reps-Range, RIR */}
+      {/* Stats: Sets, Rep, Range */}
       <div className="flex flex-col gap-2 pl-16 sm:pl-0 shrink-0">
-        {exercise.exerciseSets && exercise.exerciseSets.length > 0 ? (
-          <div className="flex flex-col items-start gap-2">
-            {exercise.exerciseSets.map((set, i) => (
-              <div key={i} className="flex flex-wrap items-center gap-2">
-                <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
-                  <span className="text-[11px] text-emerald-500 font-bold">
-                    Sets: {set.sets}
-                  </span>
-                </div>
-                <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
-                  <span className="text-xs text-white font-medium">
-                    Reps: {set.repRange}
-                  </span>
-                </div>
-                <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
-                  <span className="text-xs text-blue-400 font-medium">
-                    RIR: {set.rir}
-                  </span>
-                </div>
-              </div>
-            ))}
+        <div className="flex flex-col items-start gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {(exercise.sets || exercise.rep || exercise.range) ? (
+              <>
+                {exercise.sets && (
+                  <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                    <span className="text-[11px] text-emerald-500 font-bold">
+                      Sets: {exercise.sets}
+                    </span>
+                  </div>
+                )}
+                {exercise.rep && (
+                  <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                    <span className="text-xs text-white font-medium">
+                      Reps: {exercise.rep}
+                    </span>
+                  </div>
+                )}
+                {exercise.range && (
+                  <div className="px-3 py-1 flex items-center bg-[#111120] border border-[#2d2d45] rounded-lg">
+                    <span className="text-xs text-blue-400 font-medium">
+                      Range: {exercise.range}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-gray-500 italic">No details added.</p>
+            )}
           </div>
-        ) : (
-          <p className="text-xs text-gray-500 italic">No sets added.</p>
-        )}
+        </div>
       </div>
     </div>
   );
