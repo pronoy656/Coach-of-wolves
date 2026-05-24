@@ -558,23 +558,25 @@ export default function AddAthleteModal({
             </div>
           </div>
 
-          {/* Row 6: Active Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-emerald-300 mb-2">
-                {t.activeLabel}
-              </label>
-              <select
-                name="isActive"
-                value={formData.isActive}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
-              >
-                <option value="Active">{t.activeOption}</option>
-                <option value="In-Active">{t.inactiveOption}</option>
-              </select>
+          {/* Row 6: Active Status (Only for Edit) */}
+          {athlete && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                  {t.activeLabel}
+                </label>
+                <select
+                  name="isActive"
+                  value={formData.isActive}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="Active">{t.activeOption}</option>
+                  <option value="In-Active">{t.inactiveOption}</option>
+                </select>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Goal */}
           <div>
