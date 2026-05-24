@@ -76,6 +76,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Last Check-in",
     thWater: "Water (L)",
+    thActiveStatus: "Account Status",
+    activeLabelText: "Active",
+    inactiveLabelText: "In-Active",
     thAssignedShows: "Assigned Shows",
     thAction: "Action",
     details: "Details",
@@ -140,6 +143,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Letzter Check-in",
     thWater: "Wasser (L)",
+    thActiveStatus: "Kontostatus",
+    activeLabelText: "Aktiv",
+    inactiveLabelText: "Inaktiv",
     thAssignedShows: "Zugewiesene Shows",
     thAction: "Aktion",
     details: "Details",
@@ -441,11 +447,14 @@ export default function AthleteManagement() {
                     {t.thLastCheckin}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                    {t.thWater}
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-muted-foreground">
-                    {t.thAssignedShows}
-                  </th>
+                      {t.thWater}
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                      {t.thActiveStatus}
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                      {t.thAssignedShows}
+                    </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                     {t.thAction}
                   </th>
@@ -524,6 +533,19 @@ export default function AthleteManagement() {
                     </td>
                     <td className="px-6 py-4 text-white">
                       {athlete.waterQuantity} L
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          athlete.isActive === "Active"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-orange-500/20 text-orange-400"
+                        }`}
+                      >
+                        {athlete.isActive === "Active"
+                          ? t.activeLabelText
+                          : t.inactiveLabelText}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-white text-center font-bold">
                       {(athlete as any).shows?.length || 0}

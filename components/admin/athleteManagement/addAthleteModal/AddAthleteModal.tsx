@@ -113,6 +113,9 @@ const translations = {
     passwordPlaceholder: "Enter password",
     goalLabel: "Goal",
     goalPlaceholder: "Enter goal",
+    activeLabel: "Account Status",
+    activeOption: "Active",
+    inactiveOption: "In-Active",
     profileImageLabel: "Profile Image",
     uploadButtonChange: "Change Image",
     uploadButtonSelect: "Select Profile Image",
@@ -185,6 +188,9 @@ const translations = {
     passwordPlaceholder: "Passwort eingeben",
     goalLabel: "Ziel",
     goalPlaceholder: "Ziel eingeben",
+    activeLabel: "Kontostatus",
+    activeOption: "Aktiv",
+    inactiveOption: "Inaktiv",
     profileImageLabel: "Profilbild",
     uploadButtonChange: "Bild ändern",
     uploadButtonSelect: "Profilbild auswählen",
@@ -233,6 +239,7 @@ export default function AddAthleteModal({
     goal: string;
     password: string;
     dateOfBirth: string;
+    isActive: "Active" | "In-Active";
   }>({
     name: "",
     email: "",
@@ -250,6 +257,7 @@ export default function AddAthleteModal({
     goal: "",
     password: "",
     dateOfBirth: "",
+    isActive: "Active",
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -274,6 +282,7 @@ export default function AddAthleteModal({
         goal: athlete.goal,
         password: "",
         dateOfBirth: athlete.dateOfBirth || "",
+        isActive: athlete.isActive || "Active",
       });
 
       if (athlete.image) {
@@ -310,6 +319,7 @@ export default function AddAthleteModal({
         goal: "",
         password: "",
         dateOfBirth: "",
+        isActive: "Active",
       });
       setImageFile(null);
       setImagePreview("");
@@ -744,6 +754,25 @@ export default function AddAthleteModal({
               />
             </div>
           )}
+
+          {/* Row 6: Active Status */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.activeLabel}
+              </label>
+              <select
+                name="isActive"
+                value={formData.isActive}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer disabled:opacity-50"
+              >
+                <option value="Active">{t.activeOption}</option>
+                <option value="In-Active">{t.inactiveOption}</option>
+              </select>
+            </div>
+          </div>
 
           {/* Goal */}
           <div>

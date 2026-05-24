@@ -57,6 +57,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Last Check-in",
     thWater: "Water (L)",
+    thActiveStatus: "Account Status",
+    activeLabelText: "Active",
+    inactiveLabelText: "In-Active",
     thAction: "Action",
     emptyState: "No athletes found matching your filters",
     emptyAddFirst: "+ Add Your First Athlete",
@@ -120,6 +123,9 @@ const translations = {
     thStatus: "Status",
     thLastCheckin: "Letzter Check-in",
     thWater: "Wasser (L)",
+    thActiveStatus: "Kontostatus",
+    activeLabelText: "Aktiv",
+    inactiveLabelText: "Inaktiv",
     thAction: "Aktion",
     emptyState: "Keine Athleten entsprechen deinen Filtern",
     emptyAddFirst: "+ Ersten Athleten hinzufügen",
@@ -521,6 +527,9 @@ export default function AthleteManagement() {
                         {t.thWater}
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
+                        {t.thActiveStatus}
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                         {t.thAction}
                       </th>
                     </tr>
@@ -597,6 +606,19 @@ export default function AthleteManagement() {
                         </td>
                         <td className="px-6 py-4 text-white">
                           <p> {athlete.waterQuantity} L</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              athlete.isActive === "Active"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-orange-500/20 text-orange-400"
+                            }`}
+                          >
+                            {athlete.isActive === "Active"
+                              ? t.activeLabelText || "Active"
+                              : t.inactiveLabelText || "In-Active"}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-3">

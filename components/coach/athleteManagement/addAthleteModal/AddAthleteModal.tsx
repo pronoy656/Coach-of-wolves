@@ -110,6 +110,9 @@ const translations = {
     waterPlaceholder: "Enter daily water intake",
     goalLabel: "Goal",
     goalPlaceholder: "Enter goal",
+    activeLabel: "Account Status",
+    activeOption: "Active",
+    inactiveOption: "In-Active",
     uploadLabel: "Upload Image",
     uploadButton: "Select File",
     cancel: "Cancel",
@@ -170,6 +173,9 @@ const translations = {
     waterPlaceholder: "Tägliche Wasserzufuhr eingeben",
     goalLabel: "Ziel",
     goalPlaceholder: "Ziel eingeben",
+    activeLabel: "Kontostatus",
+    activeOption: "Aktiv",
+    inactiveOption: "Inaktiv",
     uploadLabel: "Bild hochladen",
     uploadButton: "Datei auswählen",
     cancel: "Abbrechen",
@@ -234,6 +240,7 @@ export default function AddAthleteModal({
         waterQuantity: 0, // ✅ NEW
         goal: "",
         image: "",
+        isActive: "Active",
         dateOfBirth: "",
       });
       setImagePreview("");
@@ -548,6 +555,24 @@ export default function AddAthleteModal({
                 placeholder={t.waterPlaceholder}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-colors"
               />
+            </div>
+          </div>
+
+          {/* Row 6: Active Status */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-emerald-300 mb-2">
+                {t.activeLabel}
+              </label>
+              <select
+                name="isActive"
+                value={formData.isActive}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500/60 transition-colors appearance-none cursor-pointer"
+              >
+                <option value="Active">{t.activeOption}</option>
+                <option value="In-Active">{t.inactiveOption}</option>
+              </select>
             </div>
           </div>
 

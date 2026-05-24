@@ -50,6 +50,7 @@ export interface AthleteFormData {
   checkInDay: string;
   goal: string;
   dateOfBirth: string;
+  isActive?: "Active" | "In-Active";
   image?: File | null;
   password?: string; // For create only
 }
