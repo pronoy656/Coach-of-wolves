@@ -4,13 +4,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchDailyWeekData } from "@/redux/features/tab/dailyTrackingSlice";
+import { fetchDailyWeekData, fetchDailyGraphData } from "@/redux/features/tab/dailyTrackingSlice";
 import { fetchTimelineByAthlete } from "@/redux/features/timeline/timelineSlice";
 import { 
   createCoachNote, 
   clearNoteMessages 
 } from "@/redux/features/coachNote/coachNoteSlice";
-import { Loader2, ChevronDown, MessageSquare, Send, Pencil } from "lucide-react";
+import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -141,9 +141,6 @@ const TrackingChart = ({ title, data, dataKey }: { title: string; data: any[]; d
     <div className="bg-[#0f101a] border border-gray-800 rounded-xl p-5 shadow-xl flex flex-col h-[280px]">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-white font-bold text-sm tracking-wide">{title}</h3>
-        <button className="text-gray-400 hover:text-white transition-colors">
-          <Pencil className="w-4 h-4" />
-        </button>
       </div>
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
@@ -187,7 +184,7 @@ export default function Dashboard() {
   const params = useParams();
   const userId = params.id as string;
   const dispatch = useAppDispatch();
-  const { weekData, averages, loading, error } = useAppSelector(
+  const { weekData, averages, graphData, loading, error } = useAppSelector(
     (state) => state.dailyTracking,
   );
   const { currentAthlete } = useAppSelector((state) => state.athlete);
@@ -202,8 +199,13 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     undefined,
   );
+  const [selectedGraphDate, setSelectedGraphDate] = useState<string | undefined>(
+    undefined,
+  );
+  const [isGraphCalendarOpen, setIsGraphCalendarOpen] = useState(false);
   const [coachNote, setCoachNote] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const graphDropdownRef = useRef<HTMLDivElement>(null);
 
   const formatDateDisplay = (dateString: string | undefined) => {
     if (!dateString) return "";
@@ -224,12 +226,18 @@ export default function Dashboard() {
       return options;
     }
 
-    const nowTime = new Date().getTime();
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfCurrentWeek = new Date(now);
+    startOfCurrentWeek.setDate(now.getDate() - diffToMonday);
+    startOfCurrentWeek.setHours(0, 0, 0, 0);
+    const startOfCurrentWeekTime = startOfCurrentWeek.getTime();
 
     // Filter to only include past weeks
     const pastWeeks = timeline.filter((item) => {
       if (!item.checkInDate) return false;
-      return new Date(item.checkInDate).getTime() < nowTime;
+      return new Date(item.checkInDate).getTime() < startOfCurrentWeekTime;
     });
 
     const sorted = [...pastWeeks].sort((a, b) => {
@@ -265,6 +273,21 @@ export default function Dashboard() {
     }
   }, [dispatch, userId]);
 
+  useEffect(() => {
+    if (userId) {
+      let formattedDate = selectedGraphDate;
+      if (selectedGraphDate && selectedGraphDate.includes("T")) {
+        formattedDate = selectedGraphDate.split("T")[0];
+      } else if (selectedGraphDate) {
+        const d = new Date(selectedGraphDate);
+        if (!Number.isNaN(d.getTime())) {
+          formattedDate = d.toISOString().split("T")[0];
+        }
+      }
+      dispatch(fetchDailyGraphData({ userId, date: formattedDate }));
+    }
+  }, [dispatch, userId, selectedGraphDate]);
+
   const handleSubmitNote = async () => {
     if (!coachNote.trim()) {
       toast.error("Please enter a note before submitting");
@@ -295,6 +318,12 @@ export default function Dashboard() {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsCalendarOpen(false);
+      }
+      if (
+        graphDropdownRef.current &&
+        !graphDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsGraphCalendarOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -793,26 +822,19 @@ export default function Dashboard() {
     return true;
   });
 
-  const demoData = {
-    sleep:    [6, 7.5, 5, 8, 6.5, 7, 8.5],
-    mood:     [5, 7,   6, 9, 4,   8, 7  ],
-    stress:   [6, 4,   8, 3, 7,   5, 6  ],
-    cardio:   [30, 45, 20, 60, 40, 55, 35],
-    training: [3000, 7500, 5000, 9000, 4000, 8000, 6500],
-    customer: [75, 74.5, 75.2, 74, 76, 73.5, 75.8],
+  const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const shortDays: Record<string, string> = {
+    Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
   };
 
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
-  const chartData = days.map((day, i) => {
-    const realDay = weekData[i];
+  const chartData = daysList.map((day) => {
     return {
-      name: day,
-      sleep:    Number(realDay?.sleepHour) || demoData.sleep[i],
-      mood:     Number(realDay?.energyAndWellBeing?.mood) || demoData.mood[i],
-      stress:   Number(realDay?.energyAndWellBeing?.stressLevel) || demoData.stress[i],
-      cardio:   Number(realDay?.training?.duration) || demoData.cardio[i],
-      training: Number(realDay?.activityStep) || demoData.training[i],
-      customer: Number(realDay?.weight) || demoData.customer[i],
+      name: shortDays[day] || day,
+      sleep: graphData?.sleepHours?.find(d => d.day === day)?.value || 0,
+      mood: graphData?.mood?.find(d => d.day === day)?.value || 0,
+      energy: graphData?.energy?.find(d => d.day === day)?.value || 0,
+      stress: graphData?.stress?.find(d => d.day === day)?.value || 0,
+      pms: graphData?.pmsSymptoms?.find(d => d.day === day)?.value || 0,
     };
   });
 
@@ -991,13 +1013,58 @@ export default function Dashboard() {
       </div>
 
       {/* Graphs Section */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TrackingChart title="Customer Chart" data={chartData} dataKey="customer" />
-        <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" />
-        <TrackingChart title="Training Performance" data={chartData} dataKey="training" />
-        <TrackingChart title="Cardio Data" data={chartData} dataKey="cardio" />
-        <TrackingChart title="Mood Treake" data={chartData} dataKey="mood" />
-        <TrackingChart title="Strees Treake" data={chartData} dataKey="stress" />
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-white uppercase tracking-tight">Graphs</h2>
+          <div className="relative" ref={graphDropdownRef}>
+            <button
+              onClick={() => setIsGraphCalendarOpen(!isGraphCalendarOpen)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium"
+            >
+              <CalendarIcon />
+              <span className="text-sm">
+                {selectedGraphDate
+                  ? `Past Week (${formatDateDisplay(selectedGraphDate)})`
+                  : "Current Week"}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isGraphCalendarOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isGraphCalendarOpen && (
+              <div className="absolute top-full right-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                  {weekOptions.map((option) => (
+                    <button
+                      key={option.value || "current"}
+                      onClick={() => {
+                        setSelectedGraphDate(option.value);
+                        setIsGraphCalendarOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                        selectedGraphDate === option.value
+                          ? "bg-[#2B2B3D] text-emerald-500"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" />
+          <TrackingChart title="Mood" data={chartData} dataKey="mood" />
+          <TrackingChart title="Energy" data={chartData} dataKey="energy" />
+          <TrackingChart title="Stress" data={chartData} dataKey="stress" />
+          {currentAthlete?.gender === "Female" && (
+            <TrackingChart title="PMS Symptoms" data={chartData} dataKey="pms" />
+          )}
+        </div>
       </div>
     </div>
   );

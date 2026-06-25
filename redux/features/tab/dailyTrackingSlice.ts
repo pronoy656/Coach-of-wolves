@@ -1,18 +1,22 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { Averages, WeekApiResponse, WeekItem } from "./dailyTrackingType";
+import { Averages, WeekApiResponse, WeekItem, GraphData } from "./dailyTrackingType";
 import axiosInstance from "@/lib/axiosInstance";
 
 interface WeekState {
   weekData: WeekItem[];
   averages: Averages | null;
+  graphData: GraphData | null;
   loading: boolean;
+  graphLoading: boolean;
   error: string | null;
 }
 
 const initialState: WeekState = {
   weekData: [],
   averages: null,
+  graphData: null,
   loading: false,
+  graphLoading: false,
   error: null,
 };
 
@@ -31,6 +35,22 @@ export const fetchDailyWeekData = createAsyncThunk<
     return res.data.data as WeekApiResponse;
   } catch (error) {
     return rejectWithValue("Failed to fetch week data");
+  }
+});
+
+export const fetchDailyGraphData = createAsyncThunk<
+  GraphData,
+  { userId: string; date?: string },
+  { rejectValue: string }
+>("week/fetchGraphData", async ({ userId, date }, { rejectWithValue }) => {
+  try {
+    const url = date
+      ? `/daily/tracking/graph/${userId}?date=${date}`
+      : `/daily/tracking/graph/${userId}`;
+    const res = await axiosInstance.get(url);
+    return res.data.data as GraphData;
+  } catch (error) {
+    return rejectWithValue("Failed to fetch graph data");
   }
 });
 
@@ -62,6 +82,16 @@ const weekSlice = createSlice({
       .addCase(fetchDailyWeekData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Something went wrong";
+      })
+      .addCase(fetchDailyGraphData.pending, (state) => {
+        state.graphLoading = true;
+      })
+      .addCase(fetchDailyGraphData.fulfilled, (state, action: PayloadAction<GraphData>) => {
+        state.graphLoading = false;
+        state.graphData = action.payload;
+      })
+      .addCase(fetchDailyGraphData.rejected, (state) => {
+        state.graphLoading = false;
       });
   },
 });

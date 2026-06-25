@@ -86,3 +86,17 @@ export interface WeekApiResponse {
   weekData: WeekItem[];
   averages: Averages;
 }
+
+export interface GraphDataPoint {
+  day: string;
+  date: string;
+  value: number;
+}
+
+export interface GraphData {
+  sleepHours: GraphDataPoint[];
+  mood: GraphDataPoint[];
+  energy: GraphDataPoint[];
+  stress: GraphDataPoint[];
+  pmsSymptoms: GraphDataPoint[];
+}
