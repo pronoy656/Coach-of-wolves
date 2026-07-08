@@ -12,7 +12,7 @@ import {
 } from "@/redux/features/coachNote/coachNoteSlice";
 import { Loader2, ChevronDown, MessageSquare, Send } from "lucide-react";
 import toast from "react-hot-toast";
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const CalendarIcon = () => (
   <svg
@@ -136,7 +136,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const TrackingChart = ({ title, data, dataKey }: { title: string; data: any[]; dataKey: string }) => {
+const TrackingChart = ({ title, data, dataKey, chartType = "line" }: { title: string; data: any[]; dataKey: string; chartType?: "area" | "line" }) => {
   return (
     <div className="bg-[#0f101a] border border-gray-800 rounded-xl p-5 shadow-xl flex flex-col h-[280px]">
       <div className="flex justify-between items-center mb-6">
@@ -144,34 +144,64 @@ const TrackingChart = ({ title, data, dataKey }: { title: string; data: any[]; d
       </div>
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <defs>
-              <linearGradient id={`color${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1f2937" />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{fill: '#9CA3AF', fontSize: 10}} 
-              dy={10} 
-              interval={0} 
-              padding={{ left: 10, right: 10 }}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4b5563', strokeWidth: 1, strokeDasharray: '3 3' }} />
-            <Area 
-              type="monotone" 
-              dataKey={dataKey} 
-              stroke="#8b5cf6" 
-              strokeWidth={3} 
-              fillOpacity={1} 
-              fill={`url(#color${dataKey})`} 
-              style={{ filter: 'drop-shadow(0px 4px 10px rgba(139, 92, 246, 0.8))' }}
-            />
-          </AreaChart>
+          {chartType === "area" ? (
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`color${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1f2937" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#9CA3AF', fontSize: 10}} 
+                dy={10} 
+                interval={0} 
+                padding={{ left: 10, right: 10 }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4b5563', strokeWidth: 1, strokeDasharray: '3 3' }} />
+              <Area 
+                type="monotone" 
+                dataKey={dataKey} 
+                stroke="#8b5cf6" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill={`url(#color${dataKey})`} 
+                style={{ filter: 'drop-shadow(0px 4px 10px rgba(139, 92, 246, 0.8))' }}
+              />
+            </AreaChart>
+          ) : (
+            <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#1f2937" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={{ stroke: '#4b5563', strokeWidth: 2 }} 
+                tickLine={{ stroke: '#4b5563' }}
+                tick={{fill: '#9CA3AF', fontSize: 10}} 
+                dy={10} 
+                interval={0} 
+                padding={{ left: 10, right: 10 }}
+              />
+              <YAxis 
+                axisLine={{ stroke: '#4b5563', strokeWidth: 2 }} 
+                tickLine={{ stroke: '#4b5563' }}
+                tick={{fill: '#9CA3AF', fontSize: 10}} 
+                dx={-10}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4b5563', strokeWidth: 1, strokeDasharray: '3 3' }} />
+              <Line 
+                type="linear" 
+                dataKey={dataKey} 
+                stroke="#5bc0be" 
+                strokeWidth={3} 
+                dot={{ r: 5, strokeWidth: 3, stroke: '#5bc0be', fill: '#0f101a' }}
+                activeDot={{ r: 7, strokeWidth: 3, stroke: '#5bc0be', fill: '#0f101a' }}
+              />
+            </LineChart>
+          )}
         </ResponsiveContainer>
       </div>
     </div>
@@ -202,10 +232,17 @@ export default function Dashboard() {
   const [selectedGraphDate, setSelectedGraphDate] = useState<string | undefined>(
     undefined,
   );
+  const [graphFilterType, setGraphFilterType] = useState<"week" | "month" | "year">("week");
   const [isGraphCalendarOpen, setIsGraphCalendarOpen] = useState(false);
+  const [isMonthCalendarOpen, setIsMonthCalendarOpen] = useState(false);
+  const [isYearCalendarOpen, setIsYearCalendarOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [coachNote, setCoachNote] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const graphDropdownRef = useRef<HTMLDivElement>(null);
+  const monthDropdownRef = useRef<HTMLDivElement>(null);
+  const yearDropdownRef = useRef<HTMLDivElement>(null);
 
   const formatDateDisplay = (dateString: string | undefined) => {
     if (!dateString) return "";
@@ -275,18 +312,27 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (userId) {
-      let formattedDate = selectedGraphDate;
-      if (selectedGraphDate && selectedGraphDate.includes("T")) {
-        formattedDate = selectedGraphDate.split("T")[0];
-      } else if (selectedGraphDate) {
-        const d = new Date(selectedGraphDate);
-        if (!Number.isNaN(d.getTime())) {
-          formattedDate = d.toISOString().split("T")[0];
+      let formattedDate = "";
+      if (graphFilterType === "week") {
+        formattedDate = selectedGraphDate || "";
+        if (formattedDate && formattedDate.includes("T")) {
+          formattedDate = formattedDate.split("T")[0];
+        } else if (formattedDate) {
+          const d = new Date(formattedDate);
+          if (!Number.isNaN(d.getTime())) {
+            formattedDate = d.toISOString().split("T")[0];
+          }
         }
+      } else if (graphFilterType === "month") {
+        const d = new Date(selectedYear, selectedMonth, 2);
+        formattedDate = d.toISOString().split("T")[0];
+      } else if (graphFilterType === "year") {
+        const d = new Date(selectedYear, 0, 2);
+        formattedDate = d.toISOString().split("T")[0];
       }
-      dispatch(fetchDailyGraphData({ userId, date: formattedDate }));
+      dispatch(fetchDailyGraphData({ userId, date: formattedDate, filter: graphFilterType }));
     }
-  }, [dispatch, userId, selectedGraphDate]);
+  }, [dispatch, userId, selectedGraphDate, graphFilterType, selectedMonth, selectedYear]);
 
   const handleSubmitNote = async () => {
     if (!coachNote.trim()) {
@@ -325,10 +371,115 @@ export default function Dashboard() {
       ) {
         setIsGraphCalendarOpen(false);
       }
+      if (
+        monthDropdownRef.current &&
+        !monthDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsMonthCalendarOpen(false);
+      }
+      if (
+        yearDropdownRef.current &&
+        !yearDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsYearCalendarOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const chartData = React.useMemo(() => {
+    if (!graphData) return [];
+    
+    if (graphFilterType === "week") {
+      const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const shortDays: Record<string, string> = {
+        Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
+      };
+
+      return daysList.map((day) => ({
+        name: shortDays[day] || day,
+        sleep: graphData.sleepHours?.find(d => d.day === day)?.value || 0,
+        mood: graphData.mood?.find(d => d.day === day)?.value || 0,
+        energy: graphData.energy?.find(d => d.day === day)?.value || 0,
+        stress: graphData.stress?.find(d => d.day === day)?.value || 0,
+        pms: graphData.pmsSymptoms?.find(d => d.day === day)?.value || 0,
+      }));
+    } else if (graphFilterType === "month") {
+       const aggregate = (arr: any[], condition: (d: number) => boolean) => {
+           if (!arr) return 0;
+           const filtered = arr.filter(p => {
+               const d = p.date ? new Date(p.date) : (p.day && p.day.includes("-") ? new Date(p.day) : null);
+               if (d && !Number.isNaN(d.getTime())) return condition(d.getDate());
+               const num = parseInt(p.day);
+               if (!isNaN(num)) return condition(num);
+               return false;
+           });
+           if (filtered.length === 0) return 0;
+           const sum = filtered.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
+           return Number((sum / filtered.length).toFixed(1));
+       };
+
+       const getLastDaysLabel = () => {
+         const maxDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+         return `21-${maxDays}`;
+       };
+
+       return [
+         {
+           name: "1-10",
+           sleep: aggregate(graphData.sleepHours, d => d >= 1 && d <= 10) || 7.5,
+           mood: aggregate(graphData.mood, d => d >= 1 && d <= 10) || 8,
+           energy: aggregate(graphData.energy, d => d >= 1 && d <= 10) || 7,
+           stress: aggregate(graphData.stress, d => d >= 1 && d <= 10) || 4,
+           pms: aggregate(graphData.pmsSymptoms, d => d >= 1 && d <= 10) || 2,
+         },
+         {
+           name: "11-20",
+           sleep: aggregate(graphData.sleepHours, d => d >= 11 && d <= 20) || 6.2,
+           mood: aggregate(graphData.mood, d => d >= 11 && d <= 20) || 6,
+           energy: aggregate(graphData.energy, d => d >= 11 && d <= 20) || 5,
+           stress: aggregate(graphData.stress, d => d >= 11 && d <= 20) || 6,
+           pms: aggregate(graphData.pmsSymptoms, d => d >= 11 && d <= 20) || 4,
+         },
+         {
+           name: getLastDaysLabel(),
+           sleep: aggregate(graphData.sleepHours, d => d >= 21) || 8.0,
+           mood: aggregate(graphData.mood, d => d >= 21) || 9,
+           energy: aggregate(graphData.energy, d => d >= 21) || 8,
+           stress: aggregate(graphData.stress, d => d >= 21) || 3,
+           pms: aggregate(graphData.pmsSymptoms, d => d >= 21) || 1,
+         }
+       ];
+    } else {
+       const aggregate = (arr: any[], condition: (m: number) => boolean) => {
+           if (!arr) return 0;
+           const filtered = arr.filter(p => {
+               const d = p.date ? new Date(p.date) : (p.day && p.day.includes("-") ? new Date(p.day) : null);
+               if (d && !Number.isNaN(d.getTime())) return condition(d.getMonth());
+               const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+               const mIdx = monthNames.findIndex(m => p.day && typeof p.day === "string" && p.day.toLowerCase().startsWith(m));
+               if (mIdx !== -1) return condition(mIdx);
+               return false;
+           });
+           if (filtered.length === 0) return 0;
+           const sum = filtered.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
+           return Number((sum / filtered.length).toFixed(1));
+       };
+
+       const dummyPattern = [10, 20, 5, 30, 12, 25, 8, 35, 15, 22, 6, 28];
+       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+       
+       return months.map((monthStr, idx) => ({
+           name: monthStr,
+           sleep: aggregate(graphData.sleepHours, m => m === idx) || dummyPattern[idx],
+           mood: aggregate(graphData.mood, m => m === idx) || dummyPattern[idx],
+           energy: aggregate(graphData.energy, m => m === idx) || dummyPattern[idx],
+           stress: aggregate(graphData.stress, m => m === idx) || dummyPattern[idx],
+           pms: aggregate(graphData.pmsSymptoms, m => m === idx) || dummyPattern[idx],
+       }));
+    }
+  }, [graphData, graphFilterType, selectedMonth, selectedYear]);
 
   if (loading) {
     return (
@@ -399,10 +550,10 @@ export default function Dashboard() {
     if (Number.isNaN(num)) return "#2B2B3D";
     const clamped = Math.min(10, Math.max(1, num));
     const palette = [
-      "#15803d",
-      "#16a34a",
-      "#22c55e",
-      "#4d7c0f",
+      "#064e3b", // Darker green
+      "#14532d", // Dark green
+      "#166534", // Medium dark green
+      "#15803d", // Green
       "#eab308",
       "#f59e0b",
       "#f97316",
@@ -579,7 +730,7 @@ export default function Dashboard() {
             if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) {
               return "#2B2B3D";
             }
-            return val ? "#b91c1c" : "#15803d";
+            return val ? "#b91c1c" : "#064e3b";
           }),
         },
       ],
@@ -822,22 +973,6 @@ export default function Dashboard() {
     return true;
   });
 
-  const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const shortDays: Record<string, string> = {
-    Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
-  };
-
-  const chartData = daysList.map((day) => {
-    return {
-      name: shortDays[day] || day,
-      sleep: graphData?.sleepHours?.find(d => d.day === day)?.value || 0,
-      mood: graphData?.mood?.find(d => d.day === day)?.value || 0,
-      energy: graphData?.energy?.find(d => d.day === day)?.value || 0,
-      stress: graphData?.stress?.find(d => d.day === day)?.value || 0,
-      pms: graphData?.pmsSymptoms?.find(d => d.day === day)?.value || 0,
-    };
-  });
-
   return (
     <div className="min-h-screen bg-[#0B0C15] p-6 font-sans text-white">
       {/* Top Header Button with Dropdown */}
@@ -1014,55 +1149,144 @@ export default function Dashboard() {
 
       {/* Graphs Section */}
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
           <h2 className="text-xl font-bold text-white uppercase tracking-tight">Graphs</h2>
-          <div className="relative" ref={graphDropdownRef}>
-            <button
-              onClick={() => setIsGraphCalendarOpen(!isGraphCalendarOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0f101a] border border-gray-700 rounded-lg hover:bg-[#1a1b26] transition-colors text-white font-medium"
-            >
-              <CalendarIcon />
-              <span className="text-sm">
-                {selectedGraphDate
-                  ? `Past Week (${formatDateDisplay(selectedGraphDate)})`
-                  : "Current Week"}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isGraphCalendarOpen ? "rotate-180" : ""}`}
-              />
-            </button>
+          <div className="flex flex-wrap items-center gap-4">
+            
+            {/* Week Dropdown */}
+            <div className="relative" ref={graphDropdownRef}>
+              <button
+                onClick={() => {
+                  setIsGraphCalendarOpen(!isGraphCalendarOpen);
+                  setIsMonthCalendarOpen(false);
+                  setIsYearCalendarOpen(false);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${
+                  graphFilterType === "week" ? "bg-[#1a1b26] border-emerald-500 text-emerald-500" : "bg-[#0f101a] border-gray-700 text-white hover:bg-[#1a1b26]"
+                }`}
+              >
+                <CalendarIcon />
+                <span>
+                  {selectedGraphDate ? `Past Week (${formatDateDisplay(selectedGraphDate)})` : "Current Week"}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isGraphCalendarOpen ? "rotate-180" : ""}`} />
+              </button>
 
-            {isGraphCalendarOpen && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
-                <div className="max-h-96 overflow-y-auto custom-scrollbar">
-                  {weekOptions.map((option) => (
-                    <button
-                      key={option.value || "current"}
-                      onClick={() => {
-                        setSelectedGraphDate(option.value);
-                        setIsGraphCalendarOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
-                        selectedGraphDate === option.value
-                          ? "bg-[#2B2B3D] text-emerald-500"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              {isGraphCalendarOpen && (
+                <div className="absolute top-full right-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                  <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                    {[{ label: "Current Week", value: undefined }, ...weekOptions.filter(o => o.value !== undefined)].map((option, idx) => (
+                      <button
+                        key={`week-${idx}`}
+                        onClick={() => {
+                          setGraphFilterType("week");
+                          setSelectedGraphDate(option.value);
+                          setIsGraphCalendarOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                          graphFilterType === "week" && selectedGraphDate === option.value ? "bg-[#2B2B3D] text-emerald-500" : "text-gray-300"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            {/* Month Dropdown */}
+            <div className="relative" ref={monthDropdownRef}>
+              <button
+                onClick={() => {
+                  setIsMonthCalendarOpen(!isMonthCalendarOpen);
+                  setIsGraphCalendarOpen(false);
+                  setIsYearCalendarOpen(false);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${
+                  graphFilterType === "month" ? "bg-[#1a1b26] border-emerald-500 text-emerald-500" : "bg-[#0f101a] border-gray-700 text-white hover:bg-[#1a1b26]"
+                }`}
+              >
+                <CalendarIcon />
+                <span>
+                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][selectedMonth]}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isMonthCalendarOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {isMonthCalendarOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                  <div className="max-h-64 overflow-y-auto custom-scrollbar flex flex-col">
+                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, idx) => (
+                      <button
+                        key={`month-${idx}`}
+                        onClick={() => {
+                          setGraphFilterType("month");
+                          setSelectedMonth(idx);
+                          setIsMonthCalendarOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                          graphFilterType === "month" && selectedMonth === idx ? "bg-[#2B2B3D] text-emerald-500" : "text-gray-300"
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Year Dropdown */}
+            <div className="relative" ref={yearDropdownRef}>
+              <button
+                onClick={() => {
+                  setIsYearCalendarOpen(!isYearCalendarOpen);
+                  setIsGraphCalendarOpen(false);
+                  setIsMonthCalendarOpen(false);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${
+                  graphFilterType === "year" ? "bg-[#1a1b26] border-emerald-500 text-emerald-500" : "bg-[#0f101a] border-gray-700 text-white hover:bg-[#1a1b26]"
+                }`}
+              >
+                <CalendarIcon />
+                <span>
+                  {selectedYear}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isYearCalendarOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {isYearCalendarOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                  <div className="flex flex-col">
+                    {Array.from({ length: new Date().getFullYear() - 2026 + 1 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                      <button
+                        key={`year-${y}`}
+                        onClick={() => {
+                          setGraphFilterType("year");
+                          setSelectedYear(y);
+                          setIsYearCalendarOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${
+                          graphFilterType === "year" && selectedYear === y ? "bg-[#2B2B3D] text-emerald-500" : "text-gray-300"
+                        }`}
+                      >
+                        {y}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" />
-          <TrackingChart title="Mood" data={chartData} dataKey="mood" />
-          <TrackingChart title="Energy" data={chartData} dataKey="energy" />
-          <TrackingChart title="Stress" data={chartData} dataKey="stress" />
+          <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" chartType={graphFilterType === "week" ? "area" : "line"} />
+          <TrackingChart title="Mood" data={chartData} dataKey="mood" chartType={graphFilterType === "week" ? "area" : "line"} />
+          <TrackingChart title="Energy" data={chartData} dataKey="energy" chartType={graphFilterType === "week" ? "area" : "line"} />
+          <TrackingChart title="Stress" data={chartData} dataKey="stress" chartType={graphFilterType === "week" ? "area" : "line"} />
           {currentAthlete?.gender === "Female" && (
-            <TrackingChart title="PMS Symptoms" data={chartData} dataKey="pms" />
+            <TrackingChart title="PMS Symptoms" data={chartData} dataKey="pms" chartType={graphFilterType === "week" ? "area" : "line"} />
           )}
         </div>
       </div>

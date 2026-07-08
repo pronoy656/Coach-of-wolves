@@ -40,13 +40,15 @@ export const fetchDailyWeekData = createAsyncThunk<
 
 export const fetchDailyGraphData = createAsyncThunk<
   GraphData,
-  { userId: string; date?: string },
+  { userId: string; date?: string; filter?: string },
   { rejectValue: string }
->("week/fetchGraphData", async ({ userId, date }, { rejectWithValue }) => {
+>("week/fetchGraphData", async ({ userId, date, filter }, { rejectWithValue }) => {
   try {
-    const url = date
-      ? `/daily/tracking/graph/${userId}?date=${date}`
-      : `/daily/tracking/graph/${userId}`;
+    const params = new URLSearchParams();
+    if (date) params.append("date", date);
+    if (filter) params.append("filter", filter);
+    const queryString = params.toString();
+    const url = `/daily/tracking/graph/${userId}${queryString ? `?${queryString}` : ""}`;
     const res = await axiosInstance.get(url);
     return res.data.data as GraphData;
   } catch (error) {

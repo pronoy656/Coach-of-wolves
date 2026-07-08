@@ -81,16 +81,14 @@ export default function AddTrainingSplitModal({
   }, [open, existingSplit]);
 
   const handleAddMore = () => {
-    if (splits.length < 7) {
-      // Find next available day
-      const usedDays = splits.map(s => s.day);
-      const nextDay = DAYS_OF_WEEK.find(day => !usedDays.includes(day));
+    // Find next available day
+    const usedDays = splits.map(s => s.day);
+    const nextDay = DAYS_OF_WEEK.find(day => !usedDays.includes(day));
 
-      setSplits([
-        ...splits,
-        { day: nextDay || "Custom Day", exerciseName: "" },
-      ]);
-    }
+    setSplits([
+      ...splits,
+      { day: nextDay || `Day ${splits.length + 1}`, exerciseName: "" },
+    ]);
   };
 
   const handleRemove = (index: number) => {
@@ -171,16 +169,14 @@ export default function AddTrainingSplitModal({
                 {existingSplit ? "Edit Training Split" : "Create Training Split"}
               </h2>
               <div className="flex items-center gap-3">
-                {splits.length < 7 && (
-                  <button
-                    onClick={handleAddMore}
-                    disabled={loading}
-                    className="bg-transparent border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-                  >
-                    <Plus className="w-4 h-4 inline mr-1" />
-                    Add Day
-                  </button>
-                )}
+                <button
+                  onClick={handleAddMore}
+                  disabled={loading}
+                  className="bg-transparent border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <Plus className="w-4 h-4 inline mr-1" />
+                  Add Day
+                </button>
                 <button
                   onClick={() => !loading && onOpenChange(false)}
                   disabled={loading}

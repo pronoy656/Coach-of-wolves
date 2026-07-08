@@ -113,9 +113,14 @@ const TrainingHistory = ({ athleteId }: TrainingHistoryProps) => {
         return selectedWorkouts.find(w => w._id === selectedWorkoutId) || selectedWorkouts[0];
     }, [selectedWorkouts, selectedWorkoutId]);
 
-    // Calculate total weight based on actual reps (the 'set' field in backend)
+    // Calculate total weight based on actual reps (using repRange instead of set number)
     const calculateTotalWeight = (pushData: PushSet[]) => {
-        return pushData.reduce((acc, s) => acc + (s.weight * (Number(s.set) || 0)), 0);
+        return pushData.reduce((acc, s) => {
+            // repRange might be a string like "10" or "8-12"
+            const reps = parseInt(String(s.repRange)) || 0;
+            const weight = Number(s.weight) || 0;
+            return acc + (weight * reps);
+        }, 0);
     };
 
     if (loading && histories.length === 0) {
