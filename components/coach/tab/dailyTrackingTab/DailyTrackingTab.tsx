@@ -391,6 +391,20 @@ export default function Dashboard() {
   const chartData = React.useMemo(() => {
     if (!graphData) return [];
     
+    // For Month and Year, the backend returns objects with pre-aggregated arrays for each metric.
+    if (graphFilterType === "month" || graphFilterType === "year") {
+      // Assuming all arrays (sleepHours, mood, etc.) have the same length and order from the backend.
+      return (graphData.sleepHours || []).map((point, index) => ({
+        name: point.day, // e.g., "Jan", "Feb" or "1", "2"
+        sleep: point.value || 0,
+        mood: graphData.mood?.[index]?.value || 0,
+        energy: graphData.energy?.[index]?.value || 0,
+        stress: graphData.stress?.[index]?.value || 0,
+        pms: graphData.pmsSymptoms?.[index]?.value || 0,
+      }));
+    }
+    
+    // Fallback logic for "week"
     if (graphFilterType === "week") {
       const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
       const shortDays: Record<string, string> = {
@@ -399,87 +413,16 @@ export default function Dashboard() {
 
       return daysList.map((day) => ({
         name: shortDays[day] || day,
-        sleep: graphData.sleepHours?.find(d => d.day === day)?.value || 0,
-        mood: graphData.mood?.find(d => d.day === day)?.value || 0,
-        energy: graphData.energy?.find(d => d.day === day)?.value || 0,
-        stress: graphData.stress?.find(d => d.day === day)?.value || 0,
-        pms: graphData.pmsSymptoms?.find(d => d.day === day)?.value || 0,
+        sleep: graphData.sleepHours?.find((d: any) => d.day === day)?.value || 0,
+        mood: graphData.mood?.find((d: any) => d.day === day)?.value || 0,
+        energy: graphData.energy?.find((d: any) => d.day === day)?.value || 0,
+        stress: graphData.stress?.find((d: any) => d.day === day)?.value || 0,
+        pms: graphData.pmsSymptoms?.find((d: any) => d.day === day)?.value || 0,
       }));
-    } else if (graphFilterType === "month") {
-       const aggregate = (arr: any[], condition: (d: number) => boolean) => {
-           if (!arr) return 0;
-           const filtered = arr.filter(p => {
-               const d = p.date ? new Date(p.date) : (p.day && p.day.includes("-") ? new Date(p.day) : null);
-               if (d && !Number.isNaN(d.getTime())) return condition(d.getDate());
-               const num = parseInt(p.day);
-               if (!isNaN(num)) return condition(num);
-               return false;
-           });
-           if (filtered.length === 0) return 0;
-           const sum = filtered.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
-           return Number((sum / filtered.length).toFixed(1));
-       };
-
-       const getLastDaysLabel = () => {
-         const maxDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-         return `21-${maxDays}`;
-       };
-
-       return [
-         {
-           name: "1-10",
-           sleep: aggregate(graphData.sleepHours, d => d >= 1 && d <= 10) || 7.5,
-           mood: aggregate(graphData.mood, d => d >= 1 && d <= 10) || 8,
-           energy: aggregate(graphData.energy, d => d >= 1 && d <= 10) || 7,
-           stress: aggregate(graphData.stress, d => d >= 1 && d <= 10) || 4,
-           pms: aggregate(graphData.pmsSymptoms, d => d >= 1 && d <= 10) || 2,
-         },
-         {
-           name: "11-20",
-           sleep: aggregate(graphData.sleepHours, d => d >= 11 && d <= 20) || 6.2,
-           mood: aggregate(graphData.mood, d => d >= 11 && d <= 20) || 6,
-           energy: aggregate(graphData.energy, d => d >= 11 && d <= 20) || 5,
-           stress: aggregate(graphData.stress, d => d >= 11 && d <= 20) || 6,
-           pms: aggregate(graphData.pmsSymptoms, d => d >= 11 && d <= 20) || 4,
-         },
-         {
-           name: getLastDaysLabel(),
-           sleep: aggregate(graphData.sleepHours, d => d >= 21) || 8.0,
-           mood: aggregate(graphData.mood, d => d >= 21) || 9,
-           energy: aggregate(graphData.energy, d => d >= 21) || 8,
-           stress: aggregate(graphData.stress, d => d >= 21) || 3,
-           pms: aggregate(graphData.pmsSymptoms, d => d >= 21) || 1,
-         }
-       ];
-    } else {
-       const aggregate = (arr: any[], condition: (m: number) => boolean) => {
-           if (!arr) return 0;
-           const filtered = arr.filter(p => {
-               const d = p.date ? new Date(p.date) : (p.day && p.day.includes("-") ? new Date(p.day) : null);
-               if (d && !Number.isNaN(d.getTime())) return condition(d.getMonth());
-               const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-               const mIdx = monthNames.findIndex(m => p.day && typeof p.day === "string" && p.day.toLowerCase().startsWith(m));
-               if (mIdx !== -1) return condition(mIdx);
-               return false;
-           });
-           if (filtered.length === 0) return 0;
-           const sum = filtered.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
-           return Number((sum / filtered.length).toFixed(1));
-       };
-
-       const dummyPattern = [10, 20, 5, 30, 12, 25, 8, 35, 15, 22, 6, 28];
-       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-       
-       return months.map((monthStr, idx) => ({
-           name: monthStr,
-           sleep: aggregate(graphData.sleepHours, m => m === idx) || dummyPattern[idx],
-           mood: aggregate(graphData.mood, m => m === idx) || dummyPattern[idx],
-           energy: aggregate(graphData.energy, m => m === idx) || dummyPattern[idx],
-           stress: aggregate(graphData.stress, m => m === idx) || dummyPattern[idx],
-           pms: aggregate(graphData.pmsSymptoms, m => m === idx) || dummyPattern[idx],
-       }));
     }
-  }, [graphData, graphFilterType, selectedMonth, selectedYear]);
+    
+    return [];
+  }, [graphData, graphFilterType]);
 
   if (loading) {
     return (
@@ -562,6 +505,9 @@ export default function Dashboard() {
       "#b91c1c",
     ];
     const index = clamped - 1;
+    if (clamped === 5) {
+      return "#f59e0b";
+    }
     if (direction === "goodToBad") {
       return palette[index];
     }

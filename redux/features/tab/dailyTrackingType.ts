@@ -93,6 +93,12 @@ export interface GraphDataPoint {
   value: number;
 }
 
+export interface GraphDataPoint {
+  day: string;
+  date: string;
+  value: number;
+}
+
 export interface GraphData {
   sleepHours: GraphDataPoint[];
   mood: GraphDataPoint[];
