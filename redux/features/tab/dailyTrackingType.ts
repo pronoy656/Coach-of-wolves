@@ -100,9 +100,15 @@ export interface GraphDataPoint {
 }
 
 export interface GraphData {
-  sleepHours: GraphDataPoint[];
-  mood: GraphDataPoint[];
-  energy: GraphDataPoint[];
-  stress: GraphDataPoint[];
-  pmsSymptoms: GraphDataPoint[];
+  sleepHours?: GraphDataPoint[];
+  hungerLevel?: GraphDataPoint[];
+  digestionLevel?: GraphDataPoint[];
+  mood?: GraphDataPoint[];
+  motivation?: GraphDataPoint[];
+  energy?: GraphDataPoint[];
+  muscelLevel?: GraphDataPoint[];
+  stress?: GraphDataPoint[];
+  pmsSymptoms?: GraphDataPoint[];
+  cramps?: GraphDataPoint[];
+  [key: string]: GraphDataPoint[] | undefined;
 }

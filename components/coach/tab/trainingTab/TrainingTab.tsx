@@ -156,8 +156,21 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
     } else {
       dispatch(addTrainingPlan({ athleteId, data }))
         .unwrap()
-        .then(() => {
+        .then((res: any) => {
           setShowAddPlanModal(false);
+          // Automatically move the newly created plan to the top (position 1)
+          if (res?.data?._id) {
+            dispatch(reorderTrainingPlan({ athleteId, planId: res.data._id, newPosition: 1 }))
+              .unwrap()
+              .then(() => {
+                dispatch(fetchTrainingPlans(athleteId));
+              })
+              .catch(() => {
+                dispatch(fetchTrainingPlans(athleteId));
+              });
+          } else {
+            dispatch(fetchTrainingPlans(athleteId));
+          }
         });
     }
   };

@@ -136,11 +136,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const TrackingChart = ({ title, data, dataKey, chartType = "line" }: { title: string; data: any[]; dataKey: string; chartType?: "area" | "line" }) => {
+const TrackingChart = ({ title, data, dataKey, chartType = "line", isAllTime = false, titleRightNode }: { title: string; data: any[]; dataKey: string; chartType?: "area" | "line"; isAllTime?: boolean; titleRightNode?: React.ReactNode }) => {
   return (
     <div className="bg-[#0f101a] border border-gray-800 rounded-xl p-5 shadow-xl flex flex-col h-[280px]">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-white font-bold text-sm tracking-wide">{title}</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-white font-bold text-sm tracking-wide">{title}</h3>
+          {titleRightNode}
+        </div>
       </div>
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
@@ -159,7 +162,8 @@ const TrackingChart = ({ title, data, dataKey, chartType = "line" }: { title: st
                 tickLine={false} 
                 tick={{fill: '#9CA3AF', fontSize: 10}} 
                 dy={10} 
-                interval={0} 
+                interval={isAllTime ? "preserveStartEnd" : 0} 
+                minTickGap={isAllTime ? 30 : 5}
                 padding={{ left: 10, right: 10 }}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4b5563', strokeWidth: 1, strokeDasharray: '3 3' }} />
@@ -182,7 +186,8 @@ const TrackingChart = ({ title, data, dataKey, chartType = "line" }: { title: st
                 tickLine={{ stroke: '#4b5563' }}
                 tick={{fill: '#9CA3AF', fontSize: 10}} 
                 dy={10} 
-                interval={0} 
+                interval={isAllTime ? "preserveStartEnd" : 0} 
+                minTickGap={isAllTime ? 30 : 5}
                 padding={{ left: 10, right: 10 }}
               />
               <YAxis 
@@ -232,13 +237,14 @@ export default function Dashboard() {
   const [selectedGraphDate, setSelectedGraphDate] = useState<string | undefined>(
     undefined,
   );
-  const [graphFilterType, setGraphFilterType] = useState<"week" | "month" | "year">("week");
+  const [graphFilterType, setGraphFilterType] = useState<"week" | "month" | "year" | "alltime">("week");
   const [isGraphCalendarOpen, setIsGraphCalendarOpen] = useState(false);
   const [isMonthCalendarOpen, setIsMonthCalendarOpen] = useState(false);
   const [isYearCalendarOpen, setIsYearCalendarOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [coachNote, setCoachNote] = useState("");
+  const [selectedMetric, setSelectedMetric] = useState<string>("all");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const graphDropdownRef = useRef<HTMLDivElement>(null);
   const monthDropdownRef = useRef<HTMLDivElement>(null);
@@ -329,6 +335,8 @@ export default function Dashboard() {
       } else if (graphFilterType === "year") {
         const d = new Date(selectedYear, 0, 2);
         formattedDate = d.toISOString().split("T")[0];
+      } else if (graphFilterType === "alltime") {
+        formattedDate = "";
       }
       dispatch(fetchDailyGraphData({ userId, date: formattedDate, filter: graphFilterType }));
     }
@@ -391,17 +399,22 @@ export default function Dashboard() {
   const chartData = React.useMemo(() => {
     if (!graphData) return [];
     
-    // For Month and Year, the backend returns objects with pre-aggregated arrays for each metric.
-    if (graphFilterType === "month" || graphFilterType === "year") {
-      // Assuming all arrays (sleepHours, mood, etc.) have the same length and order from the backend.
-      return (graphData.sleepHours || []).map((point, index) => ({
-        name: point.day, // e.g., "Jan", "Feb" or "1", "2"
-        sleep: point.value || 0,
-        mood: graphData.mood?.[index]?.value || 0,
-        energy: graphData.energy?.[index]?.value || 0,
-        stress: graphData.stress?.[index]?.value || 0,
-        pms: graphData.pmsSymptoms?.[index]?.value || 0,
-      }));
+    // For Month, Year, and All Time, the backend returns objects with pre-aggregated arrays for each metric.
+    if (graphFilterType === "month" || graphFilterType === "year" || graphFilterType === "alltime") {
+      const keys = Object.keys(graphData) as Array<keyof typeof graphData>;
+      const firstAvailableKey = keys.find(key => Array.isArray(graphData[key]) && graphData[key]!.length > 0);
+      const baseArray = firstAvailableKey ? graphData[firstAvailableKey] : [];
+
+      return (baseArray || []).map((point, index) => {
+        const dataPoint: any = { name: graphFilterType === "alltime" && point.date ? point.date : point.day };
+        keys.forEach(key => {
+          const arr = graphData[key];
+          if (Array.isArray(arr)) {
+            dataPoint[key] = arr[index]?.value || 0;
+          }
+        });
+        return dataPoint;
+      });
     }
     
     // Fallback logic for "week"
@@ -411,18 +424,50 @@ export default function Dashboard() {
         Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
       };
 
-      return daysList.map((day) => ({
-        name: shortDays[day] || day,
-        sleep: graphData.sleepHours?.find((d: any) => d.day === day)?.value || 0,
-        mood: graphData.mood?.find((d: any) => d.day === day)?.value || 0,
-        energy: graphData.energy?.find((d: any) => d.day === day)?.value || 0,
-        stress: graphData.stress?.find((d: any) => d.day === day)?.value || 0,
-        pms: graphData.pmsSymptoms?.find((d: any) => d.day === day)?.value || 0,
-      }));
+      return daysList.map((day) => {
+        const dataPoint: any = { name: shortDays[day] || day };
+        const keys = Object.keys(graphData) as Array<keyof typeof graphData>;
+        keys.forEach(key => {
+          const arr = graphData[key];
+          if (Array.isArray(arr)) {
+            dataPoint[key] = arr.find((d: any) => d.day === day)?.value || 0;
+          }
+        });
+        return dataPoint;
+      });
     }
     
     return [];
   }, [graphData, graphFilterType]);
+
+  const metricLabels: Record<string, string> = {
+    sleepHours: "Sleep Hours",
+    hungerLevel: "Hunger",
+    digestionLevel: "Digestion",
+    mood: "Mood",
+    motivation: "Motivation",
+    energy: "Energy",
+    muscelLevel: "Muscle Ache",
+    stress: "Stress",
+    pmsSymptoms: "PMS Symptoms",
+    cramps: "Cramps",
+  };
+
+  const availableMetrics = React.useMemo(() => {
+    if (!graphData) return [];
+    const keys = Object.keys(graphData).filter(key => Array.isArray(graphData[key as keyof typeof graphData]) && graphData[key as keyof typeof graphData]!.length > 0);
+    return keys.map(key => ({
+      id: key,
+      label: metricLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)
+    }));
+  }, [graphData]);
+
+  // Ensure selected metric is valid
+  useEffect(() => {
+    if (selectedMetric !== "all" && availableMetrics.length > 0 && !availableMetrics.find(m => m.id === selectedMetric)) {
+      setSelectedMetric("all");
+    }
+  }, [availableMetrics, selectedMetric]);
 
   if (loading) {
     return (
@@ -1224,15 +1269,61 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+
+            {/* All Time Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setGraphFilterType("alltime");
+                  setIsGraphCalendarOpen(false);
+                  setIsMonthCalendarOpen(false);
+                  setIsYearCalendarOpen(false);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${
+                  graphFilterType === "alltime" ? "bg-[#1a1b26] border-emerald-500 text-emerald-500" : "bg-[#0f101a] border-gray-700 text-white hover:bg-[#1a1b26]"
+                }`}
+              >
+                <CalendarIcon />
+                <span>All Time</span>
+              </button>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TrackingChart title="Sleep Hours" data={chartData} dataKey="sleep" chartType={graphFilterType === "week" ? "area" : "line"} />
-          <TrackingChart title="Mood" data={chartData} dataKey="mood" chartType={graphFilterType === "week" ? "area" : "line"} />
-          <TrackingChart title="Energy" data={chartData} dataKey="energy" chartType={graphFilterType === "week" ? "area" : "line"} />
-          <TrackingChart title="Stress" data={chartData} dataKey="stress" chartType={graphFilterType === "week" ? "area" : "line"} />
-          {currentAthlete?.gender === "Female" && (
-            <TrackingChart title="PMS Symptoms" data={chartData} dataKey="pms" chartType={graphFilterType === "week" ? "area" : "line"} />
+        <div className="flex justify-between items-center mb-6 mt-6">
+          <h3 className="text-white font-bold text-lg tracking-wide">
+            {selectedMetric === "all" ? "All Metrics" : availableMetrics.find(m => m.id === selectedMetric)?.label}
+          </h3>
+          <select 
+            value={selectedMetric}
+            onChange={(e) => setSelectedMetric(e.target.value)}
+            className="bg-[#1a1b26] border border-gray-700 text-gray-300 text-sm font-medium rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 hover:border-gray-500 transition-colors cursor-pointer"
+          >
+            <option value="all">All Metrics</option>
+            {availableMetrics.map(m => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className={`grid ${selectedMetric === 'all' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-6`}>
+          {selectedMetric === "all" ? (
+            availableMetrics.map(m => (
+              <TrackingChart 
+                key={m.id} 
+                title={m.label} 
+                data={chartData} 
+                dataKey={m.id} 
+                chartType={graphFilterType === "week" || graphFilterType === "alltime" ? "area" : "line"} 
+                isAllTime={graphFilterType === "alltime"} 
+              />
+            ))
+          ) : (
+            <TrackingChart 
+              title={availableMetrics.find(m => m.id === selectedMetric)?.label || ""} 
+              data={chartData} 
+              dataKey={selectedMetric} 
+              chartType={graphFilterType === "week" || graphFilterType === "alltime" ? "area" : "line"} 
+              isAllTime={graphFilterType === "alltime"} 
+            />
           )}
         </div>
       </div>
