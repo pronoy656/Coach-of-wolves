@@ -113,11 +113,13 @@ const TrainingHistory = ({ athleteId }: TrainingHistoryProps) => {
         return selectedWorkouts.find(w => w._id === selectedWorkoutId) || selectedWorkouts[0];
     }, [selectedWorkouts, selectedWorkoutId]);
 
-    // Calculate total weight by summing up the weight of each exercise
+    // Calculate total weight by summing up (weight * reps) of each exercise
     const calculateTotalWeight = (pushData: PushSet[]) => {
         return pushData.reduce((acc, s) => {
             const weight = Number(s.weight) || 0;
-            return acc + weight;
+            const repsMatch = String(s.repRange || "").match(/\d+/);
+            const reps = repsMatch ? Number(repsMatch[0]) : 0;
+            return acc + (weight * reps);
         }, 0);
     };
 
