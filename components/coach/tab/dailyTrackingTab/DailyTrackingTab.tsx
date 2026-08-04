@@ -455,12 +455,17 @@ export default function Dashboard() {
 
   const availableMetrics = React.useMemo(() => {
     if (!graphData) return [];
-    const keys = Object.keys(graphData).filter(key => Array.isArray(graphData[key as keyof typeof graphData]) && graphData[key as keyof typeof graphData]!.length > 0);
+    let keys = Object.keys(graphData).filter(key => Array.isArray(graphData[key as keyof typeof graphData]) && graphData[key as keyof typeof graphData]!.length > 0);
+    
+    if (currentAthlete?.gender === "Female") {
+      keys = keys.filter(key => key !== "pmsSymptoms");
+    }
+
     return keys.map(key => ({
       id: key,
       label: metricLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)
     }));
-  }, [graphData]);
+  }, [graphData, currentAthlete]);
 
   // Ensure selected metric is valid
   useEffect(() => {
