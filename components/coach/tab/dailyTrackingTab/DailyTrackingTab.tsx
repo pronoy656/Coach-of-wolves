@@ -424,21 +424,43 @@ export default function Dashboard() {
         Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
       };
 
-      return daysList.map((day) => {
+      return daysList.map((day, i) => {
         const dataPoint: any = { name: shortDays[day] || day };
         const keys = Object.keys(graphData) as Array<keyof typeof graphData>;
         keys.forEach(key => {
           const arr = graphData[key];
           if (Array.isArray(arr)) {
-            dataPoint[key] = arr.find((d: any) => d.day === day)?.value || 0;
+            const found = arr.find((d: any) => 
+               d.day === day || 
+               d.day === shortDays[day] || 
+               d.day?.toLowerCase() === day.toLowerCase() ||
+               d.day?.toLowerCase() === shortDays[day].toLowerCase()
+            );
+            dataPoint[key] = found?.value || 0;
           }
         });
+        
+        // Inject frontend metrics from weekData (overriding 0s)
+        const dayData = weekData[i];
+        if (dayData) {
+          const parseValue = (val: any) => {
+            if (val === null || val === undefined || val === "" || String(val).toLowerCase() === "none" || val === false) return 0;
+            const num = Number(val);
+            return Number.isNaN(num) ? 0 : num;
+          };
+
+          dataPoint.motivation = dataPoint.motivation || parseValue(dayData.energyAndWellBeing?.motivation);
+          dataPoint.muscelLevel = dataPoint.muscelLevel || parseValue(dayData.energyAndWellBeing?.muscelLevel);
+          dataPoint.cramps = dataPoint.cramps || parseValue(dayData.woman?.cramps);
+          dataPoint.restingHeartRate = dataPoint.restingHeartRate || parseValue(dayData.bloodPressure?.restingHeartRate);
+        }
+
         return dataPoint;
       });
     }
     
     return [];
-  }, [graphData, graphFilterType]);
+  }, [graphData, graphFilterType, weekData]);
 
   const metricLabels: Record<string, string> = {
     sleepHours: "Sleep Hours",
@@ -451,13 +473,23 @@ export default function Dashboard() {
     stress: "Stress",
     pmsSymptoms: "PMS Symptoms",
     cramps: "Cramps",
+    restingHeartRate: "Resting Heart Rate",
   };
 
   const availableMetrics = React.useMemo(() => {
     if (!graphData) return [];
     let keys = Object.keys(graphData).filter(key => Array.isArray(graphData[key as keyof typeof graphData]) && graphData[key as keyof typeof graphData]!.length > 0);
     
-    if (currentAthlete?.gender === "Female") {
+    if (graphFilterType === "week" && weekData && weekData.length > 0) {
+      const frontendKeys = ["motivation", "muscelLevel", "restingHeartRate", "cramps"];
+      frontendKeys.forEach(fk => {
+        if (!keys.includes(fk)) {
+          keys.push(fk);
+        }
+      });
+    }
+
+    if (currentAthlete?.gender !== "Female") {
       keys = keys.filter(key => key !== "pmsSymptoms");
     }
 
@@ -465,7 +497,7 @@ export default function Dashboard() {
       id: key,
       label: metricLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)
     }));
-  }, [graphData, currentAthlete]);
+  }, [graphData, currentAthlete, graphFilterType, weekData]);
 
   // Ensure selected metric is valid
   useEffect(() => {
@@ -997,6 +1029,8 @@ export default function Dashboard() {
                   key={option.value || "current"}
                   onClick={() => {
                     setSelectedDate(option.value);
+                    setSelectedGraphDate(option.value);
+                    setGraphFilterType("week");
                     setIsCalendarOpen(false);
                   }}
                   className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2B2B3D] transition-colors border-b border-gray-800 last:border-none ${selectedDate === option.value
