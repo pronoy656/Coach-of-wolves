@@ -453,6 +453,8 @@ export default function Dashboard() {
           dataPoint.muscelLevel = dataPoint.muscelLevel || parseValue(dayData.energyAndWellBeing?.muscelLevel);
           dataPoint.cramps = dataPoint.cramps || parseValue(dayData.woman?.cramps);
           dataPoint.restingHeartRate = dataPoint.restingHeartRate || parseValue(dayData.bloodPressure?.restingHeartRate);
+          dataPoint.hungerLevel = dataPoint.hungerLevel || parseValue(dayData.nutrition?.hungerLevel);
+          dataPoint.digestionLevel = dataPoint.digestionLevel || parseValue(dayData.nutrition?.digestionLevel);
         }
 
         return dataPoint;
@@ -489,8 +491,21 @@ export default function Dashboard() {
       });
     }
 
+    // Insert hungerLevel and digestionLevel right after stress (if it exists)
+    const newMetrics = ["hungerLevel", "digestionLevel"];
+    newMetrics.forEach(m => {
+      if (!keys.includes(m)) {
+        const stressIndex = keys.indexOf("stress");
+        if (stressIndex !== -1) {
+          keys.splice(stressIndex + 1, 0, m);
+        } else {
+          keys.push(m);
+        }
+      }
+    });
+
     if (currentAthlete?.gender !== "Female") {
-      keys = keys.filter(key => key !== "pmsSymptoms");
+      keys = keys.filter(key => key !== "pmsSymptoms" && key !== "cramps");
     }
 
     return keys.map(key => ({

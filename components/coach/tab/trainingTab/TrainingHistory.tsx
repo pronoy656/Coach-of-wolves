@@ -97,14 +97,31 @@ const TrainingHistory = ({ athleteId }: TrainingHistoryProps) => {
         }
     };
 
+    // Calculate 1RM using Epley formula with RIR
+    const calculateOneRM = (weight: string | number, reps: string | number, rir: string | number = 0): number => {
+        const w = Number(weight) || 0;
+        const rMatch = String(reps || "").match(/\d+/);
+        const r = rMatch ? Number(rMatch[0]) : 0;
+        const rirValue = Number(rir) || 0;
+        
+        if (w === 0 || r === 0) return 0;
+        
+        const effectiveReps = r + rirValue;
+        if (effectiveReps <= 1) return w;
+        
+        return Number((w * (1 + effectiveReps / 30)).toFixed(1));
+    };
+
     // Group sets by exercise name for detailed view
     const groupSetsByExercise = (pushData: PushSet[]) => {
         const grouped: Record<string, PushSet[]> = {};
         pushData.forEach((set) => {
-            if (!grouped[set.exerciseName]) {
-                grouped[set.exerciseName] = [];
+            const calculatedOneRM = set.oneRM || calculateOneRM(set.weight, set.repRange, set.rir);
+            const enrichedSet = { ...set, oneRM: calculatedOneRM };
+            if (!grouped[enrichedSet.exerciseName]) {
+                grouped[enrichedSet.exerciseName] = [];
             }
-            grouped[set.exerciseName].push(set);
+            grouped[enrichedSet.exerciseName].push(enrichedSet);
         });
         return grouped;
     };
@@ -315,7 +332,7 @@ const TrainingHistory = ({ athleteId }: TrainingHistoryProps) => {
                                                                     <div className="flex items-center gap-3">
 
                                                                         <span className="text-xs font-semibold text-blue-400">
-                                                                            1RM: {set.oneRM}
+                                                                            1RM: {set.oneRM ? set.oneRM : calculateOneRM(set.weight, set.repRange, set.rir)}
                                                                         </span>
                                                                     </div>
                                                                 </div>
