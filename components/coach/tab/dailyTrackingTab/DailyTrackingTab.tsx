@@ -455,6 +455,7 @@ export default function Dashboard() {
           dataPoint.restingHeartRate = dataPoint.restingHeartRate || parseValue(dayData.bloodPressure?.restingHeartRate);
           dataPoint.hungerLevel = dataPoint.hungerLevel || parseValue(dayData.nutrition?.hungerLevel);
           dataPoint.digestionLevel = dataPoint.digestionLevel || parseValue(dayData.nutrition?.digestionLevel);
+          dataPoint.sleepQuality = dataPoint.sleepQuality || parseValue(dayData.sleepQuality);
         }
 
         return dataPoint;
@@ -476,6 +477,7 @@ export default function Dashboard() {
     pmsSymptoms: "PMS Symptoms",
     cramps: "Cramps",
     restingHeartRate: "Resting Heart Rate",
+    sleepQuality: "Sleep Quality",
   };
 
   const availableMetrics = React.useMemo(() => {
@@ -483,7 +485,7 @@ export default function Dashboard() {
     let keys = Object.keys(graphData).filter(key => Array.isArray(graphData[key as keyof typeof graphData]) && graphData[key as keyof typeof graphData]!.length > 0);
     
     if (graphFilterType === "week" && weekData && weekData.length > 0) {
-      const frontendKeys = ["motivation", "muscelLevel", "restingHeartRate", "cramps"];
+      const frontendKeys = ["motivation", "muscelLevel", "restingHeartRate", "cramps", "sleepQuality"];
       frontendKeys.forEach(fk => {
         if (!keys.includes(fk)) {
           keys.push(fk);
@@ -503,6 +505,18 @@ export default function Dashboard() {
         }
       }
     });
+
+    // Place sleepQuality next to sleepHours
+    const sqIndex = keys.indexOf("sleepQuality");
+    if (sqIndex !== -1) {
+      keys.splice(sqIndex, 1);
+      const shIndex = keys.indexOf("sleepHours") !== -1 ? keys.indexOf("sleepHours") : keys.indexOf("sleepHour");
+      if (shIndex !== -1) {
+        keys.splice(shIndex + 1, 0, "sleepQuality");
+      } else {
+        keys.push("sleepQuality");
+      }
+    }
 
     if (currentAthlete?.gender !== "Female") {
       keys = keys.filter(key => key !== "pmsSymptoms" && key !== "cramps");
