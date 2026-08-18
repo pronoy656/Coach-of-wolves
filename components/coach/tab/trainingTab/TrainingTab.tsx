@@ -145,6 +145,23 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
   };
 
   const handleAddPlan = (data: TrainingPlanFormData) => {
+    const normalizeStr = (str?: string) => (str || "").trim().toLowerCase().replace(/\s+/g, " ");
+    const newName = normalizeStr(data.traingPlanName);
+    
+    // Check if name already exists
+    const isDuplicate = plans.some((plan) => {
+      // If editing, don't compare against the plan currently being edited
+      if (editingPlan && plan._id === editingPlan._id) {
+        return false;
+      }
+      return normalizeStr(plan.traingPlanName) === newName;
+    });
+
+    if (isDuplicate) {
+      toast.error("This training plan name is already taken.");
+      return;
+    }
+
     if (editingPlan) {
       dispatch(updateTrainingPlan({ athleteId, planId: editingPlan._id, data }))
         .unwrap()

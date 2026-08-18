@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   BackendExercise,
   TrainingPlan,
@@ -37,6 +37,10 @@ export default function AddTrainingPlanModal({
   loading = false,
 }: AddPlanModalProps) {
   const dispatch = useAppDispatch();
+  const { plans } = useAppSelector((state) => state.trainingPlan);
+
+  const normalizeStr = (str?: string) => (str || "").trim().toLowerCase().replace(/\s+/g, " ");
+  
   const createEmptyExercise = (id: string): ExerciseState => ({
     id,
     exerciseName: "",
@@ -61,6 +65,12 @@ export default function AddTrainingPlanModal({
     null,
   );
   const [fallbackExerciseId, setFallbackExerciseId] = useState("6988ff7ffd965df20288901c");
+
+  const newName = normalizeStr(traingPlanName);
+  const isDuplicateName = !!newName && plans.some((plan) => {
+    if (editingPlan && plan._id === editingPlan._id) return false;
+    return normalizeStr(plan.traingPlanName) === newName;
+  });
 
   // Fetch initial exercise list to have a valid fallback exerciseId if needed
   useEffect(() => {
@@ -311,8 +321,13 @@ export default function AddTrainingPlanModal({
                   placeholder="Type.."
                   value={traingPlanName}
                   onChange={(e) => setTraingPlanName(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                  className={`w-full bg-[#1a1a1a] border rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none ${
+                    isDuplicateName ? "border-red-500 focus:border-red-500" : "border-[#2a2a2a] focus:border-emerald-500"
+                  }`}
                 />
+                {isDuplicateName && (
+                  <p className="text-red-500 text-xs mt-1">This training plan name already exists. Please choose a different name.</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -549,7 +564,7 @@ export default function AddTrainingPlanModal({
 
             <button
               onClick={handleSave}
-              disabled={loading}
+              disabled={loading || isDuplicateName}
               className="w-full bg-blue-600 hover:bg-blue-700 text-base text-white mt-4 h-12 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
