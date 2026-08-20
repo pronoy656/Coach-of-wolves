@@ -1,7 +1,55 @@
-"use client";
-
 import { Pencil, Trash2, Calendar, Dumbbell, Loader2 } from "lucide-react";
 import { TrainingSplit, SplitDay } from "@/redux/features/trainingSplit/trainingSplitTypes";
+import { useAppSelector } from "@/redux/hooks";
+
+const translations = {
+  en: {
+    header: "Training Split Schedule",
+    created: "Created:",
+    days: (count: number) => `${count} days`,
+    edit: "Edit split",
+    delete: "Delete split",
+    dayCol: "Day",
+    workoutCol: "Workout",
+    restRecovery: "Rest/Recovery Day",
+    noDays: "No training days configured",
+    workoutDays: "Workout Days",
+    restDays: "Rest Days",
+    totalDays: "Total Days",
+    dayNames: {
+      "Day 1": "Day 1",
+      "Day 2": "Day 2",
+      "Day 3": "Day 3",
+      "Day 4": "Day 4",
+      "Day 5": "Day 5",
+      "Day 6": "Day 6",
+      "Day 7": "Day 7",
+    }
+  },
+  de: {
+    header: "Trainings-Split Zeitplan",
+    created: "Erstellt:",
+    days: (count: number) => `${count} Tage`,
+    edit: "Split bearbeiten",
+    delete: "Split löschen",
+    dayCol: "Tag",
+    workoutCol: "Training",
+    restRecovery: "Ruhe-/Erholungstag",
+    noDays: "Keine Trainingstage konfiguriert",
+    workoutDays: "Trainingstage",
+    restDays: "Ruhetage",
+    totalDays: "Tage gesamt",
+    dayNames: {
+      "Day 1": "Tag 1",
+      "Day 2": "Tag 2",
+      "Day 3": "Tag 3",
+      "Day 4": "Tag 4",
+      "Day 5": "Tag 5",
+      "Day 6": "Tag 6",
+      "Day 7": "Tag 7",
+    }
+  }
+};
 
 interface TrainingSplitPreviewProps {
   split: TrainingSplit;
@@ -16,14 +64,17 @@ export default function TrainingSplitPreview({
   onDelete,
   loading = false,
 }: TrainingSplitPreviewProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   // Format date
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
+      return date.toLocaleDateString(language === "de" ? "de-DE" : "en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
       });
     } catch {
       return dateString;
@@ -41,12 +92,16 @@ export default function TrainingSplitPreview({
   };
 
   // Helper to get consistent day label
-  const getDayLabel = (day: string) => dayMapping[day] || day;
+  const getDayLabel = (day: string) => {
+    const mapped = dayMapping[day] || day;
+    return t.dayNames[mapped as keyof typeof t.dayNames] || mapped;
+  };
 
   // Sort splits by day
   const sortedSplits = [...split.splite].sort((a, b) => {
-    const labelA = getDayLabel(a.day);
-    const labelB = getDayLabel(b.day);
+    const getSortKey = (dayStr: string) => dayMapping[dayStr] || dayStr;
+    const labelA = getSortKey(a.day);
+    const labelB = getSortKey(b.day);
 
     const daysOrder = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
     const indexA = daysOrder.indexOf(labelA);
@@ -68,15 +123,15 @@ export default function TrainingSplitPreview({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#2d2d45] bg-gradient-to-r from-[#1a1a2e] to-[#16213e]">
           <div>
-            <h3 className="font-semibold text-lg mb-1">Training Split Schedule</h3>
+            <h3 className="font-semibold text-lg mb-1">{t.header}</h3>
             <div className="flex items-center gap-4 text-sm text-gray-400">
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                <span>Created: {formatDate(split.createdAt)}</span>
+                <span>{t.created} {formatDate(split.createdAt)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Dumbbell className="w-3 h-3" />
-                <span>{split.splite.length} days</span>
+                <span>{t.days(split.splite.length)}</span>
               </div>
             </div>
           </div>
@@ -85,7 +140,7 @@ export default function TrainingSplitPreview({
               onClick={onEdit}
               disabled={loading}
               className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-600 hover:bg-blue-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Edit split"
+              title={t.edit}
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
@@ -97,7 +152,7 @@ export default function TrainingSplitPreview({
               onClick={onDelete}
               disabled={loading}
               className="w-10 h-10 rounded-full bg-red-600/20 border-2 border-red-600 hover:bg-red-600/30 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Delete split"
+              title={t.delete}
             >
               <Trash2 className="w-4 h-4 text-red-400" />
             </button>
@@ -107,8 +162,8 @@ export default function TrainingSplitPreview({
         {/* Split Days Table */}
         <div className="overflow-hidden">
           <div className="grid grid-cols-12 bg-[#1a1a30] px-6 py-3 text-sm font-medium">
-            <div className="col-span-3">Day</div>
-            <div className="col-span-9">Workout</div>
+            <div className="col-span-3">{t.dayCol}</div>
+            <div className="col-span-9">{t.workoutCol}</div>
           </div>
 
           {sortedSplits.length > 0 ? (
@@ -132,14 +187,14 @@ export default function TrainingSplitPreview({
                   <div className="text-gray-300">{splitDay.exerciseName}</div>
                   {splitDay.exerciseName.toLowerCase().includes('rest') ||
                     splitDay.exerciseName.toLowerCase().includes('recovery') ? (
-                    <span className="text-xs text-gray-400 mt-1 block">Rest/Recovery Day</span>
+                    <span className="text-xs text-gray-400 mt-1 block">{t.restRecovery}</span>
                   ) : null}
                 </div>
               </div>
             ))
           ) : (
             <div className="text-center py-8 text-gray-400">
-              No training days configured
+              {t.noDays}
             </div>
           )}
         </div>
@@ -154,7 +209,7 @@ export default function TrainingSplitPreview({
                   !s.exerciseName.toLowerCase().includes('recovery')
                 ).length}
               </div>
-              <div className="text-xs text-gray-400">Workout Days</div>
+              <div className="text-xs text-gray-400">{t.workoutDays}</div>
             </div>
             <div>
               <div className="text-lg font-bold text-blue-400">
@@ -163,13 +218,13 @@ export default function TrainingSplitPreview({
                   s.exerciseName.toLowerCase().includes('recovery')
                 ).length}
               </div>
-              <div className="text-xs text-gray-400">Rest Days</div>
+              <div className="text-xs text-gray-400">{t.restDays}</div>
             </div>
             <div>
               <div className="text-lg font-bold text-amber-400">
                 {split.splite.length}
               </div>
-              <div className="text-xs text-gray-400">Total Days</div>
+              <div className="text-xs text-gray-400">{t.totalDays}</div>
             </div>
           </div>
         </div>

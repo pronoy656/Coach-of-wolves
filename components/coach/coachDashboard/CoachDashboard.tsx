@@ -38,7 +38,30 @@ interface CoachDashboardProps {
 export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
   const dispatch = useAppDispatch();
   const { currentAthlete } = useAppSelector((state) => state.athlete);
+  const { language } = useAppSelector((state) => state.language);
   const [activeTab, setActiveTab] = useState<Tab>("Daily Tracking");
+
+  const tabTranslations: Record<string, Record<Tab, string>> = {
+    en: {
+      "Daily Tracking": "Daily Tracking",
+      "Check-Ins": "Check-Ins",
+      "Training": "Training",
+      "Nutrition": "Nutrition",
+      "Supplements": "Supplements",
+      "Timeline": "Timeline",
+      "PED": "PED",
+    },
+    de: {
+      "Daily Tracking": "Tägliches Tracking",
+      "Check-Ins": "Check-Ins",
+      "Training": "Training",
+      "Nutrition": "Ernährung",
+      "Supplements": "Nahrungsergänzung",
+      "Timeline": "Zeitleiste",
+      "PED": "PED",
+    },
+  };
+  const tTab = tabTranslations[language as keyof typeof tabTranslations] || tabTranslations.en;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -146,7 +169,7 @@ export default function CoachDashboard({ athleteId }: CoachDashboardProps) {
                 }
               `}
             >
-              {tab}
+              {tTab[tab] || tab}
             </button>
           ))}
         </div>

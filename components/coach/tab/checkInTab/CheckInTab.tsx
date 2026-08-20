@@ -16,6 +16,39 @@ import CheckInDetailsPage from "./CheckInDetailsPage";
 
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    title: "Check-Ins",
+    currentWeek: "Current Week",
+    weekOf: (date: string) => `Week of ${date}`,
+    loading: "Loading check-ins...",
+    checkInDate: "Check-in Date",
+    currentWeight: "Current Weight",
+    averageWeight: "Average Weight",
+    completed: "Completed",
+    actionRequired: "Action Required",
+    noAthleteNote: "The athlete didn't provide any specific notes for this check-in.",
+    selectCheckIn: "Select a check-in card from the list above",
+    deleteModalTitle: "Delete Check-In",
+    deleteModalMessage: "Are you sure you want to delete this check-in? This action cannot be undone.",
+  },
+  de: {
+    title: "Check-Ins",
+    currentWeek: "Aktuelle Woche",
+    weekOf: (date: string) => `Woche vom ${date}`,
+    loading: "Check-Ins werden geladen...",
+    checkInDate: "Check-in Datum",
+    currentWeight: "Aktuelles Gewicht",
+    averageWeight: "Durchschnittsgewicht",
+    completed: "Abgeschlossen",
+    actionRequired: "Aktion erforderlich",
+    noAthleteNote: "Der Athlet hat für diesen Check-in keine spezifischen Notizen angegeben.",
+    selectCheckIn: "Wähle eine Check-in-Karte aus der Liste oben",
+    deleteModalTitle: "Check-In löschen",
+    deleteModalMessage: "Bist du sicher, dass du diesen Check-in löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+  }
+};
+
 interface CheckInTabProps {
   athleteId: string;
 }
@@ -26,6 +59,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
     (state) => state.weeklyCheckin,
   );
   const { timeline } = useAppSelector((state) => state.timeline) || { timeline: [] };
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const [selectedCheckInId, setSelectedCheckInId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -56,7 +91,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
 
   const getWeekOptions = () => {
     const options: { label: string; value: string | undefined }[] = [
-      { label: "Current Week", value: undefined },
+      { label: t.currentWeek, value: undefined },
     ];
 
     if (!timeline || timeline.length === 0) {
@@ -99,7 +134,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
       if (!seen.has(item.checkInDate)) {
         seen.add(item.checkInDate);
         options.push({
-          label: `Week of ${formatDateDisplay(item.checkInDate)}`,
+          label: t.weekOf(formatDateDisplay(item.checkInDate)),
           value: item.checkInDate,
         });
       }
@@ -177,7 +212,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
     <div className="min-h-screen p-2 md:p-6 bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-          <h1 className="text-4xl font-bold text-white">Check-Ins</h1>
+          <h1 className="text-4xl font-bold text-white">{t.title}</h1>
           
           <div className="flex items-center gap-3 relative" ref={dropdownRef}>
 
@@ -188,8 +223,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
               <Calendar className="w-5 h-5" />
               <span className="text-base">
                 {selectedDate
-                  ? `Week of ${formatDateDisplay(selectedDate)}`
-                  : "Current Week"}
+                  ? t.weekOf(formatDateDisplay(selectedDate))
+                  : t.currentWeek}
               </span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${
@@ -226,7 +261,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
         {loading && checkins.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-emerald-500 mb-4" />
-            <p className="text-gray-500">Loading check-ins...</p>
+            <p className="text-gray-500">{t.loading}</p>
           </div>
         ) : (
           <div className="space-y-10">
@@ -242,12 +277,12 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                       <div className="space-y-8 flex-1">
                         <div>
                           <p className="text-gray-500 text-xs uppercase tracking-widest mb-2 font-semibold">
-                            Check-in Date
+                            {t.checkInDate}
                           </p>
                           <p className="text-white font-black text-2xl md:text-3xl uppercase tracking-tighter">
                             {new Date(
                               currentCheckIn.createdAt,
-                            ).toLocaleDateString(undefined, {
+                            ).toLocaleDateString(language === "de" ? "de-DE" : "en-US", {
                               weekday: "long",
                               year: "numeric",
                               month: "long",
@@ -259,7 +294,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                         <div className="flex flex-wrap justify-center md:justify-start gap-12 md:gap-20">
                           <div>
                             <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">
-                              Current Weight
+                              {t.currentWeight}
                             </p>
                             <p className="text-emerald-500 text-4xl md:text-5xl font-black">
                               {currentCheckIn.currentWeight}{" "}
@@ -270,7 +305,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                           </div>
                           <div>
                             <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2 font-bold">
-                              Average Weight
+                              {t.averageWeight}
                             </p>
                             <p className="text-emerald-500/80 text-4xl md:text-5xl font-black">
                               {currentCheckIn.averageWeight}{" "}
@@ -290,8 +325,8 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                             }`}
                         >
                           {currentCheckIn.checkinCompleted === "Completed"
-                            ? "Completed"
-                            : "Action Required"}
+                            ? t.completed
+                            : t.actionRequired}
                         </span>
                       </div>
                     </div>
@@ -300,8 +335,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                       <div className="relative group">
                         <div className="absolute -left-4 top-0 bottom-0 w-1 bg-emerald-500 rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
                         <p className="text-gray-400 text-lg leading-relaxed italic pl-4">
-                          {currentCheckIn.athleteNote ||
-                            "The athlete didn't provide any specific notes for this check-in."}
+                          {currentCheckIn.athleteNote || t.noAthleteNote}
                         </p>
                       </div>
                     </div>
@@ -318,7 +352,7 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
                     <Calendar className="w-8 h-8 text-gray-600" />
                   </div>
                   <p className="text-gray-500 italic text-lg">
-                    Select a check-in card from the list above
+                    {t.selectCheckIn}
                   </p>
                 </div>
               )}
@@ -330,14 +364,12 @@ export default function CheckInTab({ athleteId }: CheckInTabProps) {
       {deleteId && (
         <DeleteModal
           isOpen={!!deleteId}
-          title="Delete Check-In"
-          message="Are you sure you want to delete this check-in? This action cannot be undone."
+          title={t.deleteModalTitle}
+          message={t.deleteModalMessage}
           onConfirm={handleDeleteCheckIn}
           onCancel={() => setDeleteId(null)}
         />
       )}
-
-
     </div>
   );
 }

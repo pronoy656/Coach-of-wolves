@@ -16,6 +16,69 @@ import {
   Exercise,
 } from "@/redux/features/exercise/exerciseSlice";
 
+const translations = {
+  en: {
+    addPlanTitle: "Add Training Plan",
+    editPlanTitle: "Edit Plan",
+    planNameLabel: "Training Plan Name",
+    planNamePlaceholder: "Type..",
+    nameExistsError: "This training plan name already exists. Please choose a different name.",
+    difficultyLabel: "Difficulty",
+    difficulties: {
+      Beginner: "Beginner",
+      Intermediate: "Intermediate",
+      Advanced: "Advanced",
+    },
+    exerciseNameLabel: "Exercise Name",
+    remove: "Remove",
+    typeExercisePlaceholder: "Type exercise name...",
+    searching: "Searching...",
+    noMatches: "No matches found",
+    addAnotherExercise: "Add another exercise",
+    setBreakdown: "Set Breakdown",
+    setCount: "Set Count",
+    addAnotherSetGroup: "Add another set group",
+    repRange: "Rep Range",
+    rir: "RIR",
+    exerciseComment: "Exercise Comment",
+    exerciseCommentPlaceholder: "Specific notes for this exercise... (e.g., Keep elbows tucked)",
+    mainNotes: "Main Plan Notes",
+    mainNotesPlaceholder: "Add general instructions or notes for the entire plan...",
+    saving: "Saving...",
+    savePlan: "Save Training Plan",
+  },
+  de: {
+    addPlanTitle: "Trainingsplan hinzufügen",
+    editPlanTitle: "Plan bearbeiten",
+    planNameLabel: "Trainingsplanname",
+    planNamePlaceholder: "Eingeben..",
+    nameExistsError: "Dieser Trainingsplanname existiert bereits. Bitte wähle einen anderen Namen.",
+    difficultyLabel: "Schwierigkeit",
+    difficulties: {
+      Beginner: "Anfänger",
+      Intermediate: "Mittel",
+      Advanced: "Fortgeschritten",
+    },
+    exerciseNameLabel: "Übungsname",
+    remove: "Entfernen",
+    typeExercisePlaceholder: "Übungsname eingeben...",
+    searching: "Suche...",
+    noMatches: "Keine Treffer gefunden",
+    addAnotherExercise: "Weitere Übung hinzufügen",
+    setBreakdown: "Satz-Aufschlüsselung",
+    setCount: "Anzahl Sätze",
+    addAnotherSetGroup: "Weitere Satzgruppe hinzufügen",
+    repRange: "Wdh-Bereich",
+    rir: "RIR",
+    exerciseComment: "Übungsnotiz",
+    exerciseCommentPlaceholder: "Spezifische Notizen für diese Übung... (z. B. Ellenbogen am Körper halten)",
+    mainNotes: "Hauptplan-Notizen",
+    mainNotesPlaceholder: "Allgemeine Anweisungen oder Notizen für den gesamten Plan hinzufügen...",
+    saving: "Wird gespeichert...",
+    savePlan: "Trainingsplan speichern",
+  }
+};
+
 interface ExerciseState extends BackendExercise {
   id: string;
   dbId?: string; // Storing the MongoDB _id of the exercise template
@@ -38,6 +101,8 @@ export default function AddTrainingPlanModal({
 }: AddPlanModalProps) {
   const dispatch = useAppDispatch();
   const { plans } = useAppSelector((state) => state.trainingPlan);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const normalizeStr = (str?: string) => (str || "").trim().toLowerCase().replace(/\s+/g, " ");
   
@@ -50,7 +115,7 @@ export default function AddTrainingPlanModal({
   });
 
   const [traingPlanName, setTraingPlanName] = useState("");
-  const [dificulty, setDificulty] = useState("Begineer");
+  const [dificulty, setDificulty] = useState("Beginner");
   const [comment, setComment] = useState("");
   const [exercises, setExercises] = useState<ExerciseState[]>([
     createEmptyExercise("0"),
@@ -98,8 +163,8 @@ export default function AddTrainingPlanModal({
 
     const nextTraingPlanName = hasEditingPlan ? editingPlan.traingPlanName : "";
     const nextDificulty = hasEditingPlan
-      ? editingPlan.dificulty || "Begineer"
-      : "Begineer";
+      ? editingPlan.dificulty || "Beginner"
+      : "Beginner";
     const nextComment = hasEditingPlan ? editingPlan.comment || "" : "";
     const nextExercises = hasEditingPlan
       ? editingPlan.exercise && editingPlan.exercise.length > 0
@@ -152,39 +217,6 @@ export default function AddTrainingPlanModal({
     setExercises((prev) =>
       prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex)),
     );
-    if (field === "exerciseName") {
-      setActiveExerciseId(id);
-      setSearchTerm(String(value));
-    }
-  };
-
-  const handleAddSet = (exerciseId: string) => {
-    setExercises((prev) =>
-      prev.map((ex) => {
-        if (ex.id === exerciseId) {
-          const newSets = [
-            ...(ex.exerciseSets || []),
-            { sets: "1", repRange: "", rir: "" },
-          ];
-          return { ...ex, exerciseSets: newSets };
-        }
-        return ex;
-      }),
-    );
-  };
-
-  const handleRemoveSet = (exerciseId: string, setIndex: number) => {
-    setExercises((prev) =>
-      prev.map((ex) => {
-        if (ex.id === exerciseId && (ex.exerciseSets?.length || 0) > 1) {
-          const newSets = (ex.exerciseSets || []).filter(
-            (_, i) => i !== setIndex,
-          );
-          return { ...ex, exerciseSets: newSets };
-        }
-        return ex;
-      }),
-    );
   };
 
   const handleSetDetailChange = (
@@ -195,31 +227,106 @@ export default function AddTrainingPlanModal({
   ) => {
     setExercises((prev) =>
       prev.map((ex) => {
-        if (ex.id === exerciseId) {
-          const newSets = (ex.exerciseSets || []).map((set, i) =>
-            i === setIndex ? { ...set, [field]: value } : set,
-          );
-          return { ...ex, exerciseSets: newSets };
-        }
-        return ex;
+        if (ex.id !== exerciseId) return ex;
+        const newSets = [...(ex.exerciseSets || [])];
+        newSets[setIndex] = { ...newSets[setIndex], [field]: value };
+        return { ...ex, exerciseSets: newSets };
       }),
     );
   };
 
+  const handleAddSet = (exerciseId: string) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id !== exerciseId) return ex;
+        return {
+          ...ex,
+          exerciseSets: [
+            ...(ex.exerciseSets || []),
+            { sets: "1", repRange: "", rir: "" },
+          ],
+        };
+      }),
+    );
+  };
 
+  const handleRemoveSet = (exerciseId: string, setIndex: number) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id !== exerciseId) return ex;
+        const newSets = (ex.exerciseSets || []).filter((_, i) => i !== setIndex);
+        return { ...ex, exerciseSets: newSets };
+      }),
+    );
+  };
+
+  const handleExerciseFocus = (id: string) => {
+    setActiveExerciseId(id);
+    setShowDropdownForId(id);
+
+    const currentName = exercises.find((ex) => ex.id === id)?.exerciseName || "";
+    setSearchTerm(currentName);
+
+    setIsSearching(true);
+    dispatch(
+      getAllExercises({
+        page: 1,
+        limit: 20,
+        search: currentName,
+      }),
+    )
+      .unwrap()
+      .then((res) => {
+        setExerciseSuggestions(res.exercises || []);
+      })
+      .catch(() => {
+        setExerciseSuggestions([]);
+      })
+      .finally(() => setIsSearching(false));
+  };
+
+  const handleSelectExerciseSuggestion = (
+    exerciseId: string,
+    selected: Exercise,
+  ) => {
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.id === exerciseId
+          ? {
+              ...ex,
+              exerciseName: selected.name,
+              dbId: selected._id,
+              exerciseId: selected._id,
+            }
+          : ex,
+      ),
+    );
+    setShowDropdownForId(null);
+  };
 
   const handleSave = () => {
-    const planData: TrainingPlanFormData = {
-      traingPlanName,
-      exerciseId: fallbackExerciseId, // Add empty or fallback since required, but not critical
+    const formattedExercises: BackendExercise[] = exercises
+      .filter((ex) => ex.exerciseName.trim() !== "")
+      .map((ex) => ({
+        exerciseName: ex.exerciseName.trim(),
+        excerciseNote: ex.excerciseNote?.trim() || "",
+        exerciseId: ex.dbId || ex.exerciseId || fallbackExerciseId,
+        exerciseSets: (ex.exerciseSets || []).map((sd) => ({
+          sets: String(sd.sets || "1"),
+          repRange: String(sd.repRange || "").trim(),
+          rir: String(sd.rir || "").trim(),
+        })),
+      }));
+
+    const payload: TrainingPlanFormData = {
+      traingPlanName: traingPlanName.trim(),
+      exerciseId: fallbackExerciseId,
       dificulty,
-      exercise: exercises.map(({ id, dbId, ...rest }) => ({
-        ...rest,
-        exerciseId: dbId || rest.exerciseId || fallbackExerciseId
-      })),
-      comment,
+      comment: comment.trim(),
+      exercise: formattedExercises,
     };
-    onSave(planData);
+
+    onSave(payload);
   };
 
   useEffect(() => {
@@ -252,41 +359,6 @@ export default function AddTrainingPlanModal({
     return () => clearTimeout(handler);
   }, [dispatch, searchTerm]);
 
-  const handleExerciseFocus = (id: string) => {
-    setShowDropdownForId(id);
-    setActiveExerciseId(id);
-
-    if (exerciseSuggestions.length > 0 || isSearching) return;
-
-    setIsSearching(true);
-    dispatch(
-      getAllExercises({
-        page: 1,
-        limit: 50,
-        search: "",
-      }),
-    )
-      .unwrap()
-      .then((res) => {
-        setExerciseSuggestions(res.exercises);
-      })
-      .catch(() => {
-        setExerciseSuggestions([]);
-      })
-      .finally(() => {
-        setIsSearching(false);
-      });
-  };
-
-  const handleSelectExerciseSuggestion = (id: string, item: Exercise) => {
-    setExercises((prev) =>
-      prev.map((ex) =>
-        ex.id === id ? { ...ex, exerciseName: item.name, dbId: item._id } : ex,
-      ),
-    );
-    setShowDropdownForId(null);
-  };
-
   if (!open) return null;
 
   return (
@@ -296,10 +368,10 @@ export default function AddTrainingPlanModal({
         onClick={() => onOpenChange(false)}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#111120] border border-[#2a2a2a] rounded-lg max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto scrollbar-none">
+        <div className="bg-[#111120] border border-[#2a2a2a] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl relative">
           <div className="flex items-center justify-between border-b border-[#2a2a2a] p-6 sticky top-0 bg-[#111120] z-10">
             <h2 className="text-xl font-semibold text-white">
-              {editingPlan ? "Edit Plan" : "Add Training Plan"}
+              {editingPlan ? t.editPlanTitle : t.addPlanTitle}
             </h2>
             <button
               onClick={() => onOpenChange(false)}
@@ -314,11 +386,11 @@ export default function AddTrainingPlanModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">
-                  Training Plan Name
+                  {t.planNameLabel}
                 </label>
                 <input
                   type="text"
-                  placeholder="Type.."
+                  placeholder={t.planNamePlaceholder}
                   value={traingPlanName}
                   onChange={(e) => setTraingPlanName(e.target.value)}
                   className={`w-full bg-[#1a1a1a] border rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none ${
@@ -326,13 +398,13 @@ export default function AddTrainingPlanModal({
                   }`}
                 />
                 {isDuplicateName && (
-                  <p className="text-red-500 text-xs mt-1">This training plan name already exists. Please choose a different name.</p>
+                  <p className="text-red-500 text-xs mt-1">{t.nameExistsError}</p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">
-                  Difficulty
+                  {t.difficultyLabel}
                 </label>
                 <div className="relative">
                   <select
@@ -340,9 +412,9 @@ export default function AddTrainingPlanModal({
                     onChange={(e) => setDificulty(e.target.value)}
                     className="w-full appearance-none bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
+                    <option value="Beginner">{t.difficulties.Beginner}</option>
+                    <option value="Intermediate">{t.difficulties.Intermediate}</option>
+                    <option value="Advanced">{t.difficulties.Advanced}</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                     <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
@@ -363,21 +435,21 @@ export default function AddTrainingPlanModal({
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-medium text-white">
-                        Exercise Name {exercises.length > 1 && `#${index + 1}`}
+                        {t.exerciseNameLabel} {exercises.length > 1 && `#${index + 1}`}
                       </label>
                       {exercises.length > 1 && (
                         <button
                           onClick={() => handleRemoveExercise(exercise.id)}
                           className="text-red-500 hover:text-red-400 text-xs flex items-center gap-1 transition-colors"
                         >
-                          <Trash2 className="w-3 h-3" /> Remove
+                          <Trash2 className="w-3 h-3" /> {t.remove}
                         </button>
                       )}
                     </div>
                     <div className="relative">
                       <input
                         type="text"
-                        placeholder="Type exercise name..."
+                        placeholder={t.typeExercisePlaceholder}
                         value={exercise.exerciseName}
                         onChange={(e) =>
                           handleExerciseChange(
@@ -394,7 +466,7 @@ export default function AddTrainingPlanModal({
                         <div className="absolute z-20 mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-lg max-h-56 overflow-y-auto">
                           {isSearching && (
                             <div className="px-3 py-2 text-xs text-gray-400">
-                              Searching...
+                              {t.searching}
                             </div>
                           )}
                           {!isSearching &&
@@ -420,7 +492,7 @@ export default function AddTrainingPlanModal({
                             ))}
                           {!isSearching && exerciseSuggestions.length === 0 && (
                             <div className="px-3 py-2 text-xs text-gray-500">
-                              No matches found
+                              {t.noMatches}
                             </div>
                           )}
                         </div>
@@ -428,7 +500,7 @@ export default function AddTrainingPlanModal({
                       <button
                         onClick={handleAddExercise}
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#2a2a2a] hover:bg-[#3a3a3a] p-1.5 rounded-md text-emerald-500 transition-colors"
-                        title="Add another exercise"
+                        title={t.addAnotherExercise}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -437,7 +509,7 @@ export default function AddTrainingPlanModal({
 
 
                   <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-white/80 border-b border-[#2a2a2a] pb-2">Set Breakdown</h4>
+                    <h4 className="text-sm font-medium text-white/80 border-b border-[#2a2a2a] pb-2">{t.setBreakdown}</h4>
                     {exercise.exerciseSets?.map((set, setIndex) => (
                       <div
                         key={setIndex}
@@ -445,7 +517,7 @@ export default function AddTrainingPlanModal({
                       >
                         <div className="space-y-2">
                           <label className="text-xs font-medium text-gray-400">
-                            Set Count
+                            {t.setCount}
                           </label>
                           <div className="relative">
                             <input
@@ -466,7 +538,7 @@ export default function AddTrainingPlanModal({
                             <button
                               onClick={() => handleAddSet(exercise.id)}
                               className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#2a2a2a] hover:bg-[#3a3a3a] p-1.5 rounded-md text-emerald-500 transition-colors"
-                              title="Add another set group"
+                              title={t.addAnotherSetGroup}
                             >
                               <Plus className="w-3.5 h-3.5" />
                             </button>
@@ -475,7 +547,7 @@ export default function AddTrainingPlanModal({
 
                         <div className="space-y-2">
                           <label className="text-xs font-medium text-gray-400">
-                            Rep Range
+                            {t.repRange}
                           </label>
                           <input
                             type="text"
@@ -495,7 +567,7 @@ export default function AddTrainingPlanModal({
 
                         <div className="space-y-2 relative">
                           <label className="text-xs font-medium text-gray-400">
-                            RIR
+                            {t.rir}
                           </label>
                           <input
                             type="text"
@@ -529,10 +601,10 @@ export default function AddTrainingPlanModal({
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white">
-                      Exercise Comment
+                      {t.exerciseComment}
                     </label>
                     <textarea
-                      placeholder="Specific notes for this exercise... (e.g., Keep elbows tucked)"
+                      placeholder={t.exerciseCommentPlaceholder}
                       value={exercise.excerciseNote}
                       onChange={(e) =>
                         handleExerciseChange(
@@ -552,10 +624,10 @@ export default function AddTrainingPlanModal({
             {/* Main Plan Notes Section */}
             <div className="space-y-2 border-t border-[#2a2a2a] pt-6">
               <label className="text-lg font-bold text-white">
-                Main Plan Notes
+                {t.mainNotes}
               </label>
               <textarea
-                placeholder="Add general instructions or notes for the entire plan..."
+                placeholder={t.mainNotesPlaceholder}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 min-h-[120px] resize-none"
@@ -570,10 +642,10 @@ export default function AddTrainingPlanModal({
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Saving...
+                  {t.saving}
                 </>
               ) : (
-                "Save Training Plan"
+                t.savePlan
               )}
             </button>
           </div>

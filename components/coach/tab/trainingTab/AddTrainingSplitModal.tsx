@@ -1,8 +1,40 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
 import { SplitDay } from "@/redux/features/trainingSplit/trainingSplitTypes";
+import { useAppSelector } from "@/redux/hooks";
+
+const translations = {
+  en: {
+    editTitle: "Edit Training Split",
+    createTitle: "Create Training Split",
+    addDay: "Add Day",
+    dayLabel: "Day *",
+    dayRequired: "Day is required",
+    exerciseNameLabel: "Exercise Name *",
+    exerciseNameRequired: "Exercise name is required",
+    dayPrefix: "Day",
+    saving: "Saving...",
+    updateSplit: "Update Split",
+    createSplit: "Create Split",
+    placeholderDay: "e.g. Day 1",
+    placeholderExercise: "e.g., Push (Chest, Shoulders, Triceps)",
+  },
+  de: {
+    editTitle: "Trainings-Split bearbeiten",
+    createTitle: "Trainings-Split erstellen",
+    addDay: "Tag hinzufügen",
+    dayLabel: "Tag *",
+    dayRequired: "Tag ist erforderlich",
+    exerciseNameLabel: "Übungsname *",
+    exerciseNameRequired: "Übungsname ist erforderlich",
+    dayPrefix: "Tag",
+    saving: "Wird gespeichert...",
+    updateSplit: "Split aktualisieren",
+    createSplit: "Split erstellen",
+    placeholderDay: "z. B. Tag 1",
+    placeholderExercise: "z. B. Push (Brust, Schultern, Trizeps)",
+  }
+};
 
 interface TrainingSplitModalProps {
   open: boolean;
@@ -49,6 +81,9 @@ export default function AddTrainingSplitModal({
   existingSplit,
   loading = false,
 }: TrainingSplitModalProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const [splits, setSplits] = useState<SplitDay[]>([
     { day: "Day 1", exerciseName: "" },
   ]);
@@ -128,12 +163,12 @@ export default function AddTrainingSplitModal({
       const splitErrors: { day?: string; exerciseName?: string } = {};
 
       if (!split.day.trim()) {
-        splitErrors.day = "Day is required";
+        splitErrors.day = t.dayRequired;
         isValid = false;
       }
 
       if (!split.exerciseName.trim()) {
-        splitErrors.exerciseName = "Exercise name is required";
+        splitErrors.exerciseName = t.exerciseNameRequired;
         isValid = false;
       }
 
@@ -166,7 +201,7 @@ export default function AddTrainingSplitModal({
           <div className="sticky top-0 bg-[#0f0f0f] z-10 border-b border-[#2a2a2a]">
             <div className="flex items-center justify-between p-6">
               <h2 className="text-xl font-semibold text-white">
-                {existingSplit ? "Edit Training Split" : "Create Training Split"}
+                {existingSplit ? t.editTitle : t.createTitle}
               </h2>
               <div className="flex items-center gap-3">
                 <button
@@ -175,7 +210,7 @@ export default function AddTrainingSplitModal({
                   className="bg-transparent border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   <Plus className="w-4 h-4 inline mr-1" />
-                  Add Day
+                  {t.addDay}
                 </button>
                 <button
                   onClick={() => !loading && onOpenChange(false)}
@@ -203,7 +238,7 @@ export default function AddTrainingSplitModal({
                       {index + 1}
                     </div>
                     <h3 className="text-sm font-medium text-gray-300">
-                      Day {index + 1}
+                      {t.dayPrefix} {index + 1}
                     </h3>
                     {splits.length > 1 && (
                       <button
@@ -220,14 +255,14 @@ export default function AddTrainingSplitModal({
                     {/* Day Selection */}
                     <div className="space-y-2">
                       <label className="text-sm text-gray-400 flex items-center justify-between">
-                        <span>Day *</span>
+                        <span>{t.dayLabel}</span>
                         {errors[index]?.day && (
                           <span className="text-red-400 text-xs">{errors[index]?.day}</span>
                         )}
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Day 1"
+                        placeholder={t.placeholderDay}
                         value={split.day}
                         onChange={(e) => handleChange(index, "day", e.target.value)}
                         disabled={loading}
@@ -241,7 +276,7 @@ export default function AddTrainingSplitModal({
                     {/* Exercise Name */}
                     <div className="space-y-2">
                       <label className="text-sm text-gray-400 flex items-center justify-between">
-                        <span>Exercise Name *</span>
+                        <span>{t.exerciseNameLabel}</span>
                         {errors[index]?.exerciseName && (
                           <span className="text-red-400 text-xs">{errors[index]?.exerciseName}</span>
                         )}
@@ -249,7 +284,7 @@ export default function AddTrainingSplitModal({
                       <div className="relative">
                         <input
                           type="text"
-                          placeholder="e.g., Push (Chest, Shoulders, Triceps)"
+                          placeholder={t.placeholderExercise}
                           value={split.exerciseName}
                           onChange={(e) => handleChange(index, "exerciseName", e.target.value)}
                           disabled={loading}
@@ -276,7 +311,7 @@ export default function AddTrainingSplitModal({
                 disabled={loading}
                 className="w-full border border-green-500 hover:border-green-600 hover:text-green-600 text-green-500 mt-4 h-12 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Saving..." : existingSplit ? "Update Split" : "Create Split"}
+                {loading ? t.saving : existingSplit ? t.updateSplit : t.createSplit}
               </button>
             </div>
           </div>

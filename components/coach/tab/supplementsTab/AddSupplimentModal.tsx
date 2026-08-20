@@ -28,6 +28,9 @@ const translations = {
     link: "Link",
     typePlaceholder: "Type..",
     save: "Save",
+    cancel: "Cancel",
+    searching: "Searching...",
+    noMatches: "No matches found",
   },
   de: {
     editSupplement: "Ergänzungsmittel bearbeiten",
@@ -42,6 +45,9 @@ const translations = {
     link: "Link",
     typePlaceholder: "Eingeben..",
     save: "Speichern",
+    cancel: "Abbrechen",
+    searching: "Suche...",
+    noMatches: "Keine Treffer gefunden",
   },
 };
 
@@ -187,21 +193,21 @@ export default function AddSupplimentModal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#08081A] border border-[#303245] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-[#0f0f1e] border border-emerald-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl relative">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[#303245] sticky top-0 bg-[#08081A]">
-            <h2 className="text-2xl font-bold text-white">
+          <div className="flex items-center justify-between p-6 border-b border-[#2d2d45] sticky top-0 bg-[#0f0f1e] z-10">
+            <h2 className="text-xl font-bold text-white">
               {supplement ? t.editSupplement : t.addSupplement}
             </h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-[#303245] rounded-lg transition-colors text-gray-400 hover:text-white"
+              className="p-1 hover:bg-[#2d2d45] rounded-lg transition-colors text-gray-400 hover:text-white"
             >
               <X className="w-6 h-6" />
             </button>
@@ -212,7 +218,7 @@ export default function AddSupplimentModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Supplement Name */}
               <div className="relative">
-                <label className="block text-gray-400 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
                   {t.supplementName}
                 </label>
                 <input
@@ -222,15 +228,15 @@ export default function AddSupplimentModal({
                   onChange={handleChange}
                   onFocus={handleNameFocus}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   autoComplete="off"
                   required
                 />
                 {showDropdown && (
-                  <div className="absolute z-20 mt-1 w-full bg-[#0B0C15] border border-[#303245] rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                  <div className="absolute z-20 mt-1 w-full bg-[#08081A] border border-[#303245] rounded-lg shadow-lg max-h-56 overflow-y-auto">
                     {isSearching && (
                       <div className="px-3 py-2 text-xs text-gray-400">
-                        Searching...
+                        {t.searching}
                       </div>
                     )}
                     {!isSearching &&
@@ -251,7 +257,7 @@ export default function AddSupplimentModal({
                       ))}
                     {!isSearching && suggestions.length === 0 && (
                       <div className="px-3 py-2 text-xs text-gray-500">
-                        No matches found
+                        {t.noMatches}
                       </div>
                     )}
                   </div>
@@ -260,14 +266,14 @@ export default function AddSupplimentModal({
 
               {/* Brand */}
               <div>
-                <label className="block text-gray-400 mb-2">{t.brand}</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t.brand}</label>
                 <input
                   type="text"
                   name="brand"
                   value={formData.brand}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
@@ -276,21 +282,21 @@ export default function AddSupplimentModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Dosage */}
               <div>
-                <label className="block text-gray-400 mb-2">{t.dosage}</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t.dosage}</label>
                 <input
                   type="text"
                   name="dosage"
                   value={formData.dosage}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
 
               {/* Frequency */}
               <div>
-                <label className="block text-gray-400 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
                   {t.frequency}
                 </label>
                 <input
@@ -299,77 +305,77 @@ export default function AddSupplimentModal({
                   value={formData.frequency}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
 
               {/* Time */}
               <div>
-                <label className="block text-gray-400 mb-2">{t.time}</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t.time}</label>
                 <input
                   type="text"
                   name="time"
                   value={formData.time}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
 
               {/* Purpose */}
               <div>
-                <label className="block text-gray-400 mb-2">{t.purpose}</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t.purpose}</label>
                 <input
                   type="text"
                   name="purpose"
                   value={formData.purpose}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
 
               {/* Link */}
               <div>
-                <label className="block text-gray-400 mb-2">{(t as any).link}</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{(t as any).link}</label>
                 <input
                   type="text"
                   name="productLink"
                   value={formData.productLink}
                   onChange={handleChange}
                   placeholder={t.typePlaceholder}
-                  className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#08081A] border border-[#303245] rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
             </div>
 
             {/* Note */}
             <div>
-              <label className="block text-gray-400 mb-2">{t.note}</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t.note}</label>
               <textarea
                 name="note"
                 value={formData.note}
                 onChange={handleChange}
                 placeholder={t.typePlaceholder}
-                className="w-full bg-[#0B0C15] border border-[#303245] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 h-32 resize-none"
+                className="w-full bg-[#08081A] border border-[#303245] rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 h-28 resize-none transition-colors"
               />
             </div>
 
             {/* Footer Actions */}
-            <div className="flex justify-end gap-4 pt-4 border-t border-[#303245]">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#2d2d45]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 rounded-lg bg-[#1F2130] text-white hover:bg-[#303245] transition-colors"
+                className="px-6 py-2.5 rounded-lg bg-[#1a1a2e] border border-[#2d2d45] text-gray-300 hover:bg-[#25253e] font-medium transition-colors text-sm"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition-colors"
+                className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors text-sm"
               >
                 {t.save}
               </button>

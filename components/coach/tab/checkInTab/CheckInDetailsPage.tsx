@@ -19,8 +19,151 @@ interface CheckInDetailProps {
   onDelete: () => void;
 }
 
+const translations = {
+  en: {
+    detailsTitle: "Check-In Details",
+    compareHistory: "Compare History",
+    addSlider: "Add Slider",
+    wellBeingTitle: "Well-Being",
+    sliders: {
+      energyLevel: "Energy Level",
+      stressLevel: "Stress Level",
+      moodLevel: "Mood Level",
+      sleepQuality: "Sleep Quality",
+      hungerLevel: "Hunger Level",
+      dietLevel: "Diet Level",
+      digestionLevel: "Digestion",
+      feelStrength: "Feel Strength",
+      pumps: "Pumps",
+    },
+    dynamicSliders: "Dynamic Sliders",
+    archived: "(Archived)",
+    nutritionTitle: "Nutrition",
+    challengeDiet: "Challenge Diet",
+    trainingTitle: "Training",
+    trainingCompleted: "Training Completed?",
+    cardioCompleted: "Cardio Completed?",
+    yes: "Yes",
+    no: "No",
+    trainingFeedback: "Feedback Training",
+    editQuestionsNotes: "Edit questions & notes",
+    cancel: "Cancel",
+    questionsTitle: "Questions",
+    addQuestion: "Add Question",
+    enterQuestionPlaceholder: "Enter question...",
+    add: "Add",
+    mandatoryQuestion: "Mandatory Question",
+    mandatorySubtext: "(Athletes must answer this to complete check-in)",
+    noQuestions: "No questions added yet",
+    questionText: "Question Text",
+    mandatory: "Mandatory",
+    enterAnswerPlaceholder: "Enter answer...",
+    noAnswerProvided: "No answer provided",
+    mediaTitle: "Media",
+    photos: "Photos",
+    videosMedia: "Videos & Media",
+    noImagesUploaded: "No images uploaded",
+    noPhotosVideosSubtext: "Athletes haven't provided any photos or videos yet.",
+    comparisonTitle: "Comparison Check-In",
+    oldCheckIn: "Old Check-in",
+    presentCheckIn: "Present Check-in (Current)",
+    metrics: "Metrics",
+    weight: "Weight",
+    avgWeight: "Avg Weight",
+    energy: "Energy",
+    stress: "Stress",
+    mood: "Mood",
+    sleep: "Sleep",
+    hunger: "Hunger",
+    diet: "Diet",
+    digestion: "Digestion",
+    strength: "Strength",
+    pumps: "Pumps",
+    cardio: "Cardio",
+    completedStatus: "Completed",
+    missedStatus: "Missed",
+    noOldCheckIn: "No old check-in data available for comparison.",
+    coachNotesTitle: "Coach's Notes",
+    coachNotesPlaceholder: "Add your notes here...",
+    completing: "Completing...",
+    completeCheckInBtn: "Complete check-in",
+    removeSliderTitle: "Remove Slider",
+    removeSliderMsg: "Are you sure you want to remove this slider configuration? This will affect future check-ins for this athlete.",
+  },
+  de: {
+    detailsTitle: "Check-In Details",
+    compareHistory: "Verlauf vergleichen",
+    addSlider: "Regler hinzufügen",
+    wellBeingTitle: "Wohlbefinden",
+    sliders: {
+      energyLevel: "Energielevel",
+      stressLevel: "Stresslevel",
+      moodLevel: "Stimmungslevel",
+      sleepQuality: "Schlafqualität",
+      hungerLevel: "Hungerlevel",
+      dietLevel: "Diätlevel",
+      digestionLevel: "Verdauung",
+      feelStrength: "Kraftgefühl",
+      pumps: "Pump",
+    },
+    dynamicSliders: "Dynamische Regler",
+    archived: "(Archiviert)",
+    nutritionTitle: "Ernährung",
+    challengeDiet: "Challenge-Diät",
+    trainingTitle: "Training",
+    trainingCompleted: "Training absolviert?",
+    cardioCompleted: "Cardio absolviert?",
+    yes: "Ja",
+    no: "Nein",
+    trainingFeedback: "Training-Feedback",
+    editQuestionsNotes: "Fragen & Notizen bearbeiten",
+    cancel: "Abbrechen",
+    questionsTitle: "Fragen",
+    addQuestion: "Frage hinzufügen",
+    enterQuestionPlaceholder: "Frage eingeben...",
+    add: "Hinzufügen",
+    mandatoryQuestion: "Pflichtfrage",
+    mandatorySubtext: "(Athleten müssen dies beantworten, um den Check-in abzuschließen)",
+    noQuestions: "Noch keine Fragen hinzugefügt",
+    questionText: "Fragetext",
+    mandatory: "Pflicht",
+    enterAnswerPlaceholder: "Antwort eingeben...",
+    noAnswerProvided: "Keine Antwort angegeben",
+    mediaTitle: "Medien",
+    photos: "Fotos",
+    videosMedia: "Videos & Medien",
+    noImagesUploaded: "Keine Bilder hochgeladen",
+    noPhotosVideosSubtext: "Athleten haben noch keine Fotos oder Videos bereitgestellt.",
+    comparisonTitle: "Check-In-Vergleich",
+    oldCheckIn: "Alter Check-in",
+    presentCheckIn: "Aktueller Check-in (Aktuell)",
+    metrics: "Werte",
+    weight: "Gewicht",
+    avgWeight: "Durchschnittsgewicht",
+    energy: "Energie",
+    stress: "Stress",
+    mood: "Stimmung",
+    sleep: "Schlaf",
+    hunger: "Hunger",
+    diet: "Diät",
+    digestion: "Verdauung",
+    strength: "Kraft",
+    pumps: "Pump",
+    cardio: "Cardio",
+    completedStatus: "Absolviert",
+    missedStatus: "Verpasst",
+    noOldCheckIn: "Keine alten Check-in-Daten für den Vergleich verfügbar.",
+    coachNotesTitle: "Notizen des Coaches",
+    coachNotesPlaceholder: "Füge hier deine Notizen hinzu...",
+    completing: "Wird abgeschlossen...",
+    completeCheckInBtn: "Check-in abschließen",
+    removeSliderTitle: "Regler entfernen",
+    removeSliderMsg: "Bist du sicher, dass du diese Regler-Konfiguration entfernen möchtest? Dies hat Auswirkungen auf zukünftige Check-ins dieses Athleten.",
+  }
+};
+
 // Move YesNoDisplay component outside the main component
-const YesNoDisplay = ({ value }: { value: boolean }) => (
+const YesNoDisplay = ({ value, yesText = "Yes", noText = "No" }: { value: boolean; yesText?: string; noText?: string }) => (
   <div className="flex gap-3">
     <div
       className={`flex-1 px-2 py-2 rounded-lg font-semibold ${value
@@ -28,7 +171,7 @@ const YesNoDisplay = ({ value }: { value: boolean }) => (
         : "bg-slate-700/50 text-gray-400 border border-slate-600"
         }`}
     >
-      {value ? "Yes" : "No"}
+      {value ? yesText : noText}
     </div>
     <div
       className={`flex-1 px-2 py-2 rounded-lg font-semibold ${!value
@@ -36,7 +179,7 @@ const YesNoDisplay = ({ value }: { value: boolean }) => (
         : "bg-slate-700/50 text-gray-400 border border-slate-600"
         }`}
     >
-      {value ? "No" : "Yes"}
+      {value ? noText : yesText}
     </div>
   </div>
 );
@@ -65,6 +208,8 @@ export default function CheckInDetailsPage({
 }: CheckInDetailProps) {
   const dispatch = useAppDispatch();
   const { oldCheckin, loading: loadingOldData } = useAppSelector((state) => state.weeklyCheckin);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<WeeklyCheckin>(checkIn);
@@ -304,18 +449,16 @@ export default function CheckInDetailsPage({
   return (
     <div className="space-y-8">
 
-
-
       {/* ── Check-In Details Header ───────────────────────────────────────────── */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-700/30">
-        <h2 className="text-2xl font-bold text-white">Check-In Details</h2>
+        <h2 className="text-2xl font-bold text-white">{t.detailsTitle}</h2>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowComparisonModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:border-blue-400/50"
           >
             <History className="w-4 h-4" />
-            Compare History
+            {t.compareHistory}
           </button>
           {checkIn.checkinCompleted !== "Completed" && (
             <button
@@ -323,7 +466,7 @@ export default function CheckInDetailsPage({
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-400/50"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Add Slider
+              {t.addSlider}
             </button>
           )}
         </div>
@@ -333,17 +476,17 @@ export default function CheckInDetailsPage({
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
           <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-          Well-Being
+          {t.wellBeingTitle}
         </h3>
 
         {/* Standard sliders filled by athlete */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { label: "Energy Level", value: checkIn.wellBeing?.energyLevel || 0 },
-            { label: "Stress Level", value: checkIn.wellBeing?.stressLevel || 0 },
-            { label: "Mood Level", value: checkIn.wellBeing?.moodLevel || 0 },
-            { label: "Sleep Quality", value: checkIn.wellBeing?.sleepQuality || 0 },
-            { label: "Hunger Level", value: checkIn.wellBeing?.hungerLevel || 0 },
+            { label: t.sliders.energyLevel, value: checkIn.wellBeing?.energyLevel || 0 },
+            { label: t.sliders.stressLevel, value: checkIn.wellBeing?.stressLevel || 0 },
+            { label: t.sliders.moodLevel, value: checkIn.wellBeing?.moodLevel || 0 },
+            { label: t.sliders.sleepQuality, value: checkIn.wellBeing?.sleepQuality || 0 },
+            { label: t.sliders.hungerLevel, value: checkIn.wellBeing?.hungerLevel || 0 },
           ].map(({ label, value }) => (
             <SliderWithIndicator key={label} label={label} value={value} />
           ))}
@@ -353,7 +496,7 @@ export default function CheckInDetailsPage({
         {(activeSliders.length > 0 || Object.keys(checkIn.wellBeing || {}).some(k => !STANDARD_WELLBEING_KEYS.has(k))) && (
           <div className="mt-6 pt-5 border-t border-slate-700/40">
             <p className="text-[10px] text-violet-400/80 font-bold uppercase tracking-widest mb-4">
-              Dynamic Sliders
+              {t.dynamicSliders}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeSliders.map((slider) => {
@@ -376,7 +519,7 @@ export default function CheckInDetailsPage({
                 if (STANDARD_WELLBEING_KEYS.has(key)) return null;
                 if (activeSliders.some(s => toCamelCase(s.title) === key)) return null;
                 
-                const formattedTitle = fromCamelCase(key) + " (Archived)";
+                const formattedTitle = fromCamelCase(key) + ` ${t.archived}`;
                 return (
                   <SliderWithIndicator 
                     key={key} 
@@ -395,19 +538,19 @@ export default function CheckInDetailsPage({
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-            Nutrition
+            {t.nutritionTitle}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {[
-              { label: "Diet Level", value: checkIn.nutrition?.dietLevel || 0 },
-              { label: "Digestion", value: checkIn.nutrition?.digestionLevel || 0 },
+              { label: t.sliders.dietLevel, value: checkIn.nutrition?.dietLevel || 0 },
+              { label: t.sliders.digestionLevel, value: checkIn.nutrition?.digestionLevel || 0 },
             ].map(({ label, value }) => (
               <SliderWithIndicator key={label} label={label} value={value} />
             ))}
           </div>
           <div>
             <label className="block text-gray-300 text-sm font-bold mb-2">
-              Challenge Diet
+              {t.challengeDiet}
             </label>
             <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
               {checkIn.nutrition?.challengeDiet || "N/A"}
@@ -421,15 +564,15 @@ export default function CheckInDetailsPage({
         <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-            Training
+            {t.trainingTitle}
           </h3>
 
           <div className="space-y-6">
             {/* Sliders */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: "Feel Strength", value: checkIn.training?.feelStrength || 0 },
-                { label: "Pumps", value: checkIn.training?.pumps || 0 },
+                { label: t.sliders.feelStrength, value: checkIn.training?.feelStrength || 0 },
+                { label: t.sliders.pumps, value: checkIn.training?.pumps || 0 },
               ].map(({ label, value }) => (
                 <SliderWithIndicator key={label} label={label} value={value} />
               ))}
@@ -439,15 +582,15 @@ export default function CheckInDetailsPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
                 <label className="block text-white font-medium mb-4">
-                  Training Completed?
+                  {t.trainingCompleted}
                 </label>
-                <YesNoDisplay value={!!checkIn.training?.trainingCompleted} />
+                <YesNoDisplay value={!!checkIn.training?.trainingCompleted} yesText={t.yes} noText={t.no} />
               </div>
               <div className="bg-[#0B0B22] rounded-lg p-4 border border-slate-700/30">
                 <label className="block text-white font-medium mb-4">
-                  Cardio Completed?
+                  {t.cardioCompleted}
                 </label>
-                <YesNoDisplay value={!!checkIn.training?.cardioCompleted} />
+                <YesNoDisplay value={!!checkIn.training?.cardioCompleted} yesText={t.yes} noText={t.no} />
               </div>
             </div>
 
@@ -455,7 +598,7 @@ export default function CheckInDetailsPage({
             {checkIn.trainingFeedback && (
               <div>
                 <label className="block text-gray-300 text-sm font-bold mb-2">
-                  Feedback Training
+                  {t.trainingFeedback}
                 </label>
                 <div className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 opacity-50">
                   {checkIn.trainingFeedback}
@@ -472,7 +615,7 @@ export default function CheckInDetailsPage({
             className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 text-base"
           >
             <Edit2 className="w-4 h-4" />
-            Edit questions &amp; notes
+            {t.editQuestionsNotes}
           </button>
         </div>
       ) : (
@@ -486,7 +629,7 @@ export default function CheckInDetailsPage({
             className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border-2 border-slate-600 text-gray-400 hover:bg-slate-700/30 text-base"
           >
             <X className="w-4 h-4" />
-            Cancel
+            {t.cancel}
           </button>
         </div>
       )}
@@ -495,7 +638,7 @@ export default function CheckInDetailsPage({
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
           <h3 className="text-lg font-bold text-white flex items-center gap-3">
             <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-            Questions
+            {t.questionsTitle}
           </h3>
 
           {isEditing && (
@@ -504,7 +647,7 @@ export default function CheckInDetailsPage({
               className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm font-semibold transition-colors bg-emerald-500/10 px-3 py-2 rounded-lg hover:bg-emerald-500/20"
             >
               <Plus className="w-4 h-4" />
-              Add Question
+              {t.addQuestion}
             </button>
           )}
         </div>
@@ -516,7 +659,7 @@ export default function CheckInDetailsPage({
                 type="text"
                 value={newQuestionInput}
                 onChange={(e) => setNewQuestionInput(e.target.value)}
-                placeholder="Enter question..."
+                placeholder={t.enterQuestionPlaceholder}
                 className="flex-1 bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAddQuestion();
@@ -526,7 +669,7 @@ export default function CheckInDetailsPage({
                 onClick={handleAddQuestion}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shrink-0"
               >
-                Add
+                {t.add}
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -540,20 +683,18 @@ export default function CheckInDetailsPage({
                   className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
                 />
                 <span className="text-sm text-gray-400 group-hover:text-emerald-400 transition-colors">
-                  Mandatory Question
+                  {t.mandatoryQuestion}
                 </span>
               </label>
-              <span className="text-xs text-slate-500">(Athletes must answer this to complete check-in)</span>
+              <span className="text-xs text-slate-500">{t.mandatorySubtext}</span>
             </div>
           </div>
         )}
 
-
-
         <div className="space-y-4">
           {editData.questionAndAnswer.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">
-              No questions added yet
+              {t.noQuestions}
             </p>
           ) : (
             editData.questionAndAnswer.map((q, index) => (
@@ -565,7 +706,7 @@ export default function CheckInDetailsPage({
                   <div className="flex flex-col gap-1 w-full">
                     {isEditing ? (
                       <div className="flex flex-col gap-2 mb-2 w-full">
-                        <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Q{index + 1} Question Text</span>
+                        <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Q{index + 1} {t.questionText}</span>
                         <input
                           type="text"
                           value={q.question}
@@ -600,7 +741,7 @@ export default function CheckInDetailsPage({
                             className="w-4 h-4 rounded border-slate-600 bg-[#08081A] text-emerald-500 focus:ring-emerald-500/50 focus:ring-offset-0 transition-colors cursor-pointer"
                           />
                           <span className={`text-xs transition-colors ${q.status ? "text-emerald-400" : "text-gray-400 group-hover:text-emerald-400"}`}>
-                            Mandatory
+                            {t.mandatory}
                           </span>
                         </label>
                       </div>
@@ -624,31 +765,27 @@ export default function CheckInDetailsPage({
                   className="w-full bg-[#08081A] border border-slate-600 rounded-lg px-3 py-2 text-gray-300 text-sm resize-none disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
                   rows={2}
                   placeholder={
-                    isEditing ? "Enter answer..." : "No answer provided"
+                    isEditing ? t.enterAnswerPlaceholder : t.noAnswerProvided
                   }
                 />
               </div>
             ))
           )}
         </div>
-
-
       </div>
-
-
 
       {/* Media Section - VIEW ONLY */}
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
           <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-          Media
+          {t.mediaTitle}
         </h3>
 
         {checkIn.image?.length || checkIn.media?.length || checkIn.video?.length ? (
           <>
             {checkIn.image && checkIn.image.length > 0 ? (
               <div className="mb-8">
-                <p className="text-gray-300 text-sm mb-4 font-semibold">Photos</p>
+                <p className="text-gray-300 text-sm mb-4 font-semibold">{t.photos}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {checkIn.image.map((img, idx) => (
                     <div
@@ -670,13 +807,13 @@ export default function CheckInDetailsPage({
               </div>
             ) : (
               <div className="mb-8 bg-[#0b0b22]/30 border border-slate-800/50 rounded-lg p-4 text-center">
-                <p className="text-slate-500 text-sm italic">No imagesuploaded</p>
+                <p className="text-slate-500 text-sm italic">{t.noImagesUploaded}</p>
               </div>
             )}
 
             {(checkIn.video || checkIn.media) && (
               <div>
-                <p className="text-gray-300 text-sm mb-4 font-semibold">Videos & Media</p>
+                <p className="text-gray-300 text-sm mb-4 font-semibold">{t.videosMedia}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[...(checkIn.video || []), ...(checkIn.media || [])].map((vid, idx) => (
                     <div
@@ -699,8 +836,8 @@ export default function CheckInDetailsPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-slate-400 font-medium tracking-tight">No imagesuploaded</p>
-            <p className="text-slate-500 text-sm">Athletes haven't provided any photos or videos yet.</p>
+            <p className="text-slate-400 font-medium tracking-tight">{t.noImagesUploaded}</p>
+            <p className="text-slate-500 text-sm">{t.noPhotosVideosSubtext}</p>
           </div>
         )}
       </div>
@@ -709,7 +846,7 @@ export default function CheckInDetailsPage({
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
           <div className="w-1.5 h-8 bg-emerald-500 rounded-full"></div>
-          Comparison Check-In
+          {t.comparisonTitle}
         </h3>
 
         {loadingOldData ? (
@@ -722,44 +859,44 @@ export default function CheckInDetailsPage({
             {/* Left Side - Old Data */}
             <div className="space-y-6 pr-0 md:pr-6">
               <h4 className="text-gray-400 font-bold mb-4 text-center uppercase tracking-widest text-xs">
-                Old Check-in {oldCheckin.createdAt ? `(${new Date(oldCheckin.createdAt).toLocaleDateString()})` : ""}
+                {t.oldCheckIn} {oldCheckin.createdAt ? `(${new Date(oldCheckin.createdAt).toLocaleDateString(language === "de" ? "de-DE" : "en-US")})` : ""}
               </h4>
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Metrics</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.metrics}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
-                    <span className="text-gray-400 text-xs">Weight</span>
+                    <span className="text-gray-400 text-xs">{t.weight}</span>
                     <span className="text-white font-bold text-sm">{oldCheckin.currentWeight || "N/A"} kg</span>
                   </div>
                   <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
-                    <span className="text-gray-400 text-xs">Avg Weight</span>
+                    <span className="text-gray-400 text-xs">{t.avgWeight}</span>
                     <span className="text-white font-bold text-sm">{oldCheckin.averageWeight || "N/A"} kg</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.wellBeingTitle}</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Energy</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.energy}</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.energyLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Stress</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.stress}</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.stressLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Mood</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.mood}</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.moodLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.sleep}</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.sleepQuality || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Hunger</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.hunger}</p>
                     <p className="text-white font-bold text-sm">{oldCheckin.wellBeing?.hungerLevel || "0"}/10</p>
                   </div>
                 </div>
@@ -768,14 +905,14 @@ export default function CheckInDetailsPage({
               {/* Nutrition - Only if exists */}
               {oldCheckin.nutrition && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.nutritionTitle}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.diet}</p>
                       <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.dietLevel || "0"}/10</p>
                     </div>
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.digestion}</p>
                       <p className="text-white font-bold text-sm">{oldCheckin.nutrition?.digestionLevel || "0"}/10</p>
                     </div>
                   </div>
@@ -785,35 +922,35 @@ export default function CheckInDetailsPage({
               {/* Training - Only if exists */}
               {oldCheckin.training && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.trainingTitle}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.strength}</p>
                       <p className="text-white font-bold text-sm">{oldCheckin.training?.feelStrength || "0"}/10</p>
                     </div>
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-slate-800/50 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.pumps}</p>
                       <p className="text-white font-bold text-sm">{oldCheckin.training?.pumps || "0"}/10</p>
                     </div>
                     <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.trainingCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                      <p className="text-[10px] opacity-70 mb-1">Training</p>
-                      <p className="font-bold text-xs">{oldCheckin.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                      <p className="text-[10px] opacity-70 mb-1">{t.trainingTitle}</p>
+                      <p className="font-bold text-xs">{oldCheckin.training?.trainingCompleted ? t.completedStatus : t.missedStatus}</p>
                     </div>
                     <div className={`p-2 rounded-lg border text-center ${oldCheckin.training?.cardioCompleted ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                      <p className="text-[10px] opacity-70 mb-1">Cardio</p>
-                      <p className="font-bold text-xs">{oldCheckin.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                      <p className="text-[10px] opacity-70 mb-1">{t.cardio}</p>
+                      <p className="font-bold text-xs">{oldCheckin.training?.cardioCompleted ? t.completedStatus : t.missedStatus}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.questionsTitle}</p>
                 <div className="space-y-2">
                   {oldCheckin.questionAndAnswer?.map((qa, idx) => (
                     <div key={idx} className="bg-[#0B0B22] p-3 rounded-lg border border-slate-800/50">
                       <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">{qa.question}</p>
-                      <p className="text-white text-xs italic">"{qa.answer || "No answer"}"</p>
+                      <p className="text-white text-xs italic">"{qa.answer || t.noAnswerProvided}"</p>
                     </div>
                   ))}
                 </div>
@@ -822,7 +959,7 @@ export default function CheckInDetailsPage({
               {/* Media */}
               {oldCheckin.image && oldCheckin.image.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.photos}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {oldCheckin.image.map((img, idx) => (
                       <div
@@ -841,44 +978,44 @@ export default function CheckInDetailsPage({
             {/* Right Side - Present Data */}
             <div className="space-y-6 pl-0 md:pl-6">
               <h4 className="text-emerald-500 font-bold mb-4 text-center uppercase tracking-widest text-xs">
-                Present Check-in (Current)
+                {t.presentCheckIn}
               </h4>
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Metrics</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.metrics}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
-                    <span className="text-gray-400 text-xs">Weight</span>
+                    <span className="text-gray-400 text-xs">{t.weight}</span>
                     <span className="text-emerald-500 font-bold text-sm">{checkIn.currentWeight || "N/A"} kg</span>
                   </div>
                   <div className="flex justify-between items-center bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
-                    <span className="text-gray-400 text-xs">Avg Weight</span>
+                    <span className="text-gray-400 text-xs">{t.avgWeight}</span>
                     <span className="text-emerald-500 font-bold text-sm">{checkIn.averageWeight || "N/A"} kg</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Well-Being</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.wellBeingTitle}</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Energy</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.energy}</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.energyLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Stress</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.stress}</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.stressLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Mood</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.mood}</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.moodLevel || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Sleep</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.sleep}</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.sleepQuality || "0"}/10</p>
                   </div>
                   <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                    <p className="text-[10px] text-gray-500 mb-1">Hunger</p>
+                    <p className="text-[10px] text-gray-500 mb-1">{t.hunger}</p>
                     <p className="text-emerald-500 font-bold text-sm">{checkIn.wellBeing?.hungerLevel || "0"}/10</p>
                   </div>
                 </div>
@@ -887,14 +1024,14 @@ export default function CheckInDetailsPage({
               {/* Nutrition - Only if exists */}
               {checkIn.nutrition && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Nutrition</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.nutritionTitle}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Diet</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.diet}</p>
                       <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.dietLevel || "0"}/10</p>
                     </div>
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Digestion</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.digestion}</p>
                       <p className="text-emerald-500 font-bold text-sm">{checkIn.nutrition?.digestionLevel || "0"}/10</p>
                     </div>
                   </div>
@@ -904,35 +1041,35 @@ export default function CheckInDetailsPage({
               {/* Training - Only if exists */}
               {checkIn.training && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Training</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.trainingTitle}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Strength</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.strength}</p>
                       <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.feelStrength || "0"}/10</p>
                     </div>
                     <div className="bg-[#0B0B22] p-2 rounded-lg border border-emerald-500/10 text-center">
-                      <p className="text-[10px] text-gray-500 mb-1">Pumps</p>
+                      <p className="text-[10px] text-gray-500 mb-1">{t.pumps}</p>
                       <p className="text-emerald-500 font-bold text-sm">{checkIn.training?.pumps || "0"}/10</p>
                     </div>
                     <div className={`p-2 rounded-lg border text-center ${checkIn.training?.trainingCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                      <p className="text-[10px] opacity-70 mb-1">Training</p>
-                      <p className="font-bold text-xs">{checkIn.training?.trainingCompleted ? 'Completed' : 'Missed'}</p>
+                      <p className="text-[10px] opacity-70 mb-1">{t.trainingTitle}</p>
+                      <p className="font-bold text-xs">{checkIn.training?.trainingCompleted ? t.completedStatus : t.missedStatus}</p>
                     </div>
                     <div className={`p-2 rounded-lg border text-center ${checkIn.training?.cardioCompleted ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                      <p className="text-[10px] opacity-70 mb-1">Cardio</p>
-                      <p className="font-bold text-xs">{checkIn.training?.cardioCompleted ? 'Completed' : 'Missed'}</p>
+                      <p className="text-[10px] opacity-70 mb-1">{t.cardio}</p>
+                      <p className="font-bold text-xs">{checkIn.training?.cardioCompleted ? t.completedStatus : t.missedStatus}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="space-y-3">
-                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Questions</p>
+                <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.questionsTitle}</p>
                 <div className="space-y-2">
                   {checkIn.questionAndAnswer?.map((qa, idx) => (
                     <div key={idx} className="bg-[#0B0B22] p-3 rounded-lg border border-emerald-500/10">
                       <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">{qa.question}</p>
-                      <p className="text-emerald-400 text-xs italic">"{qa.answer || "No answer"}"</p>
+                      <p className="text-emerald-400 text-xs italic">"{qa.answer || t.noAnswerProvided}"</p>
                     </div>
                   ))}
                 </div>
@@ -941,7 +1078,7 @@ export default function CheckInDetailsPage({
               {/* Media */}
               {checkIn.image && checkIn.image.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">Images</p>
+                  <p className="text-emerald-500/50 text-[10px] font-bold uppercase tracking-wider">{t.photos}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {checkIn.image.map((img, idx) => (
                       <div
@@ -959,7 +1096,7 @@ export default function CheckInDetailsPage({
           </div>
         ) : (
           <div className="text-center py-12 bg-[#0B0B22] rounded-lg border border-slate-700/50 text-gray-500">
-            No old check-in data available for comparison.
+            {t.noOldCheckIn}
           </div>
         )}
       </div>
@@ -968,7 +1105,7 @@ export default function CheckInDetailsPage({
       <div className="bg-[#08081A] border border-slate-700/40 rounded-xl p-6">
         <label className="block text-white text-sm font-bold mb-3 flex items-center gap-3">
           <div className="w-1.5 h-6 bg-emerald-500 rounded-full"></div>
-          Coach's Notes
+          {t.coachNotesTitle}
         </label>
         <textarea
           value={editData.coachNote}
@@ -977,7 +1114,7 @@ export default function CheckInDetailsPage({
           }
           disabled={!isEditing}
           className="w-full bg-slate-900 border border-slate-700 text-gray-300 rounded-lg px-3 py-2 resize-none disabled:opacity-50 disabled:cursor-not-allowed focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
-          placeholder="Add your notes here..."
+          placeholder={t.coachNotesPlaceholder}
           rows={3}
         />
       </div>
@@ -995,12 +1132,12 @@ export default function CheckInDetailsPage({
           {isSaving ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Completing...
+              {t.completing}
             </>
           ) : isSaved ? (
-            "Completed"
+            t.completedStatus
           ) : (
-            "Complete check-in"
+            t.completeCheckInBtn
           )}
         </button>
       )}
@@ -1042,8 +1179,8 @@ export default function CheckInDetailsPage({
       {sliderToDelete && (
         <DeleteModal
           isOpen={!!sliderToDelete}
-          title="Remove Slider"
-          message="Are you sure you want to remove this slider configuration? This will affect future check-ins for this athlete."
+          title={t.removeSliderTitle}
+          message={t.removeSliderMsg}
           onConfirm={handleDeleteSlider}
           onCancel={() => setSliderToDelete(null)}
         />

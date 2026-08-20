@@ -37,6 +37,53 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
+const translations = {
+  en: {
+    searchPlaceholder: "Search Here...",
+    addPlan: "Add Plan",
+    trainingPlanTitle: "Training Plan",
+    noExercises: "No Exercises",
+    more: "more",
+    reps: "Reps:",
+    rir: "RIR:",
+    noPlansFound: "No training plans found.",
+    preview: "Preview",
+    difficulties: {
+      Advanced: "Advanced",
+      Intermediate: "Intermediate",
+      Begineer: "Beginner",
+      Beginner: "Beginner",
+    },
+    reorderFailed: "Reordering failed. Please try again.",
+    nameTaken: "This training plan name is already taken.",
+    deletePlanTitle: "Delete Training Plan",
+    deletePreviewTitle: "Delete Plan Preview",
+    deleteMessage: "Are you sure you want to delete this item? This action cannot be undone.",
+  },
+  de: {
+    searchPlaceholder: "Hier suchen...",
+    addPlan: "Plan hinzufügen",
+    trainingPlanTitle: "Trainingsplan",
+    noExercises: "Keine Übungen",
+    more: "weitere",
+    reps: "Wdh:",
+    rir: "RIR:",
+    noPlansFound: "Keine Trainingspläne gefunden.",
+    preview: "Vorschau",
+    difficulties: {
+      Advanced: "Fortgeschritten",
+      Intermediate: "Mittel",
+      Begineer: "Anfänger",
+      Beginner: "Anfänger",
+    },
+    reorderFailed: "Neusortierung fehlgeschlagen. Bitte erneut versuchen.",
+    nameTaken: "Dieser Trainingsplanname ist bereits vergeben.",
+    deletePlanTitle: "Trainingsplan löschen",
+    deletePreviewTitle: "Planvorschau löschen",
+    deleteMessage: "Bist du sicher, dass du dieses Element löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+  }
+};
+
 interface TrainingPageProps {
   athleteId: string;
 }
@@ -46,6 +93,9 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
   const { plans, loading, error, successMessage } = useAppSelector(
     (state) => state.trainingPlan,
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddPlanModal, setShowAddPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<TrainingPlan | null>(null);
@@ -95,7 +145,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
           })
           .catch((err) => {
             // Step 6: Error Handling (Restore old order if needed, but fetch usually fixes it)
-            toast.error("Reordering failed. Please try again.");
+            toast.error(t.reorderFailed);
             dispatch(fetchTrainingPlans(athleteId));
           });
       }
@@ -158,7 +208,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
     });
 
     if (isDuplicate) {
-      toast.error("This training plan name is already taken.");
+      toast.error(t.nameTaken);
       return;
     }
 
@@ -200,7 +250,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder="Search Here..."
+            placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-12 bg-[#111111] border border-[#2a2a2a] rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
@@ -217,13 +267,13 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
             className="group flex items-center gap-2 bg-transparent border-2 border-emerald-500 text-emerald-500 text-base font-bold hover:bg-emerald-500/10 rounded-full px-8 h-11 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95"
           >
             <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-            <span>Add Plan</span>
+            <span>{t.addPlan}</span>
           </button>
         </div>
 
         {/* Training Plan Section */}
         <div className="space-y-6">
-          <h2 className="text-3xl font-bold">Training Plan</h2>
+          <h2 className="text-3xl font-bold">{t.trainingPlanTitle}</h2>
 
           {/* Training Plan Cards (Small Grid) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -247,10 +297,10 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                           <p className="text-sm text-gray-400 leading-snug">
                             {plan.exercise.length > 0
                               ? plan.exercise[0].exerciseName
-                              : "No Exercises"}
+                              : t.noExercises}
                             {plan.exercise.length > 1 && (
                               <span className="text-emerald-500 text-xs ml-1">
-                                +{plan.exercise.length - 1} more
+                                +{plan.exercise.length - 1} {t.more}
                               </span>
                             )}
                           </p>
@@ -259,12 +309,12 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                             plan.exercise[0].exerciseSets.length > 0 && (
                               <div className="flex items-center gap-2 text-[10px] text-gray-500">
                                 <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
-                                  Reps:{" "}
+                                  {t.reps}{" "}
                                   {plan.exercise[0].exerciseSets[0].repRange ||
                                     "-"}
                                 </span>
                                 <span className="bg-[#1a1a30] px-1.5 py-0.5 rounded border border-[#2d2d45]">
-                                  RIR:{" "}
+                                  {t.rir}{" "}
                                   {plan.exercise[0].exerciseSets[0].rir || "-"}
                                 </span>
                               </div>
@@ -283,7 +333,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
                             : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
                           }`}
                       >
-                        {plan.dificulty}
+                        {t.difficulties[plan.dificulty as keyof typeof t.difficulties] || plan.dificulty}
                       </span>
                     </div>
                   </div>
@@ -291,7 +341,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
               ))
             ) : (
               <div className="col-span-full text-center py-12 text-gray-500 italic">
-                No training plans found.
+                {t.noPlansFound}
               </div>
             )}
           </div>
@@ -300,7 +350,7 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
           {plans.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4 text-gray-300">
-                Preview
+                {t.preview}
               </h3>
               <DndContext
                 sensors={sensors}
@@ -349,10 +399,10 @@ export default function TrainingPage({ athleteId }: TrainingPageProps) {
         isOpen={deleteModal.isOpen}
         title={
           deleteModal.type === "plan"
-            ? "Delete Training Plan"
-            : "Delete Plan Preview"
+            ? t.deletePlanTitle
+            : t.deletePreviewTitle
         }
-        message="Are you sure you want to delete this item? This action cannot be undone."
+        message={t.deleteMessage}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModal({ isOpen: false, type: null, id: null })}
       />

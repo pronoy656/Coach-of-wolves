@@ -6,6 +6,51 @@ import { useAppSelector } from "@/redux/hooks";
 import axiosInstance from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
 
+const translations = {
+  en: {
+    header: "Multi-Week Comparison",
+    compareHistorical: "Compare Historical Weeks",
+    noHistorical: "No historical weeks found.",
+    unknownDate: "Unknown Date",
+    generateComparison: "Generate Comparison",
+    metric: "Metric",
+    currentWeek: "Current Week",
+    past: "Past",
+    questionAnalysis: "Question Analysis",
+    currentAnswer: "Current Answer:",
+    selectAtLeastOne: "Please select at least one week to compare",
+    fetchFailed: "Failed to fetch comparison data",
+    metrics: {
+      weight: "Weight (kg)",
+      avgWeight: "Avg Weight (kg)",
+      energy: "Energy Level",
+      stress: "Stress Level",
+      sleep: "Sleep Quality",
+    }
+  },
+  de: {
+    header: "Mehrwöchiger Vergleich",
+    compareHistorical: "Historische Wochen vergleichen",
+    noHistorical: "Keine historischen Wochen gefunden.",
+    unknownDate: "Unbekanntes Datum",
+    generateComparison: "Vergleich erstellen",
+    metric: "Metrik",
+    currentWeek: "Aktuelle Woche",
+    past: "Vergangen",
+    questionAnalysis: "Fragenanalyse",
+    currentAnswer: "Aktuelle Antwort:",
+    selectAtLeastOne: "Bitte wähle mindestens eine Woche zum Vergleichen aus",
+    fetchFailed: "Fehler beim Abrufen der Vergleichsdaten",
+    metrics: {
+      weight: "Gewicht (kg)",
+      avgWeight: "Durchschnittsgewicht (kg)",
+      energy: "Energielevel",
+      stress: "Stresslevel",
+      sleep: "Schlafqualität",
+    }
+  }
+};
+
 interface ComparisonModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -46,13 +91,16 @@ const MultiWeekSelector: React.FC<{
   weeks: Array<{ id: string; date: string; isCompleted: boolean }>;
   selectedIds: string[];
   onToggle: (id: string) => void;
-}> = ({ weeks, selectedIds, onToggle }) => {
+  label: string;
+  noWeeksText: string;
+  unknownDateText: string;
+}> = ({ weeks, selectedIds, onToggle, label, noWeeksText, unknownDateText }) => {
   return (
     <div className="flex flex-col gap-2 bg-[#0B0B22] p-4 rounded-xl border border-slate-700/50 mb-6">
-      <label className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Compare Historical Weeks</label>
+      <label className="text-sm font-semibold text-gray-400 uppercase tracking-widest">{label}</label>
       <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto custom-scrollbar p-2">
         {weeks.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No historical weeks found.</p>
+          <p className="text-sm text-gray-500 italic">{noWeeksText}</p>
         ) : (
           weeks.map((week) => (
             <label 
@@ -69,7 +117,7 @@ const MultiWeekSelector: React.FC<{
                 onChange={() => onToggle(week.id)}
                 className="hidden"
               />
-              <span>{week.date || "Unknown Date"}</span>
+              <span>{week.date || unknownDateText}</span>
             </label>
           ))
         )}
@@ -84,6 +132,9 @@ export default function ComparisonModal({
   userId,
   currentWeekId,
 }: ComparisonModalProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   // State from Guide
   const [selectedCompareWeekIds, setSelectedCompareWeekIds] = useState<string[]>([]);
   const [comparisonData, setComparisonData] = useState<any | null>(null);
@@ -94,11 +145,11 @@ export default function ComparisonModal({
   
   // Format timeline into expected format, filtering out the current week
   const formattedWeeks = timeline
-    .filter((t: any) => t._id && t._id !== currentWeekId)
-    .map((t: any) => ({
-      id: t._id,
-      _id: t._id,
-      date: new Date(t.checkInDate).toLocaleDateString(),
+    .filter((tItem: any) => tItem._id && tItem._id !== currentWeekId)
+    .map((tItem: any) => ({
+      id: tItem._id,
+      _id: tItem._id,
+      date: new Date(tItem.checkInDate).toLocaleDateString(language === "de" ? "de-DE" : "en-US"),
       isCompleted: true // Fallback as TimelineItem doesn't store checkinCompleted natively
     }));
 
@@ -111,7 +162,7 @@ export default function ComparisonModal({
 
   const fetchComparison = async () => {
     if (!currentWeekId || selectedCompareWeekIds.length === 0) {
-      toast.error("Please select at least one week to compare");
+      toast.error(t.selectAtLeastOne);
       return;
     }
 
@@ -125,10 +176,10 @@ export default function ComparisonModal({
       if (res.data?.success) {
         setComparisonData(res.data.data);
       } else {
-        toast.error("Failed to fetch comparison data");
+        toast.error(t.fetchFailed);
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Comparison fetch failed");
+      toast.error(err?.response?.data?.message || t.fetchFailed);
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +197,7 @@ export default function ComparisonModal({
             <span className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
               📊
             </span>
-            Multi-Week Comparison
+            {t.header}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -160,6 +211,9 @@ export default function ComparisonModal({
             weeks={formattedWeeks} 
             selectedIds={selectedCompareWeekIds} 
             onToggle={handleToggleWeek} 
+            label={t.compareHistorical}
+            noWeeksText={t.noHistorical}
+            unknownDateText={t.unknownDate}
           />
 
           <div className="flex justify-end mb-6">
@@ -169,7 +223,7 @@ export default function ComparisonModal({
               className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-              Generate Comparison
+              {t.generateComparison}
             </button>
           </div>
 
@@ -178,10 +232,10 @@ export default function ComparisonModal({
               
               {/* Header Row */}
               <div className="grid grid-cols-4 gap-4 py-3 border-b border-slate-600 mb-4 items-center text-sm font-bold text-gray-400">
-                <span className="col-span-1">Metric</span>
-                <span className="text-center text-blue-400">Current Week</span>
+                <span className="col-span-1">{t.metric}</span>
+                <span className="text-center text-blue-400">{t.currentWeek}</span>
                 {comparisonData.comparisons?.map((comp: any, idx: number) => (
-                  <span key={idx} className="text-center">Past: {comp.date}</span>
+                  <span key={idx} className="text-center">{t.past}: {comp.date}</span>
                 ))}
                 {/* Pad if fewer than 2 comparisons */}
                 {comparisonData.comparisons?.length === 1 && <span className="text-center"></span>}
@@ -190,27 +244,27 @@ export default function ComparisonModal({
               {/* Data Rows */}
               <div className="space-y-1">
                 <MetricComparisonRow 
-                  title="Weight (kg)" 
+                  title={t.metrics.weight} 
                   currentValue={comparisonData.currentWeek?.weight || 0} 
                   pastValues={comparisonData.comparisons?.map((c: any) => c.weight || 0) || []} 
                 />
                 <MetricComparisonRow 
-                  title="Avg Weight (kg)" 
+                  title={t.metrics.avgWeight} 
                   currentValue={comparisonData.currentWeek?.averageWeight || 0} 
                   pastValues={comparisonData.comparisons?.map((c: any) => c.averageWeight || 0) || []} 
                 />
                 <MetricComparisonRow 
-                  title="Energy Level" 
+                  title={t.metrics.energy} 
                   currentValue={comparisonData.currentWeek?.wellbeing?.energyLevel || 0} 
                   pastValues={comparisonData.comparisons?.map((c: any) => c.wellbeing?.energyLevel || 0) || []} 
                 />
                 <MetricComparisonRow 
-                  title="Stress Level" 
+                  title={t.metrics.stress} 
                   currentValue={comparisonData.currentWeek?.wellbeing?.stressLevel || 0} 
                   pastValues={comparisonData.comparisons?.map((c: any) => c.wellbeing?.stressLevel || 0) || []} 
                 />
                 <MetricComparisonRow 
-                  title="Sleep Quality" 
+                  title={t.metrics.sleep} 
                   currentValue={comparisonData.currentWeek?.wellbeing?.sleepQuality || 0} 
                   pastValues={comparisonData.comparisons?.map((c: any) => c.wellbeing?.sleepQuality || 0) || []} 
                 />
@@ -218,7 +272,7 @@ export default function ComparisonModal({
 
               {/* Questions Section */}
               <div className="mt-8 pt-6 border-t border-slate-700/50">
-                <h4 className="text-emerald-400 font-bold mb-4 uppercase tracking-widest text-xs">Question Analysis</h4>
+                <h4 className="text-emerald-400 font-bold mb-4 uppercase tracking-widest text-xs">{t.questionAnalysis}</h4>
                 
                 <div className="grid grid-cols-1 gap-6">
                   {comparisonData.currentWeek?.questions?.map((q: any, idx: number) => (
@@ -226,7 +280,7 @@ export default function ComparisonModal({
                       <p className="text-sm text-gray-400 mb-2">Q: {q.question}</p>
                       <div className="space-y-3">
                         <div className="pl-3 border-l-2 border-blue-500">
-                          <span className="text-xs text-blue-400 font-semibold block mb-1">Current Answer:</span>
+                          <span className="text-xs text-blue-400 font-semibold block mb-1">{t.currentAnswer}</span>
                           <p className="text-white text-sm">"{q.answer || "N/A"}"</p>
                         </div>
                         
@@ -235,7 +289,7 @@ export default function ComparisonModal({
                           const pastQ = comp.questions?.find((past: any) => past.question === q.question);
                           return (
                             <div key={compIdx} className="pl-3 border-l-2 border-slate-600">
-                              <span className="text-xs text-slate-500 font-semibold block mb-1">Past ({comp.date}):</span>
+                              <span className="text-xs text-slate-500 font-semibold block mb-1">{t.past} ({comp.date}):</span>
                               <p className="text-gray-400 text-sm italic">"{pastQ?.answer || "N/A"}"</p>
                             </div>
                           );

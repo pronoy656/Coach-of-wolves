@@ -52,6 +52,198 @@ interface SectionData {
   rows: RowData[];
 }
 
+const translations = {
+  en: {
+    dropdown: {
+      currentWeek: "Current Week",
+      pastWeek: (dateStr: string) => `Past Week (${dateStr})`,
+    },
+    tableHeader: {
+      data: "Data",
+      tag: "TAG",
+      day: "Day",
+      average: "Average",
+    },
+    sections: {
+      nutritionDigestion: "Nutrition & Digestion",
+      activity: "ACTIVITY",
+      sleep: "Sleep",
+      sick: "Sick",
+      wellBeing: "Well-Being",
+      trainingPlan: "Training Plan",
+      women: "Women",
+      peds: "PEDs",
+      healthMetrics: "Health metrics",
+      dailyNote: "Daily Note",
+    },
+    rows: {
+      weight: { label: "WEIGHT", unit: "(kg)" },
+      cal: { label: "CALORIE" },
+      e: { label: "E", unit: "(g)" },
+      k: { label: "K", unit: "(g)" },
+      f: { label: "F", unit: "(g)" },
+      salt: { label: "Salt", unit: "(g)" },
+      water: { label: "WATER" },
+      hunger: { label: "HUNGER", subLabel: "SCALE 1-10" },
+      digestion: { label: "Digestion", subLabel: "SCALE 1-10" },
+      steps: { label: "Steps" },
+      cardio: { label: "CARDIO", unit: "(min)" },
+      training: { label: "TRAINING" },
+      sleepDur: { label: "Sleep duration", subLabel: "subjective perception" },
+      sleepQual: { label: "Sleep quality" },
+      sickness: { label: "Sickness", subLabel: "YES / NO", yes: "YES", no: "NO" },
+      mood: { label: "Mood", subLabel: "SCALE 1-10" },
+      motivation: { label: "Motivation", subLabel: "SCALE 1-10" },
+      energy: { label: "ENERGY", subLabel: "SCALE 1-10" },
+      muscle: { label: "Muscle ache", subLabel: "SCALE 1-10" },
+      stress: { label: "STRESS", subLabel: "SCALE 1-10" },
+      trComp: { label: "Training Completed", yes: "Yes", no: "No" },
+      trPlan: { label: "Training Plan" },
+      cardioComp: { label: "Cardio Completed", yes: "Yes", no: "No" },
+      cardioType: { label: "Cardio Type" },
+      duration: { label: "Duration" },
+      cyclePhase: { label: "Cycle Phase" },
+      cycleDay: { label: "Cycle day" },
+      pms: { label: "PMS symptoms", subLabel: "SCALE 1-10" },
+      cramps: { label: "Cramps", subLabel: "SCALE 1-10" },
+      symptoms: { label: "Symptoms" },
+      dosage: { label: "Daily dosage taken" },
+      sideEffects: { label: "Side effects notes" },
+      bp: { label: "Blood pressure" },
+      rhr: { label: "Resting heart rate" },
+      glucose: { label: "Blood glucose" },
+      notes: { label: "Daily Notes" },
+    },
+    coachNote: {
+      title: "Coach Note",
+      placeholder: "Add your feedback or notes for this athlete's week here...",
+      submit: "Submit Note",
+      submitting: "Submitting...",
+      errorEmpty: "Please enter a note before submitting",
+    },
+    graphs: {
+      title: "Graphs",
+      allMetrics: "All Metrics",
+      allTime: "All Time",
+      months: [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ],
+    }
+  },
+  de: {
+    dropdown: {
+      currentWeek: "Aktuelle Woche",
+      pastWeek: (dateStr: string) => `Vergangene Woche (${dateStr})`,
+    },
+    tableHeader: {
+      data: "Daten",
+      tag: "TAG",
+      day: "Tag",
+      average: "Durchschnitt",
+    },
+    sections: {
+      nutritionDigestion: "Ernährung & Verdauung",
+      activity: "AKTIVITÄT",
+      sleep: "Schlaf",
+      sick: "Krankheit",
+      wellBeing: "Wohlbefinden",
+      trainingPlan: "Trainingsplan",
+      women: "Frauen",
+      peds: "PEDs",
+      healthMetrics: "Gesundheitswerte",
+      dailyNote: "Tägliche Notiz",
+    },
+    rows: {
+      weight: { label: "GEWICHT", unit: "(kg)" },
+      cal: { label: "KALORIEN" },
+      e: { label: "E", unit: "(g)" },
+      k: { label: "K", unit: "(g)" },
+      f: { label: "F", unit: "(g)" },
+      salt: { label: "Salz", unit: "(g)" },
+      water: { label: "WASSER" },
+      hunger: { label: "HUNGER", subLabel: "SKALA 1-10" },
+      digestion: { label: "Verdauung", subLabel: "SKALA 1-10" },
+      steps: { label: "Schritte" },
+      cardio: { label: "CARDIO", unit: "(min)" },
+      training: { label: "TRAINING" },
+      sleepDur: { label: "Schlafdauer", subLabel: "subjektive Wahrnehmung" },
+      sleepQual: { label: "Schlafqualität" },
+      sickness: { label: "Krankheit", subLabel: "JA / NEIN", yes: "JA", no: "NEIN" },
+      mood: { label: "Stimmung", subLabel: "SKALA 1-10" },
+      motivation: { label: "Motivation", subLabel: "SKALA 1-10" },
+      energy: { label: "ENERGIE", subLabel: "SKALA 1-10" },
+      muscle: { label: "Muskelkater", subLabel: "SKALA 1-10" },
+      stress: { label: "STRESS", subLabel: "SKALA 1-10" },
+      trComp: { label: "Training absolviert", yes: "Ja", no: "Nein" },
+      trPlan: { label: "Trainingsplan" },
+      cardioComp: { label: "Cardio absolviert", yes: "Ja", no: "Nein" },
+      cardioType: { label: "Cardio Art" },
+      duration: { label: "Dauer" },
+      cyclePhase: { label: "Zyklusphase" },
+      cycleDay: { label: "Zyklustag" },
+      pms: { label: "PMS Symptome", subLabel: "SKALA 1-10" },
+      cramps: { label: "Krämpfe", subLabel: "SKALA 1-10" },
+      symptoms: { label: "Symptome" },
+      dosage: { label: "Tägliche Dosis eingenommen" },
+      sideEffects: { label: "Nebenwirkungen Notizen" },
+      bp: { label: "Blutdruck" },
+      rhr: { label: "Ruhepuls" },
+      glucose: { label: "Blutzucker" },
+      notes: { label: "Tägliche Notizen" },
+    },
+    coachNote: {
+      title: "Trainer Notiz",
+      placeholder: "Füge hier dein Feedback oder Notizen für die Woche dieses Athleten hinzu...",
+      submit: "Notiz absenden",
+      submitting: "Wird gesendet...",
+      errorEmpty: "Bitte gib eine Notiz ein, bevor du sie absendest",
+    },
+    graphs: {
+      title: "Diagramme",
+      allMetrics: "Alle Metriken",
+      allTime: "Gesamter Zeitraum",
+      months: [
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
+      ],
+    }
+  }
+};
+
+const metricLabelsMap: Record<string, { en: string; de: string }> = {
+  sleepHours: { en: "Sleep Hours", de: "Schlafdauer" },
+  hungerLevel: { en: "Hunger", de: "Hunger" },
+  digestionLevel: { en: "Digestion", de: "Verdauung" },
+  mood: { en: "Mood", de: "Stimmung" },
+  motivation: { en: "Motivation", de: "Motivation" },
+  energy: { en: "Energy", de: "Energie" },
+  muscelLevel: { en: "Muscle Ache", de: "Muskelkater" },
+  stress: { en: "Stress", de: "Stress" },
+  pmsSymptoms: { en: "PMS Symptoms", de: "PMS Symptome" },
+  cramps: { en: "Cramps", de: "Krämpfe" },
+  restingHeartRate: { en: "Resting Heart Rate", de: "Ruhepuls" },
+  sleepQuality: { en: "Sleep Quality", de: "Schlafqualität" },
+  weight: { en: "Weight", de: "Gewicht" },
+  calories: { en: "Calorie", de: "Kalorien" },
+};
+
+const translateDayName = (day?: string, lang: string = "en") => {
+  if (!day) return "";
+  if (lang !== "de") return day;
+  const dayMap: Record<string, string> = {
+    Monday: "Montag", Tuesday: "Dienstag", Wednesday: "Mittwoch", Thursday: "Donnerstag", Friday: "Freitag", Saturday: "Samstag", Sunday: "Sonntag",
+    Mon: "Mo", Tue: "Di", Wed: "Mi", Thu: "Do", Thurs: "Do", Fri: "Fr", Sat: "Sa", Sun: "So"
+  };
+  return dayMap[day] || day;
+};
+
+interface SectionData {
+  id?: string;
+  title: string;
+  rows: RowData[];
+}
+
 // --- Components ---
 
 const HeaderCell = ({
@@ -224,6 +416,9 @@ export default function Dashboard() {
   );
   const { currentAthlete } = useAppSelector((state) => state.athlete);
   const { timeline } = useAppSelector((state) => state.timeline);
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const { 
     loading: noteLoading, 
     error: noteError, 
@@ -262,7 +457,7 @@ export default function Dashboard() {
 
   const getWeekOptions = () => {
     const options: { label: string; value: string | undefined }[] = [
-      { label: "Current Week", value: undefined },
+      { label: t.dropdown.currentWeek, value: undefined },
     ];
 
     if (!timeline || timeline.length === 0) {
@@ -294,7 +489,7 @@ export default function Dashboard() {
         return;
       }
       options.push({
-        label: `Past Week (${formatDateDisplay(item.checkInDate)})`,
+        label: t.dropdown.pastWeek(formatDateDisplay(item.checkInDate)),
         value: item.checkInDate,
       });
     });
@@ -344,7 +539,7 @@ export default function Dashboard() {
 
   const handleSubmitNote = async () => {
     if (!coachNote.trim()) {
-      toast.error("Please enter a note before submitting");
+      toast.error(t.coachNote.errorEmpty);
       return;
     }
 
@@ -406,7 +601,8 @@ export default function Dashboard() {
       const baseArray = firstAvailableKey ? graphData[firstAvailableKey] : [];
 
       return (baseArray || []).map((point, index) => {
-        const dataPoint: any = { name: graphFilterType === "alltime" && point.date ? point.date : point.day };
+        const rawName = graphFilterType === "alltime" && point.date ? point.date : point.day;
+        const dataPoint: any = { name: translateDayName(rawName, language) };
         keys.forEach(key => {
           const arr = graphData[key];
           if (Array.isArray(arr)) {
@@ -420,9 +616,13 @@ export default function Dashboard() {
     // Fallback logic for "week"
     if (graphFilterType === "week") {
       const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-      const shortDays: Record<string, string> = {
+      const shortDaysEn: Record<string, string> = {
         Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thurs", Friday: "Fri", Saturday: "Sat", Sunday: "Sun"
       };
+      const shortDaysDe: Record<string, string> = {
+        Monday: "Mo", Tuesday: "Di", Wednesday: "Mi", Thursday: "Do", Friday: "Fr", Saturday: "Sa", Sunday: "So"
+      };
+      const shortDays = language === "de" ? shortDaysDe : shortDaysEn;
 
       return daysList.map((day, i) => {
         const dataPoint: any = { name: shortDays[day] || day };
@@ -432,9 +632,9 @@ export default function Dashboard() {
           if (Array.isArray(arr)) {
             const found = arr.find((d: any) => 
                d.day === day || 
-               d.day === shortDays[day] || 
-               d.day?.toLowerCase() === day.toLowerCase() ||
-               d.day?.toLowerCase() === shortDays[day].toLowerCase()
+               d.day === shortDaysEn[day] || 
+               d.day === shortDaysDe[day] ||
+               d.day?.toLowerCase() === day.toLowerCase()
             );
             dataPoint[key] = found?.value || 0;
           }
@@ -463,22 +663,7 @@ export default function Dashboard() {
     }
     
     return [];
-  }, [graphData, graphFilterType, weekData]);
-
-  const metricLabels: Record<string, string> = {
-    sleepHours: "Sleep Hours",
-    hungerLevel: "Hunger",
-    digestionLevel: "Digestion",
-    mood: "Mood",
-    motivation: "Motivation",
-    energy: "Energy",
-    muscelLevel: "Muscle Ache",
-    stress: "Stress",
-    pmsSymptoms: "PMS Symptoms",
-    cramps: "Cramps",
-    restingHeartRate: "Resting Heart Rate",
-    sleepQuality: "Sleep Quality",
-  };
+  }, [graphData, graphFilterType, weekData, language]);
 
   const availableMetrics = React.useMemo(() => {
     if (!graphData) return [];
@@ -524,9 +709,9 @@ export default function Dashboard() {
 
     return keys.map(key => ({
       id: key,
-      label: metricLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)
+      label: metricLabelsMap[key]?.[language as "en" | "de"] || key.charAt(0).toUpperCase() + key.slice(1)
     }));
-  }, [graphData, currentAthlete, graphFilterType, weekData]);
+  }, [graphData, currentAthlete, graphFilterType, weekData, language]);
 
   // Ensure selected metric is valid
   useEffect(() => {
@@ -628,12 +813,13 @@ export default function Dashboard() {
   // Reconstructing dynamic data using the EXACT original design structure
   const rawDataSections: SectionData[] = [
     {
+      id: "top",
       title: "", // Top section (Weight)
       rows: [
         {
           id: "weight",
-          label: "WEIGHT",
-          unit: "(kg)",
+          label: t.rows.weight.label,
+          unit: t.rows.weight.unit,
           type: "read-only",
           values: getValues("weight"),
           average: getAverage("weight"),
@@ -642,19 +828,20 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Nutrition & Digestion",
+      id: "nutrition",
+      title: t.sections.nutritionDigestion,
       rows: [
         {
           id: "cal",
-          label: "CALORIE",
+          label: t.rows.cal.label,
           type: "read-only",
           values: getValues("nutrition.calories"),
           average: getAverage("nutrition.calories"),
         },
         {
           id: "e",
-          label: "E",
-          unit: "(g)",
+          label: t.rows.e.label,
+          unit: t.rows.e.unit,
           type: "read-only",
           values: getValues("nutrition.protein"),
           average: getAverage("nutrition.protein"),
@@ -662,16 +849,16 @@ export default function Dashboard() {
         },
         {
           id: "k",
-          label: "K",
-          unit: "(g)",
+          label: t.rows.k.label,
+          unit: t.rows.k.unit,
           type: "read-only",
           values: getValues("nutrition.carbs"),
           average: getAverage("nutrition.carbs"),
         },
         {
           id: "f",
-          label: "F",
-          unit: "(g)",
+          label: t.rows.f.label,
+          unit: t.rows.f.unit,
           type: "read-only",
           values: getValues("nutrition.fats"),
           average: getAverage("nutrition.fats"),
@@ -679,15 +866,15 @@ export default function Dashboard() {
         },
         {
           id: "salt",
-          label: "Salt",
-          unit: "(g)",
+          label: t.rows.salt.label,
+          unit: t.rows.salt.unit,
           type: "read-only",
           values: getValues("nutrition.salt"),
           average: getAverage("nutrition.salt"),
         },
         {
           id: "water",
-          label: "WATER",
+          label: t.rows.water.label,
           type: "read-only",
           values: getValues("water"),
           average: getAverage("water"),
@@ -695,8 +882,8 @@ export default function Dashboard() {
         },
         {
           id: "hunger",
-          label: "HUNGER",
-          subLabel: "SCALE 1-10",
+          label: t.rows.hunger.label,
+          subLabel: t.rows.hunger.subLabel,
           type: "dropdown",
           values: getValues("nutrition.hungerLevel"),
           average: getAverage("nutrition.hungerLevel"),
@@ -706,8 +893,8 @@ export default function Dashboard() {
         },
         {
           id: "digestion",
-          label: "Digestion",
-          subLabel: "SCALE 1-10",
+          label: t.rows.digestion.label,
+          subLabel: t.rows.digestion.subLabel,
           type: "dropdown",
           values: getValues("nutrition.digestionLevel"),
           average: getAverage("nutrition.digestionLevel"),
@@ -718,19 +905,20 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "ACTIVITY",
+      id: "activity",
+      title: t.sections.activity,
       rows: [
         {
           id: "steps",
-          label: "Steps",
+          label: t.rows.steps.label,
           type: "read-only",
           values: getValues("activityStep"),
           average: getAverage("activityStep"),
         },
         {
           id: "cardio",
-          label: "CARDIO",
-          unit: "(min)",
+          label: t.rows.cardio.label,
+          unit: t.rows.cardio.unit,
           type: "read-only",
           values: getValues("training.duration"),
           average: getAverage("training.cardioDuration"),
@@ -738,7 +926,7 @@ export default function Dashboard() {
         },
         {
           id: "training",
-          label: "TRAINING",
+          label: t.rows.training.label,
           type: "text",
           values: Array.from({ length: 7 }).map(
             (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || "",
@@ -748,19 +936,20 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Sleep",
+      id: "sleep",
+      title: t.sections.sleep,
       rows: [
         {
           id: "sleep_dur",
-          label: "Sleep duration",
-          subLabel: "subjective perception",
+          label: t.rows.sleepDur.label,
+          subLabel: t.rows.sleepDur.subLabel,
           type: "text",
           values: getValues("sleepHour"),
           average: getAverage("sleepHour"),
         },
         {
           id: "sleep_qual",
-          label: "Sleep quality",
+          label: t.rows.sleepQual.label,
           type: "text",
           values: getValues("sleepQuality"),
           average: getAverage("sleepQuality"),
@@ -769,17 +958,18 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Sick",
+      id: "sick",
+      title: t.sections.sick,
       rows: [
         {
           id: "sickness",
-          label: "Sickness",
-          subLabel: "YES / NO",
+          label: t.rows.sickness.label,
+          subLabel: t.rows.sickness.subLabel,
           type: "dropdown",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.sick;
             if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
-            return val ? "YES" : "NO";
+            return val ? t.rows.sickness.yes : t.rows.sickness.no;
           }),
           average: "",
           cellColors: Array.from({ length: 7 }).map((_, i) => {
@@ -793,12 +983,13 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Well-Being",
+      id: "wellBeing",
+      title: t.sections.wellBeing,
       rows: [
         {
           id: "mood",
-          label: "Mood",
-          subLabel: "SCALE 1-10",
+          label: t.rows.mood.label,
+          subLabel: t.rows.mood.subLabel,
           type: "dropdown",
           values: getValues("energyAndWellBeing.mood"),
           average: getAverage("energyAndWellBeing.mood"),
@@ -808,8 +999,8 @@ export default function Dashboard() {
         },
         {
           id: "motivation",
-          label: "Motivation",
-          subLabel: "SCALE 1-10",
+          label: t.rows.motivation.label,
+          subLabel: t.rows.motivation.subLabel,
           type: "dropdown",
           values: getValues("energyAndWellBeing.motivation"),
           average: getAverage("energyAndWellBeing.motivation"),
@@ -819,8 +1010,8 @@ export default function Dashboard() {
         },
         {
           id: "energy",
-          label: "ENERGY",
-          subLabel: "SCALE 1-10",
+          label: t.rows.energy.label,
+          subLabel: t.rows.energy.subLabel,
           type: "dropdown",
           values: getValues("energyAndWellBeing.energyLevel"),
           average: getAverage("energyAndWellBeing.energyLevel"),
@@ -830,8 +1021,8 @@ export default function Dashboard() {
         },
         {
           id: "muscle",
-          label: "Muscle ache",
-          subLabel: "SCALE 1-10",
+          label: t.rows.muscle.label,
+          subLabel: t.rows.muscle.subLabel,
           type: "dropdown",
           values: getValues("energyAndWellBeing.muscelLevel"),
           average: getAverage("energyAndWellBeing.muscelLevel"),
@@ -841,8 +1032,8 @@ export default function Dashboard() {
         },
         {
           id: "stress",
-          label: "STRESS",
-          subLabel: "SCALE 1-10",
+          label: t.rows.stress.label,
+          subLabel: t.rows.stress.subLabel,
           type: "dropdown",
           values: getValues("energyAndWellBeing.stressLevel"),
           average: getAverage("energyAndWellBeing.stressLevel"),
@@ -853,22 +1044,23 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Training Plan",
+      id: "trainingPlan",
+      title: t.sections.trainingPlan,
       rows: [
         {
           id: "tr_comp",
-          label: "Training Completed",
+          label: t.rows.trComp.label,
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.training?.trainingCompleted;
             if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
-            return val ? "Yes" : "No";
+            return val ? t.rows.trComp.yes : t.rows.trComp.no;
           }),
           average: "",
         },
         {
           id: "tr_plan",
-          label: "Training Plan",
+          label: t.rows.trPlan.label,
           type: "text",
           values: Array.from({ length: 7 }).map(
             (_, i) => weekData[i]?.training?.trainingPlan?.join(", ") || "",
@@ -877,26 +1069,26 @@ export default function Dashboard() {
         },
         {
           id: "cardio_comp",
-          label: "Cardio Completed",
+          label: t.rows.cardioComp.label,
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const val = weekData[i]?.training?.cardioCompleted;
             if (val === undefined || val === null || (val as any) === 0 || (val as any) === "0" || val === false) return "";
-            return val ? "Yes" : "No";
+            return val ? t.rows.cardioComp.yes : t.rows.cardioComp.no;
           }),
           average: "",
         },
 
         {
           id: "cardio_type",
-          label: "Cardio Type",
+          label: t.rows.cardioType.label,
           type: "text",
           values: getValues("training.cardioType"),
           average: "",
         },
         {
           id: "duration",
-          label: "Duration",
+          label: t.rows.duration.label,
           type: "text",
           values: getValues("training.duration"),
           average: getAverage("training.cardioDuration"),
@@ -904,26 +1096,27 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Women",
+      id: "women",
+      title: t.sections.women,
       rows: [
         {
           id: "cycle_phase",
-          label: "Cycle Phase",
+          label: t.rows.cyclePhase.label,
           type: "text",
           values: getValues("woman.cyclePhase"),
           average: "",
         },
         {
           id: "cycle_day",
-          label: "Cycle day",
+          label: t.rows.cycleDay.label,
           type: "text",
           values: getValues("woman.cycleDay"),
           average: "",
         },
         {
           id: "pms",
-          label: "PMS symptoms",
-          subLabel: "SCALE 1-10",
+          label: t.rows.pms.label,
+          subLabel: t.rows.pms.subLabel,
           type: "dropdown",
           values: getValues("woman.pmsSymptoms"),
           average: getAverage("woman.pmsSymptoms"),
@@ -933,8 +1126,8 @@ export default function Dashboard() {
         },
         {
           id: "cramps",
-          label: "Cramps",
-          subLabel: "SCALE 1-10",
+          label: t.rows.cramps.label,
+          subLabel: t.rows.cramps.subLabel,
           type: "dropdown",
           values: getValues("woman.cramps"),
           average: getAverage("woman.cramps"),
@@ -944,7 +1137,7 @@ export default function Dashboard() {
         },
         {
           id: "symptoms",
-          label: "Symptoms",
+          label: t.rows.symptoms.label,
           type: "text",
           values: Array.from({ length: 7 }).map(
             (_, i) => weekData[i]?.woman?.symptoms?.join(", ") || "",
@@ -954,18 +1147,19 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "PEDs",
+      id: "peds",
+      title: t.sections.peds,
       rows: [
         {
           id: "dosage",
-          label: "Daily dosage taken",
+          label: t.rows.dosage.label,
           type: "text",
           values: getValues("ped.dailyDosage"),
           average: "",
         },
         {
           id: "side_effects",
-          label: "Side effects notes",
+          label: t.rows.sideEffects.label,
           type: "text",
           values: getValues("ped.sideEffect"),
           average: "",
@@ -973,11 +1167,12 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Health metrics",
+      id: "healthMetrics",
+      title: t.sections.healthMetrics,
       rows: [
         {
           id: "bp",
-          label: "Blood pressure",
+          label: t.rows.bp.label,
           type: "text",
           values: Array.from({ length: 7 }).map((_, i) => {
             const bp = weekData[i]?.bloodPressure;
@@ -992,14 +1187,14 @@ export default function Dashboard() {
         },
         {
           id: "rhr",
-          label: "Resting heart rate",
+          label: t.rows.rhr.label,
           type: "text",
           values: getValues("bloodPressure.restingHeartRate"),
           average: getAverage("bloodPressure.restingHeartRate"),
         },
         {
           id: "glucose",
-          label: "Blood glucose",
+          label: t.rows.glucose.label,
           type: "text",
           values: getValues("bloodPressure.bloodGlucose"),
           average: getAverage("bloodPressure.bloodGlucose"),
@@ -1007,11 +1202,12 @@ export default function Dashboard() {
       ],
     },
     {
-      title: "Daily Note",
+      id: "dailyNote",
+      title: t.sections.dailyNote,
       rows: [
         {
           id: "notes",
-          label: "Daily Notes",
+          label: t.rows.notes.label,
           type: "text",
           values: getValues("dailyNotes"),
           average: "",
@@ -1021,10 +1217,10 @@ export default function Dashboard() {
   ];
 
   const dataSections = rawDataSections.filter((section) => {
-    if (section.title === "Women") {
+    if (section.id === "women") {
       return currentAthlete?.gender === "Female";
     }
-    if (section.title === "PEDs") {
+    if (section.id === "peds") {
       return currentAthlete?.status === "Enhanced";
     }
     return true;
@@ -1041,8 +1237,8 @@ export default function Dashboard() {
           <CalendarIcon />
           <span className="text-base">
             {selectedDate
-              ? `Past Week (${formatDateDisplay(selectedDate)})`
-              : "Current Week"}
+              ? t.dropdown.pastWeek(formatDateDisplay(selectedDate))
+              : t.dropdown.currentWeek}
           </span>
           <ChevronDown
             className={`w-4 h-4 transition-transform ${isCalendarOpen ? "rotate-180" : ""
@@ -1081,7 +1277,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-[1.2fr_repeat(7,1fr)_0.8fr] gap-px bg-[#0B0C15]">
           {/* Corner Cell */}
           <div className="bg-[#9CA3AF] flex items-center justify-center h-20">
-            <span className="text-xl font-bold text-white">Data</span>
+            <span className="text-xl font-bold text-white">{t.tableHeader.data}</span>
           </div>
 
           {/* Days Columns */}
@@ -1089,15 +1285,14 @@ export default function Dashboard() {
             <div key={i} className="flex flex-col h-20">
               <div className="flex-1 bg-[#d1d5db] flex items-center justify-center">
                 <span className="text-gray-800 font-bold text-sm uppercase">
-                  TAG {i + 1}
+                  {t.tableHeader.tag} {i + 1}
                 </span>
               </div>
               <div className="flex-1 bg-[#1F1F2E] flex items-center justify-center border-t border-gray-700 px-1">
                 <span className="text-gray-300 text-[10px] text-center">
                   {weekData[i]?.date
-                    ? `${formatDateDisplay(weekData[i].date)} ${weekData[i].day || ""
-                    }`
-                    : `Day ${i + 1}`}
+                    ? `${formatDateDisplay(weekData[i].date)} ${translateDayName(weekData[i].day, language)}`
+                    : `${t.tableHeader.day} ${i + 1}`}
                 </span>
               </div>
             </div>
@@ -1105,7 +1300,7 @@ export default function Dashboard() {
 
           {/* Average Column Header */}
           <div className="bg-[#9CA3AF] flex items-center justify-center h-20">
-            <span className="text-sm font-bold text-white">Average</span>
+            <span className="text-sm font-bold text-white">{t.tableHeader.average}</span>
           </div>
         </div>
 
@@ -1172,7 +1367,7 @@ export default function Dashboard() {
             <MessageSquare className="w-5 h-5 text-emerald-500" />
           </div>
           <h3 className="text-xl font-bold text-white uppercase tracking-tight">
-            Coach Note
+            {t.coachNote.title}
           </h3>
         </div>
 
@@ -1180,7 +1375,7 @@ export default function Dashboard() {
           <textarea
             value={coachNote}
             onChange={(e) => setCoachNote(e.target.value)}
-            placeholder="Add your feedback or notes for this athlete's week here..."
+            placeholder={t.coachNote.placeholder}
             className="w-full min-h-[120px] bg-[#0B0C15] border border-gray-800 rounded-lg p-4 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
           />
 
@@ -1193,12 +1388,12 @@ export default function Dashboard() {
               {noteLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Submitting...</span>
+                  <span>{t.coachNote.submitting}</span>
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Submit Note</span>
+                  <span>{t.coachNote.submit}</span>
                 </>
               )}
             </button>
@@ -1209,7 +1404,7 @@ export default function Dashboard() {
       {/* Graphs Section */}
       <div className="mt-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-          <h2 className="text-xl font-bold text-white uppercase tracking-tight">Graphs</h2>
+          <h2 className="text-xl font-bold text-white uppercase tracking-tight">{t.graphs.title}</h2>
           <div className="flex flex-wrap items-center gap-4">
             
             {/* Week Dropdown */}
@@ -1226,7 +1421,7 @@ export default function Dashboard() {
               >
                 <CalendarIcon />
                 <span>
-                  {selectedGraphDate ? `Past Week (${formatDateDisplay(selectedGraphDate)})` : "Current Week"}
+                  {selectedGraphDate ? t.dropdown.pastWeek(formatDateDisplay(selectedGraphDate)) : t.dropdown.currentWeek}
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isGraphCalendarOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1234,7 +1429,7 @@ export default function Dashboard() {
               {isGraphCalendarOpen && (
                 <div className="absolute top-full right-0 mt-2 w-64 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
                   <div className="max-h-96 overflow-y-auto custom-scrollbar">
-                    {[{ label: "Current Week", value: undefined }, ...weekOptions.filter(o => o.value !== undefined)].map((option, idx) => (
+                    {[{ label: t.dropdown.currentWeek, value: undefined }, ...weekOptions.filter(o => o.value !== undefined)].map((option, idx) => (
                       <button
                         key={`week-${idx}`}
                         onClick={() => {
@@ -1268,7 +1463,7 @@ export default function Dashboard() {
               >
                 <CalendarIcon />
                 <span>
-                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][selectedMonth]}
+                  {t.graphs.months[selectedMonth]}
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isMonthCalendarOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1276,7 +1471,7 @@ export default function Dashboard() {
               {isMonthCalendarOpen && (
                 <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1b26] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
                   <div className="max-h-64 overflow-y-auto custom-scrollbar flex flex-col">
-                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, idx) => (
+                    {t.graphs.months.map((m, idx) => (
                       <button
                         key={`month-${idx}`}
                         onClick={() => {
@@ -1352,21 +1547,21 @@ export default function Dashboard() {
                 }`}
               >
                 <CalendarIcon />
-                <span>All Time</span>
+                <span>{t.graphs.allTime}</span>
               </button>
             </div>
           </div>
         </div>
         <div className="flex justify-between items-center mb-6 mt-6">
           <h3 className="text-white font-bold text-lg tracking-wide">
-            {selectedMetric === "all" ? "All Metrics" : availableMetrics.find(m => m.id === selectedMetric)?.label}
+            {selectedMetric === "all" ? t.graphs.allMetrics : availableMetrics.find(m => m.id === selectedMetric)?.label}
           </h3>
           <select 
             value={selectedMetric}
             onChange={(e) => setSelectedMetric(e.target.value)}
             className="bg-[#1a1b26] border border-gray-700 text-gray-300 text-sm font-medium rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 hover:border-gray-500 transition-colors cursor-pointer"
           >
-            <option value="all">All Metrics</option>
+            <option value="all">{t.graphs.allMetrics}</option>
             {availableMetrics.map(m => (
               <option key={m.id} value={m.id}>{m.label}</option>
             ))}

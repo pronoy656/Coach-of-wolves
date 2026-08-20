@@ -1,15 +1,57 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
-
 import type React from "react";
 import { useState, useEffect } from "react";
 import { X, Clock, Plus, Trash2 } from "lucide-react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAllNutritions,
   Nutrition,
 } from "@/redux/features/nutrition/nutritionSlice";
 import { NutritionPlan } from "@/redux/features/tab/oneNutritionPlanType";
+
+const translations = {
+  en: {
+    editTitle: "Edit Meal",
+    addTitle: "Add New Meal",
+    mealsNameLabel: "Meals Name",
+    mealsNamePlaceholder: "Type meal name...",
+    foodItemsLabel: "Food Items",
+    foodNamePlaceholder: "Food name",
+    quantityPlaceholder: "Quantity in grams (e.g., 30)",
+    addAnotherFood: "Add Another Food Item",
+    timeLabel: "Time",
+    timePlaceholder: "HH:MM (e.g., 14:30)",
+    dayLabel: "Day",
+    trainingDay: "Training Day",
+    restDay: "Rest Day",
+    specialDay: "Special Day",
+    searching: "Searching...",
+    noMatches: "No matches found",
+    save: "Save",
+    saving: "Saving...",
+    foodItemRequired: "Please add at least one food item",
+  },
+  de: {
+    editTitle: "Mahlzeit bearbeiten",
+    addTitle: "Neue Mahlzeit hinzufügen",
+    mealsNameLabel: "Mahlzeitenname",
+    mealsNamePlaceholder: "Mahlzeitenname eingeben...",
+    foodItemsLabel: "Lebensmittel",
+    foodNamePlaceholder: "Lebensmittelname",
+    quantityPlaceholder: "Menge in Gramm (z. B. 30)",
+    addAnotherFood: "Weiters Lebensmittel hinzufügen",
+    timeLabel: "Uhrzeit",
+    timePlaceholder: "HH:MM (z. B. 14:30)",
+    dayLabel: "Tag",
+    trainingDay: "Trainingstag",
+    restDay: "Ruhetag",
+    specialDay: "Spezialtag",
+    searching: "Suche...",
+    noMatches: "Keine Treffer gefunden",
+    save: "Speichern",
+    saving: "Wird gespeichert...",
+    foodItemRequired: "Bitte füge mindestens ein Lebensmittel hinzu",
+  }
+};
 
 interface AddModalProps {
   open: boolean;
@@ -47,6 +89,8 @@ export default function AddModal({
   loading = false,
 }: AddModalProps) {
   const dispatch = useAppDispatch();
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const [formData, setFormData] = useState<{
     mealsName: string;
@@ -187,7 +231,7 @@ export default function AddModal({
       }));
 
     if (validFoodItems.length === 0) {
-      alert("Please add at least one food item");
+      alert(t.foodItemRequired);
       return;
     }
 
@@ -213,7 +257,7 @@ export default function AddModal({
         <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
-              {editingMeal ? "Edit Meal" : "Add New Meal"}
+              {editingMeal ? t.editTitle : t.addTitle}
             </h2>
             <button
               onClick={() => onOpenChange(false)}
@@ -227,11 +271,11 @@ export default function AddModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-base font-medium text-gray-200">
-                Meals Name
+                {t.mealsNameLabel}
               </label>
               <input
                 type="text"
-                placeholder="Type meal name..."
+                placeholder={t.mealsNamePlaceholder}
                 value={formData.mealsName}
                 onChange={(e) =>
                   setFormData({ ...formData, mealsName: e.target.value })
@@ -244,7 +288,7 @@ export default function AddModal({
 
             <div className="space-y-2">
               <label className="text-base font-medium text-gray-200">
-                Food Items
+                {t.foodItemsLabel}
               </label>
               <div className="space-y-3">
                 {formData.foodItems.map((foodItem, index) => (
@@ -253,7 +297,7 @@ export default function AddModal({
                       <div className="flex-1 relative">
                         <input
                           type="text"
-                          placeholder="Food name"
+                          placeholder={t.foodNamePlaceholder}
                           value={foodItem.name}
                           onChange={(e) =>
                             handleFoodNameChange(index, e.target.value)
@@ -267,7 +311,7 @@ export default function AddModal({
                           <div className="absolute z-20 mt-1 w-full bg-[#08081A] border border-[#303245] rounded-lg shadow-lg max-h-56 overflow-y-auto">
                             {isSearching && (
                               <div className="px-3 py-2 text-xs text-gray-400">
-                                Searching...
+                                {t.searching}
                               </div>
                             )}
                             {!isSearching &&
@@ -290,7 +334,7 @@ export default function AddModal({
                               ))}
                             {!isSearching && foodSuggestions.length === 0 && (
                               <div className="px-3 py-2 text-xs text-gray-500">
-                                No matches found
+                                {t.noMatches}
                               </div>
                             )}
                           </div>
@@ -299,7 +343,7 @@ export default function AddModal({
                       <div className="flex-1">
                         <input
                           type="number"
-                          placeholder="Quantity in grams (e.g., 30)"
+                          placeholder={t.quantityPlaceholder}
                           value={foodItem.quantity}
                           onChange={(e) =>
                             handleQuantityChange(index, e.target.value)
@@ -329,7 +373,7 @@ export default function AddModal({
                         disabled={loading}
                       >
                         <Plus className="w-4 h-4" />
-                        Add Another Food Item
+                        {t.addAnotherFood}
                       </button>
                     )}
                   </div>
@@ -340,7 +384,7 @@ export default function AddModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <label className="text-base font-medium text-gray-200">
-                  Time
+                  {t.timeLabel}
                 </label>
                 <div className="relative">
                   <input
@@ -358,7 +402,7 @@ export default function AddModal({
                       }
                       setFormData({ ...formData, time: val });
                     }}
-                    placeholder="HH:MM (e.g., 14:30)"
+                    placeholder={t.timePlaceholder}
                     pattern="^([01][0-9]|2[0-3]):[0-5][0-9]$"
                     title="Please enter time in 24-hour format (00:00 to 23:59)"
                     className="w-full bg-[#08081A] border border-[#303245] rounded-lg pl-12 pr-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 text-base"
@@ -371,7 +415,7 @@ export default function AddModal({
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-gray-200">
-                  Day
+                  {t.dayLabel}
                 </label>
                 <select
                   value={formData.day}
@@ -382,9 +426,9 @@ export default function AddModal({
                   required
                   disabled={loading}
                 >
-                  <option value="training day">Training Day</option>
-                  <option value="rest day">Rest Day</option>
-                  <option value="special day">Special Day</option>
+                  <option value="training day">{t.trainingDay}</option>
+                  <option value="rest day">{t.restDay}</option>
+                  <option value="special day">{t.specialDay}</option>
                 </select>
               </div>
             </div>
@@ -394,7 +438,7 @@ export default function AddModal({
               className="w-full bg-[#1e3a8a] hover:bg-[#1e40af] text-white py-3 rounded-lg font-semibold transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? t.saving : t.save}
             </button>
           </form>
         </div>

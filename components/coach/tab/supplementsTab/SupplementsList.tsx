@@ -45,8 +45,8 @@ export default function SupplementsList({
 
   if (supplements.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-400 text-lg">{t.noSupplementsFound}</p>
+      <div className="text-center py-16 bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] rounded-xl">
+        <p className="text-gray-400 text-base">{t.noSupplementsFound}</p>
       </div>
     );
   }
@@ -73,74 +73,78 @@ export default function SupplementsList({
         return (
           <div
             key={supplement._id}
-            className="bg-[#08081A] border border-[#303245] rounded-lg p-6"
+            className="bg-gradient-to-br from-[#141424] to-[#0f0f1e] border border-[#2d2d45] hover:border-emerald-500/40 rounded-xl p-5 transition-all shadow-md group"
           >
             {/* Supplement Name and Actions */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text-white">{supplement.name}</h3>
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-[#2d2d45]/60">
+              <h3 className="text-lg font-bold text-white tracking-wide">
+                {supplement.name}
+              </h3>
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onEdit(supplement)}
-                  className="p-2 hover:bg-[#303245] rounded-lg transition-colors text-emerald-400"
+                  className="w-8 h-8 rounded-full bg-blue-600/10 border border-blue-600/50 hover:bg-blue-600/30 flex items-center justify-center transition-all"
+                  title="Edit supplement"
                   aria-label="Edit supplement"
                 >
-                  <Edit2 className="w-5 h-5" />
+                  <Edit2 className="w-3.5 h-3.5 text-blue-400" />
                 </button>
                 <button
                   onClick={() => onDelete(supplement._id)}
-                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-500"
+                  className="w-8 h-8 rounded-full bg-red-600/10 border border-red-600/50 hover:bg-red-600/30 flex items-center justify-center transition-all"
+                  title="Delete supplement"
                   aria-label="Delete supplement"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
               </div>
             </div>
 
             {/* Supplement Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {/* Brand */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{t.brand}</p>
-                <p className="text-emerald-400 font-medium text-base">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.brand}</p>
+                <p className="text-sm font-medium text-emerald-400 truncate">
                   {supplement.brand || "-"}
                 </p>
               </div>
 
               {/* Dosage */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{t.dosage}</p>
-                <p className="text-emerald-400 font-medium text-base">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.dosage}</p>
+                <p className="text-sm font-medium text-emerald-400 truncate">
                   {supplement.dosage || "-"}
                 </p>
               </div>
 
               {/* Frequency */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{t.frequency}</p>
-                <p className="text-emerald-400 font-medium text-base">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.frequency}</p>
+                <p className="text-sm font-medium text-emerald-400 truncate">
                   {actualFrequency || "-"}
                 </p>
               </div>
 
               {/* Time */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{t.time}</p>
-                <p className="text-emerald-400 font-medium text-base">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.time}</p>
+                <p className="text-sm font-medium text-emerald-400 truncate">
                   {supplement.time || "-"}
                 </p>
               </div>
 
               {/* Purpose */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{t.purpose}</p>
-                <p className="text-emerald-400 font-medium text-base">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.purpose}</p>
+                <p className="text-sm font-medium text-emerald-400 truncate">
                   {supplement.purpose || "-"}
                 </p>
               </div>
 
               {/* Link */}
               <div>
-                <p className="text-gray-300 mb-1 text-xl">{(t as any).link}</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{(t as any).link}</p>
                 {actualLink ? (
                   <a
                     href={
@@ -150,24 +154,24 @@ export default function SupplementsList({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline font-medium text-base"
+                    className="text-sm font-medium text-blue-400 hover:text-blue-300 underline inline-block truncate max-w-full"
                   >
                     {(t as any).view}
                   </a>
                 ) : (
-                  <p className="text-gray-500 font-medium text-base">-</p>
+                  <p className="text-sm font-medium text-gray-500">-</p>
                 )}
               </div>
-          </div>
-
-          {/* Note */}
-          {supplement.note && (
-            <div className="mt-4 pt-4 border-t border-[#303245]">
-              <p className="text-gray-300 mb-1 text-xl">{t.note}</p>
-              <p className="text-gray-400 text-base">{supplement.note}</p>
             </div>
-          )}
-        </div>
+
+            {/* Note */}
+            {supplement.note && (
+              <div className="mt-3 pt-3 border-t border-[#2d2d45]/60">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">{t.note}</p>
+                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{supplement.note}</p>
+              </div>
+            )}
+          </div>
         );
       })}
     </div>

@@ -3,9 +3,48 @@ import { TrainingPlan, BackendExercise } from "@/redux/features/trainingPlan/tra
 import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { reorderExercisesLocally, reorderExercises, fetchTrainingPlans } from "@/redux/features/trainingPlan/trainingPlanSlice";
 import toast from "react-hot-toast";
+
+const translations = {
+  en: {
+    editPlan: "Edit Plan",
+    deletePlan: "Delete Plan",
+    noExercises: "No exercises added.",
+    mainNotes: "Main Plan Notes",
+    notePrefix: "Note:",
+    setBreakdown: "Set Breakdown",
+    sets: "Sets:",
+    reps: "Reps:",
+    rir: "RIR:",
+    noSets: "No sets added.",
+    difficulties: {
+      Advanced: "Advanced",
+      Intermediate: "Intermediate",
+      Begineer: "Beginner",
+      Beginner: "Beginner",
+    }
+  },
+  de: {
+    editPlan: "Plan bearbeiten",
+    deletePlan: "Plan löschen",
+    noExercises: "Keine Übungen hinzugefügt.",
+    mainNotes: "Hauptplan-Notizen",
+    notePrefix: "Notiz:",
+    setBreakdown: "Satz-Aufschlüsselung",
+    sets: "Sätze:",
+    reps: "Wdh:",
+    rir: "RIR:",
+    noSets: "Keine Sätze hinzugefügt.",
+    difficulties: {
+      Advanced: "Fortgeschritten",
+      Intermediate: "Mittel",
+      Begineer: "Anfänger",
+      Beginner: "Anfänger",
+    }
+  }
+};
 
 interface PlanPreviewCardProps {
   plan: TrainingPlan;
@@ -21,6 +60,9 @@ export default function TrainingPlanPreview({
   onDelete,
 }: PlanPreviewCardProps) {
   const dispatch = useAppDispatch();
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -119,7 +161,7 @@ export default function TrainingPlanPreview({
                     plan.dificulty,
                   )}`}
                 >
-                  {plan.dificulty}
+                  {t.difficulties[plan.dificulty as keyof typeof t.difficulties] || plan.dificulty}
                 </span>
               </div>
             </div>
@@ -130,14 +172,14 @@ export default function TrainingPlanPreview({
             <button
               onClick={onEdit}
               className="w-8 h-8 rounded-full bg-blue-600/10 border border-blue-600/50 hover:bg-blue-600/30 flex items-center justify-center transition-all"
-              title="Edit Plan"
+              title={t.editPlan}
             >
               <Pencil className="w-3.5 h-3.5 text-blue-400" />
             </button>
             <button
               onClick={onDelete}
               className="w-8 h-8 rounded-full bg-red-600/10 border border-red-600/50 hover:bg-red-600/30 flex items-center justify-center transition-all"
-              title="Delete Plan"
+              title={t.deletePlan}
             >
               <Trash2 className="w-3.5 h-3.5 text-red-400" />
             </button>
@@ -161,12 +203,13 @@ export default function TrainingPlanPreview({
                     key={ex._id || index}
                     exercise={ex}
                     index={index}
+                    t={t}
                   />
                 ))}
               </SortableContext>
             </DndContext>
           ) : (
-            <p className="text-sm text-gray-500 italic">No exercises added.</p>
+            <p className="text-sm text-gray-500 italic">{t.noExercises}</p>
           )}
         </div>
 
@@ -174,7 +217,7 @@ export default function TrainingPlanPreview({
         {plan.comment && (
           <div className="pt-4 border-t border-[#2d2d45]">
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-2 text-gray-500">
-              Main Plan Notes
+              {t.mainNotes}
             </h4>
             <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">
               {plan.comment}
@@ -190,9 +233,10 @@ export default function TrainingPlanPreview({
 interface SortableExerciseProps {
   exercise: BackendExercise;
   index: number;
+  t: typeof translations["en"];
 }
 
-function SortableExercise({ exercise, index }: SortableExerciseProps) {
+function SortableExercise({ exercise, index, t }: SortableExerciseProps) {
   const {
     attributes,
     listeners,
@@ -237,7 +281,7 @@ function SortableExercise({ exercise, index }: SortableExerciseProps) {
         {exercise.excerciseNote && (
           <div className="pl-16">
             <p className="text-[11px] text-emerald-400/80 italic leading-relaxed bg-emerald-500/5 px-2 py-1 rounded-md border border-emerald-500/10 inline-block">
-              Note: {exercise.excerciseNote}
+              {t.notePrefix} {exercise.excerciseNote}
             </p>
           </div>
         )}
@@ -247,29 +291,29 @@ function SortableExercise({ exercise, index }: SortableExerciseProps) {
       <div className="flex flex-col gap-3 pl-16 sm:pl-0 shrink-0">
         {exercise.exerciseSets && exercise.exerciseSets.length > 0 ? (
           <div className="flex flex-col items-start gap-2 border-t border-[#2d2d45]/50 pt-2 sm:border-t-0 sm:pt-0">
-            <span className="text-[10px] uppercase text-gray-500 font-semibold mb-1 block sm:hidden">Set Breakdown</span>
+            <span className="text-[10px] uppercase text-gray-500 font-semibold mb-1 block sm:hidden">{t.setBreakdown}</span>
             {exercise.exerciseSets.map((set, i) => (
               <div key={i} className="flex flex-wrap items-center gap-2">
                 <div className="px-2 py-0.5 flex items-center bg-[#111120] border border-[#2d2d45] rounded">
                   <span className="text-[10px] text-emerald-500 font-bold">
-                    Sets: {set.sets}
+                    {t.sets} {set.sets}
                   </span>
                 </div>
                 <div className="px-2 py-0.5 flex items-center bg-[#111120] border border-[#2d2d45] rounded">
                   <span className="text-[10px] text-white font-medium">
-                    Reps: {set.repRange}
+                    {t.reps} {set.repRange}
                   </span>
                 </div>
                 <div className="px-2 py-0.5 flex items-center bg-[#111120] border border-[#2d2d45] rounded">
                   <span className="text-[10px] text-blue-400 font-medium">
-                    RIR: {set.rir}
+                    {t.rir} {set.rir}
                   </span>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-gray-500 italic">No sets added.</p>
+          <p className="text-xs text-gray-500 italic">{t.noSets}</p>
         )}
       </div>
     </div>

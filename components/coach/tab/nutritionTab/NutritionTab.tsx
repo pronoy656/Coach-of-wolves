@@ -30,6 +30,66 @@ const formatTo24Hour = (timeStr: string) => {
   return timeStr;
 };
 
+const translations = {
+  en: {
+    searchPlaceholder: "Search Here...",
+    dayTypes: {
+      trainingDay: "Training Day",
+      restDay: "Rest Day",
+      specialDay: "Special Day",
+    },
+    addMore: "+ Add More",
+    macroSummary: (day: string) => `${day === "All" ? "Total" : day.charAt(0).toUpperCase() + day.slice(1)} Macro Summary`,
+    calories: "Calories",
+    protein: "Protein",
+    carbs: "Carbs",
+    fats: "Fats",
+    showingMeals: (count: number, activeDayLabel: string) =>
+      `Showing ${count} meal${count !== 1 ? "s" : ""}${activeDayLabel !== "All" ? ` for ${activeDayLabel}` : ""}`,
+    deleteSuccess: "Meal deleted successfully",
+    deleteError: "Failed to delete meal",
+    updateSuccess: "Meal updated successfully",
+    addSuccess: "Meal added successfully",
+    saveError: "Failed to save meal",
+    noMeals: (dayLabel: string) => `No meals added for ${dayLabel === "All" ? "any day" : dayLabel} yet.`,
+    addFirstMeal: "Add Your First Meal",
+    deleteTitle: "Delete Meal",
+    deleteMessage: "Are you sure you want to delete this meal? This action cannot be undone.",
+    loading: "Loading...",
+  },
+  de: {
+    searchPlaceholder: "Hier suchen...",
+    dayTypes: {
+      trainingDay: "Trainingstag",
+      restDay: "Ruhetag",
+      specialDay: "Spezialtag",
+    },
+    addMore: "+ Weitere hinzufügen",
+    macroSummary: (day: string) => {
+      if (day === "All") return "Gesamt-Makro-Zusammenfassung";
+      if (day === "training day") return "Trainingstag-Makro-Zusammenfassung";
+      if (day === "rest day") return "Ruhetag-Makro-Zusammenfassung";
+      return "Spezialtag-Makro-Zusammenfassung";
+    },
+    calories: "Kalorien",
+    protein: "Protein",
+    carbs: "Kohlenhydrate",
+    fats: "Fette",
+    showingMeals: (count: number, activeDayLabel: string) =>
+      `${count} Mahlzeit${count !== 1 ? "en" : ""}${activeDayLabel !== "All" ? ` für ${activeDayLabel}` : ""} angezeigt`,
+    deleteSuccess: "Mahlzeit erfolgreich gelöscht",
+    deleteError: "Mahlzeit konnte nicht gelöscht werden",
+    updateSuccess: "Mahlzeit erfolgreich aktualisiert",
+    addSuccess: "Mahlzeit erfolgreich hinzugefügt",
+    saveError: "Mahlzeit konnte nicht gespeichert werden",
+    noMeals: (dayLabel: string) => `Noch keine Mahlzeiten für ${dayLabel === "All" ? "jeden Tag" : dayLabel} hinzugefügt.`,
+    addFirstMeal: "Erste Mahlzeit hinzufügen",
+    deleteTitle: "Mahlzeit löschen",
+    deleteMessage: "Bist du sicher, dass du diese Mahlzeit löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+    loading: "Wird geladen...",
+  }
+};
+
 interface NutritionTabProps {
   athleteId: string;
 }
@@ -39,6 +99,8 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
   const { plans, totals, loading, error, successMessage } = useAppSelector(
     (state) => state.oneNutritionPlan
   );
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const [activeDay, setActiveDay] = useState<string>("training day");
   const [searchQuery, setSearchQuery] = useState("");
@@ -106,9 +168,9 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
           planId: deleteModal.id,
           athleteId
         })).unwrap();
-        toast.success("Meal deleted successfully");
+        toast.success(t.deleteSuccess);
       } catch (error) {
-        toast.error("Failed to delete meal");
+        toast.error(t.deleteError);
       }
     }
     setDeleteModal({ isOpen: false, id: null });
@@ -129,11 +191,11 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
             data: mealData,
           })
         ).unwrap();
-        toast.success("Meal updated successfully");
+        toast.success(t.updateSuccess);
         setEditingMeal(null);
       } else {
         const result = await dispatch(addNutritionPlan({ athleteId, data: mealData })).unwrap();
-        toast.success("Meal added successfully");
+        toast.success(t.addSuccess);
 
         // Automatically add the meal as an entry to the central Nutrition Database
         if (result && result.data) {
@@ -163,15 +225,22 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
       }
       setShowMealModal(false);
     } catch (error) {
-      toast.error("Failed to save meal");
+      toast.error(t.saveError);
     }
   };
 
   const dayTypes = [
-    { label: "Training Day", value: "training day" },
-    { label: "Rest Day", value: "rest day" },
-    { label: "Special Day", value: "special day" },
+    { label: t.dayTypes.trainingDay, value: "training day" },
+    { label: t.dayTypes.restDay, value: "rest day" },
+    { label: t.dayTypes.specialDay, value: "special day" },
   ];
+
+  const getDayTypeLabel = (val: string) => {
+    if (val === "training day") return t.dayTypes.trainingDay;
+    if (val === "rest day") return t.dayTypes.restDay;
+    if (val === "special day") return t.dayTypes.specialDay;
+    return val;
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
@@ -181,7 +250,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-[#1a1a2e] p-6 rounded-lg flex flex-col items-center">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
-              <span className="text-gray-300">Loading...</span>
+              <span className="text-gray-300">{t.loading}</span>
             </div>
           </div>
         )}
@@ -191,7 +260,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder="Search Here..."
+            placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 bg-[#111111] border border-[#2a2a2a] rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
@@ -226,19 +295,19 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
             disabled={loading}
             className="bg-transparent border border-green-500 text-green-500 text-base hover:bg-emerald-500/10 rounded-full px-6 h-10 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            + Add More
+            {t.addMore}
           </button>
         </div>
 
         {/* Macro Summary */}
         <div className="space-y-4">
           <h2 className="text-3xl font-bold">
-            {activeDay === "All" ? "Total" : activeDay.charAt(0).toUpperCase() + activeDay.slice(1)} Macro Summary
+            {t.macroSummary(activeDay)}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-              <h3 className="mb-2 text-emerald-400">Calories</h3>
+              <h3 className="mb-2 text-emerald-400">{t.calories}</h3>
               <p className="text-xl">
                 {activeDay === "All"
                   ? totals.totalCalories.toLocaleString()
@@ -247,21 +316,21 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-              <h3 className="mb-2 text-blue-400">Protein</h3>
+              <h3 className="mb-2 text-blue-400">{t.protein}</h3>
               <p className="text-xl">
                 {activeDay === "All" ? totals.totalProtein.toFixed(1) : macroSummary.protein.toFixed(1)}g
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-              <h3 className="mb-2 text-yellow-400">Carbs</h3>
+              <h3 className="mb-2 text-yellow-400">{t.carbs}</h3>
               <p className="text-xl">
                 {activeDay === "All" ? totals.totalCarbs.toFixed(1) : macroSummary.carbs.toFixed(1)}g
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#2d2d45] rounded-lg p-6">
-              <h3 className="text-orange-400 mb-2">Fats</h3>
+              <h3 className="text-orange-400 mb-2">{t.fats}</h3>
               <p className="text-xl">
                 {activeDay === "All" ? totals.totalFats.toFixed(1) : macroSummary.fats.toFixed(1)}g
               </p>
@@ -271,8 +340,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
 
         {/* Meal Count */}
         <div className="text-sm text-gray-400">
-          Showing {activeDayMeals.length} meal{activeDayMeals.length !== 1 ? 's' : ''}
-          {activeDay !== "All" && ` for ${activeDay}`}
+          {t.showingMeals(activeDayMeals.length, getDayTypeLabel(activeDay))}
         </div>
 
         {/* Meal Cards */}
@@ -300,7 +368,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
                               : "bg-purple-900/30 text-purple-300 border border-purple-700/50"
                             }`}
                         >
-                          {meal.trainingDay === "training day" ? "Training Day" : meal.trainingDay === "rest day" ? "Rest Day" : "Special Day"}
+                          {getDayTypeLabel(meal.trainingDay)}
                         </span>
                       </h3>
                     </div>
@@ -332,7 +400,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
                     P: {(meal.totalProtein || 0).toFixed(1)}g
                   </span>
                   <span className="bg-yellow-600/20 text-yellow-400 text-xs px-3 py-1 rounded-full">
-                    C: {(meal.totalCarbs || 0).toFixed(1)}g
+                    {language === "de" ? "K" : "C"}: {(meal.totalCarbs || 0).toFixed(1)}g
                   </span>
                   <span className="bg-orange-600/20 text-orange-400 text-xs px-3 py-1 rounded-full">
                     F: {(meal.totalFats || 0).toFixed(1)}g
@@ -360,7 +428,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
         {!loading && activeDayMeals.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
-              No meals added for {activeDay === "All" ? "any day" : dayTypes.find(d => d.value === activeDay)?.label} yet.
+              {t.noMeals(getDayTypeLabel(activeDay))}
             </p>
             <button
               onClick={() => {
@@ -369,7 +437,7 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
               }}
               className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              Add Your First Meal
+              {t.addFirstMeal}
             </button>
           </div>
         )}
@@ -390,8 +458,8 @@ export default function NutritionTab({ athleteId }: NutritionTabProps) {
 
       <DeleteModal
         isOpen={deleteModal.isOpen}
-        title="Delete Meal"
-        message="Are you sure you want to delete this meal? This action cannot be undone."
+        title={t.deleteTitle}
+        message={t.deleteMessage}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModal({ isOpen: false, id: null })}
       />

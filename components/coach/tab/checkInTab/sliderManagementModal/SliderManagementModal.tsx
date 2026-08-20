@@ -4,6 +4,34 @@ import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Edit2, Loader2, Save, SlidersHorizontal } from "lucide-react";
 import axiosInstance from "@/lib/axiosInstance";
 import toast from "react-hot-toast";
+import { useAppSelector } from "@/redux/hooks";
+
+const translations = {
+  en: {
+    manageSliders: "Manage Dynamic Sliders",
+    addNewSlider: "Add New Slider",
+    sliderTitle: "Slider Title",
+    placeholderTitle: "e.g. Nutrition Adherence",
+    min: "Min",
+    max: "Max",
+    add: "Add",
+    activeSliders: "Active Sliders",
+    noCustomSliders: "No custom sliders active.",
+    range: "Range",
+  },
+  de: {
+    manageSliders: "Dynamische Regler verwalten",
+    addNewSlider: "Neuen Regler hinzufügen",
+    sliderTitle: "Regler-Titel",
+    placeholderTitle: "z. B. Diäteinhaltung",
+    min: "Min",
+    max: "Max",
+    add: "Hinzufügen",
+    activeSliders: "Aktive Regler",
+    noCustomSliders: "Keine benutzerdefinierten Regler aktiv.",
+    range: "Bereich",
+  }
+};
 
 interface DynamicSlider {
   _id: string;
@@ -22,6 +50,9 @@ interface SliderManagementModalProps {
 }
 
 export default function SliderManagementModal({ athleteId, isOpen, onClose }: SliderManagementModalProps) {
+  const { language } = useAppSelector((state) => state.language);
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const [sliders, setSliders] = useState<DynamicSlider[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -141,7 +172,7 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
             <span className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400">
               <SlidersHorizontal className="w-4 h-4" />
             </span>
-            Manage Dynamic Sliders
+            {t.manageSliders}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -151,20 +182,20 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
           {/* Add New Slider Form */}
           <div className="bg-[#13132B] rounded-xl p-5 border border-slate-700/50">
-            <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4">Add New Slider</h3>
+            <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4">{t.addNewSlider}</h3>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
               <div className="md:col-span-6">
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">Slider Title</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-1.5">{t.sliderTitle}</label>
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. Nutrition Adherence"
+                  placeholder={t.placeholderTitle}
                   className="w-full bg-[#0a0a1a] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 outline-none"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">Min</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-1.5">{t.min}</label>
                 <input
                   type="number"
                   value={newMin}
@@ -173,7 +204,7 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">Max</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-1.5">{t.max}</label>
                 <input
                   type="number"
                   value={newMax}
@@ -188,7 +219,7 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
                   className="w-full flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  Add
+                  {t.add}
                 </button>
               </div>
             </div>
@@ -196,14 +227,14 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
 
           {/* Existing Sliders */}
           <div>
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Active Sliders</h3>
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">{t.activeSliders}</h3>
             {loading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
               </div>
             ) : sliders.length === 0 ? (
               <div className="text-center py-8 border border-dashed border-slate-700 rounded-xl">
-                <p className="text-slate-500">No custom sliders active.</p>
+                <p className="text-slate-500">{t.noCustomSliders}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -215,18 +246,18 @@ export default function SliderManagementModal({ athleteId, isOpen, onClose }: Sl
                            <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full bg-[#0a0a1a] border border-violet-500/50 rounded-lg px-3 py-1.5 text-sm text-white outline-none" />
                          </div>
                          <div className="md:col-span-3 flex items-center gap-2">
-                           <span className="text-xs text-gray-500">Min</span>
+                           <span className="text-xs text-gray-500">{t.min}</span>
                            <input type="number" value={editMin} onChange={e => setEditMin(Number(e.target.value))} className="w-16 bg-[#0a0a1a] border border-violet-500/50 rounded-lg px-2 py-1.5 text-sm text-white outline-none" />
                          </div>
                          <div className="md:col-span-3 flex items-center gap-2">
-                           <span className="text-xs text-gray-500">Max</span>
+                           <span className="text-xs text-gray-500">{t.max}</span>
                            <input type="number" value={editMax} onChange={e => setEditMax(Number(e.target.value))} className="w-16 bg-[#0a0a1a] border border-violet-500/50 rounded-lg px-2 py-1.5 text-sm text-white outline-none" />
                          </div>
                       </div>
                     ) : (
                       <div className="flex-1">
                         <p className="font-bold text-white mb-1">{slider.title}</p>
-                        <p className="text-xs text-gray-500">Range: {slider.min} - {slider.max}</p>
+                        <p className="text-xs text-gray-500">{t.range}: {slider.min} - {slider.max}</p>
                       </div>
                     )}
 
